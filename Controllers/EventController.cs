@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using EventManagement.Models;
+using EventManagement.DTOs;
 using EventManagement.Services;
 
 namespace EventManagement.Controllers;
@@ -16,14 +17,14 @@ public class EventsController : ControllerBase
     }
     
     [HttpGet]
-    public ActionResult<IEnumerable<Event>> GetAll()
+    public ActionResult<IEnumerable<EventDTO>> GetAll()
     {
         var events = _eventService.GetAll();
         return Ok(events);
     }
     
     [HttpGet("{id}")]
-    public ActionResult<Event> GetById(Guid id)
+    public ActionResult<EventDTO> GetById(Guid id)
     {
         var eventItem = _eventService.GetById(id);
         
@@ -36,7 +37,7 @@ public class EventsController : ControllerBase
     }
     
     [HttpPost]
-    public ActionResult<Event> Create(Event eventItem)
+    public ActionResult<EventDTO> Create(CreateEventDTO eventItem)
     {
         try
         {
@@ -50,7 +51,7 @@ public class EventsController : ControllerBase
     }
     
     [HttpPut("{id}")]
-    public ActionResult<Event> Update(Guid id, Event eventItem)
+    public ActionResult<Event> Update(Guid id, UpdateEventDTO eventItem)
     {
         try
         {

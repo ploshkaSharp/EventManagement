@@ -1,47 +1,51 @@
 using EventManagement.Models;
+using EventManagement.DTOs;
+using EventManagement.Mappers;
 
 namespace EventManagement.Services;
 
 public class EventService : IEventService
 {
   private readonly Dictionary<Guid, Event> _events = new();
-  public IEnumerable<Event> GetAll()
+  public IEnumerable<EventDTO> GetAll()
   {
-    return _events.Values.OrderBy(e => e.StartAt);
+    var events = _events.Values.OrderBy(e => e.StartAt);
+    return EventMapper.ToDtoList(events);
   }    
-  public Event? GetById(Guid id)
+  public EventDTO? GetById(Guid id)
   {
     _events.TryGetValue(id, out var eventItem);
-    return eventItem;
+    return eventItem != null ? EventMapper.ToDto(eventItem) : null;    
   }
     
-  public Event Create(Event eventCreated)
+  public EventDTO Create(CreateEventDTO eventCreated)
   {
-    if (eventCreated.Id == Guid.Empty)
+    var eventItem = EventMapper.ToEntity(eventCreated);
+    
+    if (eventItem.Id == Guid.Empty)
     {
-      eventCreated.Id = Guid.NewGuid();
+      eventItem.Id = Guid.NewGuid();
     }
                 
-    _events.TryAdd(eventCreated.Id, eventCreated);
-    return eventCreated;
+    _events.TryAdd(eventItem.Id, eventItem);
+    return EventMapper.ToDto(eventItem);
   }
     
-  public Event? Update(Guid id, Event eventUpdated)
+  public EventDTO? Update(Guid id, UpdateEventDTO eventUpdated)
   {
     if (!_events.ContainsKey(id))
     {
       return null;
     }
-          
-    eventUpdated.Id = id;
-    _events[id] = eventUpdated;
 
-    return eventUpdated;
+    var updatedEvent = EventMapper.ToEntity(eventUpdated, id);          
+    _events[id] = updatedEvent;
+
+    return EventMapper.ToDto(updatedEvent);
   }
     
   public bool Delete(Guid id)
   {
-    return _events.Remove(id);
+    return _events.Remove(id);    
   }
-
 }
