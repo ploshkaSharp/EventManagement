@@ -62,6 +62,32 @@ public class CreateEventDTO
   /// <example>2026-06-15T10:00:00Z</example>    
   [Required(ErrorMessage = "EndAt обязателен для заполнения.")]
   public DateTime EndAt { get; set; }
+
+  /*
+  /// <summary>
+  /// Кастомная валидация для проверки корректности дат
+  /// </summary>
+  /// <param name="validationContext">Контекст валидации</param>
+  /// <returns>Результаты валидации</returns>
+  public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+  { 
+    var results = new List<ValidationResult>();
+
+    // Проверка, что дата начала не в прошлом
+    if (StartAt < DateTime.UtcNow)
+    {
+      results.Add(new ValidationResult("StartAt cannot be in the past",  new[] { nameof(StartAt) }));
+    }
+
+    // Проверка, что дата начала меньше даты окончания
+    if (StartAt >= EndAt)
+    {
+      results.Add(new ValidationResult("StartAt cannot be in the past", new[] { nameof(StartAt) }));      
+    }
+        
+    return results;
+  }
+  */
 }
 
 /// <summary>

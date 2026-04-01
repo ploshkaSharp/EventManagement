@@ -10,6 +10,7 @@ namespace EventManagement.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
+[Produces("application/json")]
 public class EventsController : ControllerBase
 {
     private readonly IEventService _eventService;
@@ -30,6 +31,7 @@ public class EventsController : ControllerBase
     /// <returns>Список мероприятий</returns>
     /// <response code="200">Успешно возвращен список мероприятий</response>
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<EventDTO>), StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<EventDTO>> GetAll()
     {
         var events = _eventService.GetAll();
@@ -83,7 +85,7 @@ public class EventsController : ControllerBase
     [ProducesResponseType(typeof(CreateEventDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]    
     public ActionResult<EventDTO> Create(CreateEventDTO eventItem)
-    {
+    {     
         try
         {
             var createdEvent = _eventService.Create(eventItem);
