@@ -1,7 +1,7 @@
 # Event Management
 REST API для управления мероприятиями с CRUD-операциями (создание, просмотр, обновление, удаление).
 
-Хранение мерприятий в памяти (in-memory).
+Хранение мероприятий в памяти (in-memory).
 
 Валидация входных данных (обязательность заполнения, дата окончания должна быть позже даты начала).
 
@@ -28,7 +28,7 @@ EventManagement/
 
 ├── Mappers/
 
-│ └── EventMapper.cs  *#Маппинг DTO объктов*
+│ └── EventMapper.cs  *#Маппинг DTO объектов*
 
 ├── Models/
 
@@ -56,18 +56,22 @@ EventManagement/
 1. **Склонируйте репозиторий:**
    ```bash
    git clone https://github.com/ploshkaSharp/EventManagement
+   ```
    
 2. **Переключитесь в папку с клонированным репозиторием:**
    ```bash
    cd EventManagement
+   ```
 
 3. **Опубликуйте решение:**
    ```bash
    dotnet build
+   ```
 
 4. **Запустите решение:**
    ```bash
    dotnet run
+   ```
 
 5. **Для тестирования решения откройте swagger:**
 
@@ -87,7 +91,7 @@ EventManagement/
  
  POST   │ /events      │ Создать мероприятие              │ 201 Created / 400 Bad Request
  
- PUT    │ /events/{id} │ Обновить мероприятие             │ 204 No Content / 404 Not Found / 400 Bad Request
+ PUT    │ /events/{id} │ Обновить мероприятие             │ 200 Ok / 404 Not Found / 400 Bad Request
  
  DELETE │ /events/{id} │ Удалить мероприятие              │ 204 No Content / 404 Not Found
 
@@ -95,7 +99,7 @@ EventManagement/
    **Создание мероприятия:**
    ```bash
    curl -X 'POST' \
-     'http://localhost:5000/api/Events' \
+     'http://localhost:5000/Events' \
      -H 'accept: text/plain' \
      -H 'Content-Type: application/json' \
      -d '{
@@ -108,20 +112,20 @@ EventManagement/
 
    **Вывод списка всех мероприятий:**
    ```bash
-   curl -X GET 'https://localhost:5000/api/Events'  \
+   curl -X GET 'https://localhost:5000/Events'  \
       -H 'accept: text/plain'
    ```
 
    **Вывод мероприятия по ID (Guid):**
    ```bash
-   curl -X GET 'https://localhost:5000/api/Events/3fa85f64-5717-4562-b3fc-2c963f66afa6' \
+   curl -X GET 'https://localhost:5000/Events/3fa85f64-5717-4562-b3fc-2c963f66afa6' \
       -H 'accept: text/plain'
    ```
 
   **Обновить мероприятие:**
    ```bash
    curl -X 'PUT' \
-     'http://localhost:5000/api/Events/3fa85f64-5717-4562-b3fc-2c963f66afa6' \
+     'http://localhost:5000/Events/3fa85f64-5717-4562-b3fc-2c963f66afa6' \
      -H 'accept: text/plain' \
      -H 'Content-Type: application/json' \
      -d '{
@@ -134,6 +138,6 @@ EventManagement/
    **Удалить мероприятия по ID (Guid):**
    ```bash
    curl -X 'DELETE' \
-     'http://localhost:5000/api/Events/3fa85f64-5717-4562-b3fc-2c963f66afa6' \
+     'http://localhost:5000/Events/3fa85f64-5717-4562-b3fc-2c963f66afa6' \
      -H 'accept: */*'    
    ```   

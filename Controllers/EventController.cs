@@ -6,7 +6,7 @@ using EventManagement.Services;
 namespace EventManagement.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class EventsController : ControllerBase
 {
     private readonly IEventService _eventService;
