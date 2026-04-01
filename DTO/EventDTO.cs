@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 namespace EventManagement.DTOs;
 
-
 public class EventDTO
 {
   public Guid Id { get; set; }
