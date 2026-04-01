@@ -15,7 +15,7 @@ public class EventsController : ControllerBase
     {
         _eventService = eventService;
     }
-    
+
     [HttpGet]
     public ActionResult<IEnumerable<EventDTO>> GetAll()
     {

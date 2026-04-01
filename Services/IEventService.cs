@@ -1,5 +1,4 @@
 using EventManagement.DTOs;
-using EventManagement.Models;
 
 namespace EventManagement.Services;
 

@@ -1,8 +1,5 @@
 namespace EventManagement.Models;
 
-/// <summary>
-/// Мероприятие
-/// </summary>
 public class Event
 {
   public Guid Id { get; set; }
