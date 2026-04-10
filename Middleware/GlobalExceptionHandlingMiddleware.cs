@@ -71,7 +71,8 @@ public class GlobalExceptionHandlingMiddleware
         errorResponse.Extensions = validationEx.Errors;
 
         _logger.LogWarning(exception,
-            "Validation error occurred. Path: {Path}, Errors: {Errors}",
+            "Validation error occurred. Method: {Method}, Path: {Path}, Errors: {Errors}",
+            context.Request.Method,
             context.Request.Path,
             JsonSerializer.Serialize(validationEx.Errors));
         break;
@@ -84,7 +85,8 @@ public class GlobalExceptionHandlingMiddleware
         errorResponse.Detail = notFoundEx.Message;
 
         _logger.LogWarning(exception,
-            "Resource not found. Path: {Path}, Message: {Message}",
+            "Resource not found. Method: {Method}, Path: {Path}, Message: {Message}",
+            context.Request.Method,
             context.Request.Path,
             notFoundEx.Message);
         break;
@@ -97,7 +99,8 @@ public class GlobalExceptionHandlingMiddleware
         errorResponse.Detail = badRequestEx.Message;
 
         _logger.LogWarning(exception,
-            "Bad request. Path: {Path}, Message: {Message}",
+            "Bad request. Method: {Method}, Path: {Path}, Message: {Message}",
+            context.Request.Method,
             context.Request.Path,
             badRequestEx.Message);
         break;
@@ -110,7 +113,8 @@ public class GlobalExceptionHandlingMiddleware
         errorResponse.Detail = argEx.Message;
 
         _logger.LogWarning(exception,
-            "Invalid argument. Path: {Path}, Message: {Message}",
+            "Invalid argument. Method: {Method}, Path: {Path}, Message: {Message}",
+            context.Request.Method,
             context.Request.Path,
             argEx.Message);
         break;
