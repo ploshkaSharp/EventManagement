@@ -15,10 +15,68 @@ public class EventService : IEventService
   /// Получить список всех мероприятий
   /// </summary>
   /// <returns>Список мероприятий</returns>
-  public IEnumerable<EventDTO> GetAll()
+  public IEnumerable<EventDTO> GetAll(EventFilterDto? filter = null)
   {
-    var events = _events.Values.OrderBy(e => e.StartAt);
+
+    if (filter != null && filter.From != null && filter.To != null && filter.From > filter.To)
+    {
+      throw new BadRequestException("'from' cannot be more than 'to'");
+    }
+
+    var query = FilteredQuery(filter);
+    var events = query.OrderBy(e => e.StartAt);
     return EventMapper.ToDtoList(events);
+  }
+
+  /// <summary>
+  /// Построение запроса с фильтрацией (отдельный метод для лучшей читаемости)
+  /// </summary>
+  private IQueryable<Event> FilteredQuery(EventFilterDto? filter)
+  {
+    var query = _events.Values.AsQueryable();
+
+    if (filter == null)
+      return query;
+
+    query = TitleFilter(query, filter.Title);
+    query = FromDateFilter(query, filter.From);
+    query = ToDateFilter(query, filter.To);
+
+    return query;
+  }
+
+  /// <summary>
+  /// Фильтр по названию
+  /// </summary>
+  private IQueryable<Event> TitleFilter(IQueryable<Event> query, string? title)
+  {
+    if (string.IsNullOrWhiteSpace(title))
+      return query;
+
+    return query.Where(e =>
+                 e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
+  }
+
+  /// <summary>
+  /// Фильтр по дате начала
+  /// </summary>
+  private IQueryable<Event> FromDateFilter(IQueryable<Event> query, DateTime? from)
+  {
+    if (!from.HasValue)
+      return query;
+
+    return query.Where(e => e.StartAt >= from.Value);
+  }
+
+  /// <summary>
+  /// Фильтра по дате окончания
+  /// </summary>
+  private IQueryable<Event> ToDateFilter(IQueryable<Event> query, DateTime? to)
+  {
+    if (!to.HasValue)
+      return query;
+
+    return query.Where(e => e.EndAt <= to.Value);
   }
 
   /// <summary>
@@ -44,7 +102,7 @@ public class EventService : IEventService
   public EventDTO Create(CreateEventDTO eventCreated)
   {
     var eventItem = EventMapper.ToEntity(eventCreated);
-   
+
     var isExistEvent = _events.Values.Any(e =>
                        e.Title.Equals(eventCreated.Title, StringComparison.OrdinalIgnoreCase));
 
@@ -56,12 +114,12 @@ public class EventService : IEventService
     if (eventCreated.StartAt < DateTime.UtcNow)
     {
       throw new ValidationException("StartAt must be more than now.");
-    }     
+    }
 
     if (eventCreated.StartAt >= eventCreated.EndAt)
     {
       throw new ValidationException($"StartAt must be less than EndAt ('{eventCreated.EndAt}')");
-    }    
+    }
 
     if (eventItem.Id == Guid.Empty)
     {
@@ -99,12 +157,12 @@ public class EventService : IEventService
     if (eventUpdated.StartAt >= eventUpdated.EndAt)
     {
       throw new ValidationException($"StartAt must be less than EndAt ('{eventUpdated.EndAt}')");
-    }    
+    }
 
     if (eventUpdated.StartAt < DateTime.UtcNow)
     {
       throw new ValidationException("StartAt must be more than now.");
-    }    
+    }
 
     var updatedEvent = EventMapper.ToEntity(eventUpdated, id);
     _events[id] = updatedEvent;

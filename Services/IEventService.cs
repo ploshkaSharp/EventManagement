@@ -10,7 +10,8 @@ public interface IEventService
   /// <summary>
   /// Получить список всех мероприятий
   /// </summary>  
-  IEnumerable<EventDTO> GetAll();
+  /// <param name="filter">Параметры фильтра</param>
+  IEnumerable<EventDTO> GetAll(EventFilterDto? filter = null);
   /// <summary>
   /// Уникальный идентификатор мероприятия
   /// </summary>
