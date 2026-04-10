@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.OpenApi;
 using EventManagement.Services;
+using EventManagement.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,8 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddSingleton<IEventService, EventService>();
 
 var app = builder.Build();
+// middleware для глобальной обработки ошибок. Ставить первым в pipeline для перехвата всех исключений
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

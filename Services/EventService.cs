@@ -1,6 +1,7 @@
 using EventManagement.Models;
 using EventManagement.DTOs;
 using EventManagement.Mappers;
+using EventManagement.Exceptions;
 
 namespace EventManagement.Services;
 
@@ -18,17 +19,21 @@ public class EventService : IEventService
   {
     var events = _events.Values.OrderBy(e => e.StartAt);
     return EventMapper.ToDtoList(events);
-  }    
+  }
 
   /// <summary>
   /// Получить мероприятие по идентификатору
   /// </summary>
   /// <param name="id">Идентификатор мероприятия (GUID)</param>
-  /// <returns>DTO мероприятия с указанным идентификатором если оно найдено или null</returns>  
+  /// <returns>DTO мероприятия с указанным идентификатором если оно найдено</returns>  
   public EventDTO? GetById(Guid id)
   {
     _events.TryGetValue(id, out var eventItem);
-    return eventItem != null ? EventMapper.ToDto(eventItem) : null;    
+    if (eventItem == null)
+    {
+      throw new NotFoundException(nameof(Event), id);
+    }
+    return EventMapper.ToDto(eventItem);
   }
 
   /// <summary>
@@ -39,42 +44,71 @@ public class EventService : IEventService
   public EventDTO Create(CreateEventDTO eventCreated)
   {
     var eventItem = EventMapper.ToEntity(eventCreated);
-    
+
+    var isExistEvent = _events.Values.Any(e =>
+                       e.Title.Equals(eventCreated.Title, StringComparison.OrdinalIgnoreCase));
+
+    if (isExistEvent)
+    {
+      throw new ValidationException($"Event with title '{eventCreated.Title}' already exists");
+    }
+
+    if (eventCreated.StartAt >= eventCreated.EndAt)
+    {
+      throw new ValidationException($"StartAt must be less than '{eventCreated.EndAt}'");
+    }
+
     if (eventItem.Id == Guid.Empty)
     {
       eventItem.Id = Guid.NewGuid();
     }
-                
-    _events.TryAdd(eventItem.Id, eventItem);
+
+    if (!_events.TryAdd(eventItem.Id, eventItem))
+    {
+      throw new BadRequestException("Failed to create event");
+    }
     return EventMapper.ToDto(eventItem);
   }
-    
+
   /// <summary>
   /// Обновить существующее мероприятие
   /// </summary>
   /// <param name="id">Идентификатор мероприятия для обновления (GUID)</param>
   /// <param name="eventUpdated">Обновленные данные мероприятия</param>
-  /// <returns>DTO обновленного мероприятия если оно найдено или null</returns>    
+  /// <returns>DTO обновленного мероприятия если оно найдено</returns>    
   public EventDTO? Update(Guid id, UpdateEventDTO eventUpdated)
   {
     if (!_events.ContainsKey(id))
     {
-      return null;
+      throw new NotFoundException(nameof(Event), id);
     }
 
-    var updatedEvent = EventMapper.ToEntity(eventUpdated, id);          
+    var isExistEvent = _events.Values.Any(e =>
+                       e.Title.Equals(eventUpdated.Title, StringComparison.OrdinalIgnoreCase));
+
+    if (isExistEvent)
+    {
+      throw new ValidationException($"Event with title '{eventUpdated.Title}' already exists");
+    }
+
+    var updatedEvent = EventMapper.ToEntity(eventUpdated, id);
     _events[id] = updatedEvent;
 
     return EventMapper.ToDto(updatedEvent);
   }
-    
+
   /// <summary>
   /// Удалить мероприятие
   /// </summary>
   /// <param name="id">Идентификатор мероприятия для удаления (GUID)</param>
-  /// <returns>true если удалось удалить или false</returns>
+  /// <returns>true если удалось удалить</returns>
   public bool Delete(Guid id)
   {
-    return _events.Remove(id);    
+    if (!_events.ContainsKey(id))
+    {
+      throw new NotFoundException(nameof(Event), id);
+    }
+
+    return _events.Remove(id);
   }
 }

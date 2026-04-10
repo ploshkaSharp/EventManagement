@@ -7,6 +7,9 @@ namespace EventManagement.Exceptions;
 /// </summary>
 public class ValidationException : Exception
 {
+  /// <summary>
+  /// Список ошибок
+  /// </summary>
   public IDictionary<string, string[]> Errors { get; }
   /// <summary>
   /// Ошибка валидации
