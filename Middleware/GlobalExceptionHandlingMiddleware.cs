@@ -75,7 +75,7 @@ public class GlobalExceptionHandlingMiddleware
             context.Request.Method,
             context.Request.Path,
             JsonSerializer.Serialize(validationEx.Errors));
-        break;
+        break;      
 
       case NotFoundException notFoundEx:
         response.StatusCode = (int)HttpStatusCode.NotFound;

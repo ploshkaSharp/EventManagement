@@ -44,7 +44,7 @@ public class EventService : IEventService
   public EventDTO Create(CreateEventDTO eventCreated)
   {
     var eventItem = EventMapper.ToEntity(eventCreated);
-
+   
     var isExistEvent = _events.Values.Any(e =>
                        e.Title.Equals(eventCreated.Title, StringComparison.OrdinalIgnoreCase));
 
@@ -53,10 +53,15 @@ public class EventService : IEventService
       throw new ValidationException($"Event with title '{eventCreated.Title}' already exists");
     }
 
+    if (eventCreated.StartAt < DateTime.UtcNow)
+    {
+      throw new ValidationException("StartAt must be more than now.");
+    }     
+
     if (eventCreated.StartAt >= eventCreated.EndAt)
     {
-      throw new ValidationException($"StartAt must be less than '{eventCreated.EndAt}'");
-    }
+      throw new ValidationException($"StartAt must be less than EndAt ('{eventCreated.EndAt}')");
+    }    
 
     if (eventItem.Id == Guid.Empty)
     {
@@ -90,6 +95,16 @@ public class EventService : IEventService
     {
       throw new ValidationException($"Event with title '{eventUpdated.Title}' already exists");
     }
+
+    if (eventUpdated.StartAt >= eventUpdated.EndAt)
+    {
+      throw new ValidationException($"StartAt must be less than EndAt ('{eventUpdated.EndAt}')");
+    }    
+
+    if (eventUpdated.StartAt < DateTime.UtcNow)
+    {
+      throw new ValidationException("StartAt must be more than now.");
+    }    
 
     var updatedEvent = EventMapper.ToEntity(eventUpdated, id);
     _events[id] = updatedEvent;
