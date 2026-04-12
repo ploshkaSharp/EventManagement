@@ -14,6 +14,7 @@ public class EventService : IEventService
   /// <summary>
   /// Получить список всех мероприятий
   /// </summary>
+  /// <param name="filter">Параметры фильтра</param>
   /// <returns>Список мероприятий</returns>
   public IEnumerable<EventDTO> GetAll(EventFilterDto? filter = null)
   {
@@ -31,6 +32,7 @@ public class EventService : IEventService
   /// <summary>
   /// Построение запроса с фильтрацией (отдельный метод для лучшей читаемости)
   /// </summary>
+  /// <param name="filter">Параметры фильтра</param>
   private IQueryable<Event> FilteredQuery(EventFilterDto? filter)
   {
     var query = _events.Values.AsQueryable();
@@ -48,6 +50,8 @@ public class EventService : IEventService
   /// <summary>
   /// Фильтр по названию
   /// </summary>
+  /// <param name="query">Запрос фильтрации</param>
+  /// <param name="title">Именование мероприятия</param>
   private IQueryable<Event> TitleFilter(IQueryable<Event> query, string? title)
   {
     if (string.IsNullOrWhiteSpace(title))
@@ -60,6 +64,8 @@ public class EventService : IEventService
   /// <summary>
   /// Фильтр по дате начала
   /// </summary>
+  /// <param name="query">Запрос фильтрации</param>
+  /// <param name="from">С даты</param>
   private IQueryable<Event> FromDateFilter(IQueryable<Event> query, DateTime? from)
   {
     if (!from.HasValue)
@@ -71,12 +77,46 @@ public class EventService : IEventService
   /// <summary>
   /// Фильтра по дате окончания
   /// </summary>
+  /// <param name="query">Запрос фильтрации</param>
+  /// <param name="to">До даты</param>  
   private IQueryable<Event> ToDateFilter(IQueryable<Event> query, DateTime? to)
   {
     if (!to.HasValue)
       return query;
 
     return query.Where(e => e.EndAt <= to.Value);
+  }
+
+  /// <summary>
+  /// Получить пагинированный список мероприятий с фильтрацией
+  /// </summary>
+  /// <param name="filter">Параметры фильтрации и пагинации</param>
+  /// <returns>Пагинированный результат с мероприятиями</returns>
+  public PaginatedResult<EventDTO> GetPaginated(EventFilterDto filter)
+  {
+    filter.Validate();
+
+    var query = FilteredQuery(filter);
+
+    // Общее количество записей ДО пагинации
+    var totalCount = query.Count();
+
+    // Элементы для текущей страницы
+    var items = query
+        .OrderBy(e => e.StartAt) // Сортировка для консистентности
+        .Skip((filter.PageNumber - 1) * filter.PageSize)
+        .Take(filter.PageSize)
+        .ToList();
+
+    var itemDtos = EventMapper.ToDtoList(items);
+
+    // пагинированный результат
+    return new PaginatedResult<EventDTO>(
+        itemDtos,
+        totalCount,
+        filter.PageNumber,
+        filter.PageSize
+    );
   }
 
   /// <summary>

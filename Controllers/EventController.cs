@@ -28,6 +28,8 @@ public class EventsController : ControllerBase
     /// <param name="title">Фильтр по названию (регистронезависимый, частичное совпадение)</param>
     /// <param name="from">Фильтр по дате начала (события, начинающиеся не раньше указанной даты)</param>
     /// <param name="to">Фильтр по дате окончания (события, заканчивающиеся не позже указанной даты)</param>
+    /// <param name="page">Номер страницы</param>
+    /// <param name="pageSize">Размер элементов на странице</param>
     /// <remarks>
     /// Возвращает список всех мероприятий
     /// </remarks>
@@ -39,17 +41,21 @@ public class EventsController : ControllerBase
     public ActionResult<IEnumerable<EventDTO>> GetAll(
         [FromQuery] string? title,
         [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to
+        [FromQuery] DateTime? to,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10
     )
     {
         var filter = new EventFilterDto
         {
             Title = title,
             From = from,
-            To = to
+            To = to,
+            PageNumber = page,
+            PageSize = pageSize
         };
 
-        var events = _eventService.GetAll(filter);
+        var events = _eventService.GetPaginated(filter);
         return Ok(events);
     }
 
