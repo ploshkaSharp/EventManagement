@@ -42,7 +42,7 @@ public class CreateEventDTO
   /// Название мероприятия
   /// </summary>
   /// <example>Tech Conference 2026</example>
-  [Required(ErrorMessage = "Title обязателен для заполнения.")]
+  [Required]
   public string Title { get; set; } = string.Empty;
   /// <summary>
   /// Описание мероприятия (опционально)
@@ -53,13 +53,13 @@ public class CreateEventDTO
   /// Дата и время начала мероприятия (UTC)
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example> 
-  [Required(ErrorMessage = "StartAt обязателен для заполнения.")] 
+  [Required] 
   public DateTime StartAt { get; set; }
   /// <summary>
   /// Дата и время окончания мероприятия (UTC)
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example>    
-  [Required(ErrorMessage = "EndAt обязателен для заполнения.")]
+  [Required]
   public DateTime EndAt { get; set; }
 }
 
@@ -72,7 +72,7 @@ public class UpdateEventDTO
   /// Название мероприятия
   /// </summary>
   /// <example>Tech Conference 2026</example>  
-  [Required(ErrorMessage = "Title обязателен для заполнения.")]
+  [Required]
   public string Title { get; set; } = string.Empty;
   /// <summary>
   /// Описание мероприятия (опционально)
@@ -83,12 +83,12 @@ public class UpdateEventDTO
   /// Дата и время начала мероприятия (UTC)
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example>   
-  [Required(ErrorMessage = "StartAt обязателен для заполнения.")]
+  [Required]
   public DateTime StartAt { get; set; }
   /// <summary>
   /// Дата и время окончания мероприятия (UTC)
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example>  
-  [Required(ErrorMessage = "EndAt обязателен для заполнения.")]
+  [Required]
   public DateTime EndAt { get; set; } 
 }

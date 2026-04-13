@@ -146,6 +146,11 @@ public class EventService : IEventService
     var isExistEvent = _events.Values.Any(e =>
                        e.Title.Equals(eventCreated.Title, StringComparison.OrdinalIgnoreCase));
 
+    if (string.IsNullOrEmpty(eventCreated.Title))
+    {
+      throw new ValidationException("Title is required.");
+    }
+
     if (isExistEvent)
     {
       throw new ValidationException($"Event with title '{eventCreated.Title}' already exists");
@@ -188,6 +193,11 @@ public class EventService : IEventService
 
     var isExistEvent = _events.Values.Any(e =>
                        e.Title.Equals(eventUpdated.Title, StringComparison.OrdinalIgnoreCase));
+
+    if (string.IsNullOrEmpty(eventUpdated.Title))
+    {
+      throw new ValidationException("Title is required.");
+    }
 
     if (isExistEvent)
     {
