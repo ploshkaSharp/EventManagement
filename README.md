@@ -24,13 +24,31 @@ EventManagement/
 
 ├── DTO/
 
-│ └── EventDTO.cs  *#DTO объекты с валидацией*
+│ ├── EventDTO.cs  *#DTO объекты с валидацией*
+
+│ ├── EventFilterDTO.cs *#DTO для параметров фильтрации*
+
+│ └── PaginateResultDTO.cs *#DTO для пагинированного результата*
+
+├── Exceptions/
+
+│ ├── BadRequestException.cs  *#Исключение - Некорректный запрос*
+
+│ ├── NotFoundException.cs *#Исключение - Ресурс не найден*
+
+│ └── ValidationException.cs *#Исключение - Ошибка валидации*
 
 ├── Mappers/
 
 │ └── EventMapper.cs  *#Маппинг DTO объектов*
 
+├── Middleware/
+
+│ └── GlobalExceptionHandlingMiddleware.cs  *#Глобальная обработка исключений (middleware)*
+
 ├── Models/
+
+│ ├── ErrorResponse.cs *#Модель ответа об ошибке в формате Problem Details (RFC 7807)*
 
 │ └── Event.cs  *#Доменная модель (сущность)*
 
@@ -86,7 +104,13 @@ EventManagement/
 ───────────────────────────────────────────────────────────────────────────────────────
 
  GET    │ /events      │ Получить список всех мероприятий │ 200 OK
- 
+
+        │              │ С возможносью фильтрации по      │
+
+        │              │ названию, дате старта, дате      │
+
+        │              │ окончания и пагинации            │
+
  GET    │ /events/{id} │ Получить мероприятие по ID       │ 200 OK / 404 Not Found
  
  POST   │ /events      │ Создать мероприятие              │ 201 Created / 400 Bad Request
@@ -100,7 +124,7 @@ EventManagement/
    ```bash
    curl -X 'POST' \
      'http://localhost:5000/Events' \
-     -H 'accept: text/plain' \
+     -H 'accept: application/json' \
      -H 'Content-Type: application/json' \
      -d '{
           "title": "Cобрание коллектива",
@@ -111,22 +135,32 @@ EventManagement/
    ```
 
    **Вывод списка всех мероприятий:**
+    Возможна фильтрация по названию (title), даты старта (from), даты окончания (to).
+    Вывод результата осуществляется по страницам. Необходимо указать номер страницы (page), размер страницы (pageSize).
+    
+    Параметр title - проверяется на вхождение строки в наименование мероприятия.
+    Параметр from - проводится поиск мероприятий начинающихся с этой даты. Формат даты UTC, напр. 2026-06-15T10:00:00Z
+    Параметр to - проводится поиск мероприятий заканчивающихся в эту дату. Формат даты UTC, напр. 2026-06-17T10:00:00Z
+
+    Параметр page - в параметр передается номер страницы получаемого результата. По умолчанию передается 1.
+    Параметр pageSize - в параметр передается количество мероприятий на одной странице. По умолчанию передается 10.
+
    ```bash
-   curl -X GET 'https://localhost:5000/Events'  \
-      -H 'accept: text/plain'
+   curl -X GET 'https://localhost:5000/Events?title=title&from=2026-06-15T10%3A00%3A00Z&to=2026-06-20T10%3A00%3A00Z&page=1&pageSize=10'  \
+      -H 'accept: application/json'
    ```
 
    **Вывод мероприятия по ID (Guid):**
    ```bash
    curl -X GET 'https://localhost:5000/Events/3fa85f64-5717-4562-b3fc-2c963f66afa6' \
-      -H 'accept: text/plain'
+      -H 'accept: application/json'
    ```
 
   **Обновить мероприятие:**
    ```bash
    curl -X 'PUT' \
      'http://localhost:5000/Events/3fa85f64-5717-4562-b3fc-2c963f66afa6' \
-     -H 'accept: text/plain' \
+     -H 'accept: application/json' \
      -H 'Content-Type: application/json' \
      -d '{
           "title": "Собрание актива",
@@ -141,3 +175,20 @@ EventManagement/
      'http://localhost:5000/Events/3fa85f64-5717-4562-b3fc-2c963f66afa6' \
      -H 'accept: */*'    
    ```   
+
+## Формат ответа об ошибках:
+   В случае ошибок ответ выводится в json-виде, в формате Problem Details ([RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807)).
+
+**Пример ответа об ошибке:**
+
+  ```bash
+  {
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+  "title": "Validation Error",
+  "status": 400,
+  "detail": "Title is required.",
+  "instance": "/Events",
+  "errors": {},
+  "traceId": "0HNKQ29I9RQNL:00000003"
+}
+ ``` 
