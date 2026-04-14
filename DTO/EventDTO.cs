@@ -37,8 +37,7 @@ public class EventDTO
 /// <summary>
 /// DTO для создания нового мероприятия
 /// </summary>
-
-
+[SwaggerSchema(Required = new[] { "title", "startAt", "endAt" })]
 public class CreateEventDTO 
 {
   /// <summary>
@@ -59,7 +58,7 @@ public class CreateEventDTO
   /// <summary>
   /// Дата и время окончания мероприятия (UTC)
   /// </summary>
-  /// <example>2026-06-15T10:00:00Z</example>    
+  /// <example>2026-06-15T11:00:00Z</example>    
   public DateTime EndAt { get; set; }
 }
 
@@ -87,6 +86,6 @@ public class UpdateEventDTO
   /// <summary>
   /// Дата и время окончания мероприятия (UTC)
   /// </summary>
-  /// <example>2026-06-15T10:00:00Z</example>  
+  /// <example>2026-06-15T11:00:00Z</example>  
   public DateTime EndAt { get; set; } 
 }

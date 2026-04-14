@@ -2,7 +2,6 @@ using System.Reflection;
 using Microsoft.OpenApi;
 using EventManagement.Services;
 using EventManagement.Middleware;
-using EventManagement.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +35,7 @@ var app = builder.Build();
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
