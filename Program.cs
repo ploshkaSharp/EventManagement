@@ -7,12 +7,7 @@ using EventManagement.Exceptions;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers()
-.ConfigureApiBehaviorOptions(options =>
-    {
-        // Эта опция отключает автоматическую проверку валидации 
-        options.SuppressModelStateInvalidFilter = true;
-    });
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 // Настройка Swagger с поддержкой XML-комментариев

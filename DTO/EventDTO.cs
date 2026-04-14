@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 namespace EventManagement.DTOs;
 
 /// <summary>
@@ -36,13 +37,14 @@ public class EventDTO
 /// <summary>
 /// DTO для создания нового мероприятия
 /// </summary>
+
+
 public class CreateEventDTO 
 {
   /// <summary>
   /// Название мероприятия
   /// </summary>
   /// <example>Tech Conference 2026</example>
-  [Required]
   public string Title { get; set; } = string.Empty;
   /// <summary>
   /// Описание мероприятия (опционально)
@@ -53,26 +55,24 @@ public class CreateEventDTO
   /// Дата и время начала мероприятия (UTC)
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example> 
-  [Required] 
   public DateTime StartAt { get; set; }
   /// <summary>
   /// Дата и время окончания мероприятия (UTC)
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example>    
-  [Required]
   public DateTime EndAt { get; set; }
 }
 
 /// <summary>
 /// DTO для создания обновления существующего мероприятия
 /// </summary>
+[SwaggerSchema(Required = new[] { "title", "startAt", "endAt" })]
 public class UpdateEventDTO
 {
   /// <summary>
   /// Название мероприятия
   /// </summary>
   /// <example>Tech Conference 2026</example>  
-  [Required]
   public string Title { get; set; } = string.Empty;
   /// <summary>
   /// Описание мероприятия (опционально)
@@ -83,12 +83,10 @@ public class UpdateEventDTO
   /// Дата и время начала мероприятия (UTC)
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example>   
-  [Required]
   public DateTime StartAt { get; set; }
   /// <summary>
   /// Дата и время окончания мероприятия (UTC)
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example>  
-  [Required]
   public DateTime EndAt { get; set; } 
 }
