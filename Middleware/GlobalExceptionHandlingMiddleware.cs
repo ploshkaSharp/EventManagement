@@ -65,7 +65,7 @@ public class GlobalExceptionHandlingMiddleware
       case ValidationException validationEx:
         response.StatusCode = (int)HttpStatusCode.BadRequest;
         errorResponse.Status = response.StatusCode;
-        errorResponse.Type = "http://localhost/problems/validation-error";
+        errorResponse.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1";
         errorResponse.Title = "Validation Error";
         errorResponse.Detail = validationEx.Message;
         errorResponse.Extensions = validationEx.Errors;
@@ -80,7 +80,7 @@ public class GlobalExceptionHandlingMiddleware
       case NotFoundException notFoundEx:
         response.StatusCode = (int)HttpStatusCode.NotFound;
         errorResponse.Status = response.StatusCode;
-        errorResponse.Type = "http://localhost/problems/not-found-error";
+        errorResponse.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
         errorResponse.Title = "Resource Not Found";
         errorResponse.Detail = notFoundEx.Message;
 
@@ -94,7 +94,7 @@ public class GlobalExceptionHandlingMiddleware
       case BadRequestException badRequestEx:
         response.StatusCode = (int)HttpStatusCode.BadRequest;
         errorResponse.Status = response.StatusCode;
-        errorResponse.Type = "http://localhost/problems/bad-request-error";
+        errorResponse.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1";
         errorResponse.Title = "Bad Request";
         errorResponse.Detail = badRequestEx.Message;
 
@@ -108,7 +108,7 @@ public class GlobalExceptionHandlingMiddleware
       case ArgumentException argEx:
         response.StatusCode = (int)HttpStatusCode.BadRequest;
         errorResponse.Status = response.StatusCode;
-        errorResponse.Type = "http://localhost/problems/invalid-argument-error";
+        errorResponse.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1";
         errorResponse.Title = "Invalid Argument";
         errorResponse.Detail = argEx.Message;
 
@@ -122,7 +122,7 @@ public class GlobalExceptionHandlingMiddleware
       default:
         response.StatusCode = (int)HttpStatusCode.InternalServerError;
         errorResponse.Status = response.StatusCode;
-        errorResponse.Type = "http://localhost/problems/internal-server-error";
+        errorResponse.Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1";
         errorResponse.Title = "Internal Server Error";
         errorResponse.Detail = exception.Message;
         errorResponse.Extensions = new Dictionary<string, string[]>
