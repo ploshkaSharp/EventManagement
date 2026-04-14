@@ -57,7 +57,7 @@ public class GlobalExceptionHandlingMiddleware
     var errorResponse = new ErrorResponse
     {
       Instance = context.Request.Path,
-      Timestamp = DateTime.UtcNow
+      TraceId = context.TraceIdentifier
     };
 
     switch (exception)
@@ -68,7 +68,7 @@ public class GlobalExceptionHandlingMiddleware
         errorResponse.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1";
         errorResponse.Title = "Validation Error";
         errorResponse.Detail = validationEx.Message;
-        errorResponse.Extensions = validationEx.Errors;
+        errorResponse.Errors = validationEx.Errors;
 
         _logger.LogWarning(exception,
             "Validation error occurred. Method: {Method}, Path: {Path}, Errors: {Errors}",
@@ -125,7 +125,7 @@ public class GlobalExceptionHandlingMiddleware
         errorResponse.Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1";
         errorResponse.Title = "Internal Server Error";
         errorResponse.Detail = exception.Message;
-        errorResponse.Extensions = new Dictionary<string, string[]>
+        errorResponse.Errors = new Dictionary<string, string[]>
         {
           ["stackTrace"] = new[] { exception.StackTrace ?? "No stack trace available" }
         };

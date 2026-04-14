@@ -42,13 +42,13 @@ public class ErrorResponse
   /// <summary>
   /// Расширенные данные об ошибке
   /// </summary>
-  [JsonPropertyName("extensions")]
-  public IDictionary<string, string[]>? Extensions { get; set; }
+  [JsonPropertyName("errors")]
+  public IDictionary<string, string[]>? Errors { get; set; }
 
-  /// <summary>
-  /// Временная метка возникновения ошибки
-  /// </summary>
-  [JsonPropertyName("timestamp")]
-  public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    /// <summary>
+    /// Trace ID для отслеживания запроса
+    /// </summary>
+    [JsonPropertyName("traceId")]
+    public string? TraceId { get; set; }
 
 }
