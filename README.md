@@ -58,6 +58,18 @@ EventManagement/
 
 │ └── IEventService.cs  *#Интерфейс сервиса*
 
+├── Tests/
+
+│ └── Data/
+
+│ │   └── DataGenerator.cs  *#Генератор тестовых данных*
+
+│ └──  Services/
+
+│ │    └── EventServiceTest.cs  *#Тестовые сценарии (успешные, неуспешные, пограничные)*
+
+│ └── Tests.csproj  *#Проект с тестами*
+
 ├── Program.cs  *#Точка входа в приложение с конфигурацией DI*
 
 └── appsettings.json  *#Настройки приложения*
@@ -91,7 +103,14 @@ EventManagement/
    dotnet run
    ```
 
-5. **Для тестирования решения откройте swagger:**
+5. **Для запуска тестов переключитесь в папку проекта тестов и запустите тесты:**
+
+   ```bash
+   cd Tests
+   dotnet test
+   ```   
+
+6. **Для тестирования решения в swagger:**
 
    в браузере напишите адрес:
    http://localhost:5000/swagger
