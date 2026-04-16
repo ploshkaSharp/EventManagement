@@ -10,7 +10,14 @@ public interface IEventService
   /// <summary>
   /// Получить список всех мероприятий
   /// </summary>  
-  IEnumerable<EventDTO> GetAll();
+  /// <param name="filter">Параметры фильтра</param>
+  IEnumerable<EventDTO> GetAll(EventFilterDto? filter = null);
+  /// <summary>
+  /// Получить пагинированный список мероприятий
+  /// </summary>
+  /// <param name="filter">Параметры фильтра</param>
+  /// <returns></returns>
+  PaginatedResult<EventDTO> GetPaginated(EventFilterDto filter);
   /// <summary>
   /// Уникальный идентификатор мероприятия
   /// </summary>

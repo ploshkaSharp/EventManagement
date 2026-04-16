@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 namespace EventManagement.DTOs;
 
 /// <summary>
@@ -36,13 +37,13 @@ public class EventDTO
 /// <summary>
 /// DTO для создания нового мероприятия
 /// </summary>
-public class CreateEventDTO : IValidatableObject
+[SwaggerSchema(Required = new[] { "title", "startAt", "endAt" })]
+public class CreateEventDTO 
 {
   /// <summary>
   /// Название мероприятия
   /// </summary>
   /// <example>Tech Conference 2026</example>
-  [Required(ErrorMessage = "Title обязателен для заполнения.")]
   public string Title { get; set; } = string.Empty;
   /// <summary>
   /// Описание мероприятия (опционально)
@@ -53,51 +54,24 @@ public class CreateEventDTO : IValidatableObject
   /// Дата и время начала мероприятия (UTC)
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example> 
-  [Required(ErrorMessage = "StartAt обязателен для заполнения.")]
   public DateTime StartAt { get; set; }
   /// <summary>
   /// Дата и время окончания мероприятия (UTC)
   /// </summary>
-  /// <example>2026-06-15T10:00:00Z</example>    
-  [Required(ErrorMessage = "EndAt обязателен для заполнения.")]
+  /// <example>2026-06-15T11:00:00Z</example>    
   public DateTime EndAt { get; set; }
-
- 
-  /// <summary>
-  /// Кастомная валидация для проверки корректности дат
-  /// </summary>
-  /// <param name="validationContext">Контекст валидации</param>
-  /// <returns>Результаты валидации</returns>
-  public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-  {     
-    var errors = new List<ValidationResult>();
-
-    // Проверка, что дата начала не в прошлом
-    if (StartAt < DateTime.UtcNow)
-    {
-      errors.Add(new ValidationResult("StartAt не может быть меньше текущей даты", new[] { nameof(StartAt) }));
-    }
-
-    // Проверка, что дата начала меньше даты окончания
-    if (StartAt >= EndAt)
-    {
-      errors.Add(new ValidationResult("StartAt не может быть больше EndAt", new[] { nameof(StartAt), nameof(EndAt) }));      
-    }
-        
-    return errors;
-  }
 }
 
 /// <summary>
 /// DTO для создания обновления существующего мероприятия
 /// </summary>
-public class UpdateEventDTO : IValidatableObject
+[SwaggerSchema(Required = new[] { "title", "startAt", "endAt" })]
+public class UpdateEventDTO
 {
   /// <summary>
   /// Название мероприятия
   /// </summary>
   /// <example>Tech Conference 2026</example>  
-  [Required(ErrorMessage = "Title обязателен для заполнения.")]
   public string Title { get; set; } = string.Empty;
   /// <summary>
   /// Описание мероприятия (опционально)
@@ -108,36 +82,10 @@ public class UpdateEventDTO : IValidatableObject
   /// Дата и время начала мероприятия (UTC)
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example>   
-  [Required(ErrorMessage = "StartAt обязателен для заполнения.")]  
   public DateTime StartAt { get; set; }
   /// <summary>
   /// Дата и время окончания мероприятия (UTC)
   /// </summary>
-  /// <example>2026-06-15T10:00:00Z</example>  
-  [Required(ErrorMessage = "EndAt обязателен для заполнения.")]
-  public DateTime EndAt { get; set; }
-
-  /// <summary>
-  /// Кастомная валидация для проверки корректности дат
-  /// </summary>
-  /// <param name="validationContext">Контекст валидации</param>
-  /// <returns>Результаты валидации</returns>
-  public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-  {     
-    var errors = new List<ValidationResult>();
-
-    // Проверка, что дата начала не в прошлом
-    if (StartAt < DateTime.UtcNow)
-    {
-      errors.Add(new ValidationResult("StartAt не может быть меньше текущей даты", new[] { nameof(StartAt) }));
-    }
-
-    // Проверка, что дата начала меньше даты окончания
-    if (StartAt >= EndAt)
-    {
-      errors.Add(new ValidationResult("StartAt не может быть больше EndAt", new[] { nameof(StartAt), nameof(EndAt) }));      
-    }
-        
-    return errors;
-  }  
+  /// <example>2026-06-15T11:00:00Z</example>  
+  public DateTime EndAt { get; set; } 
 }

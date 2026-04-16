@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.OpenApi;
 using EventManagement.Services;
+using EventManagement.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,12 +18,12 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "API для управления мероприятиями"
     });
-    
+
     // Включение XML-комментариев для документации
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     c.IncludeXmlComments(xmlPath);
-    
+
     // Добавление аннотаций для типов ответов
     c.EnableAnnotations();
 });
@@ -30,12 +31,14 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddSingleton<IEventService, EventService>();
 
 var app = builder.Build();
+// middleware для глобальной обработки ошибок. Ставить первым в pipeline для перехвата всех исключений
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();    
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

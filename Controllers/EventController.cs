@@ -25,19 +25,40 @@ public class EventsController : ControllerBase
     /// <summary>
     /// Получить список всех мероприятий
     /// </summary>
+    /// <param name="title">Фильтр по названию (регистронезависимый, частичное совпадение)</param>
+    /// <param name="from">Фильтр по дате начала (события, начинающиеся не раньше указанной даты)</param>
+    /// <param name="to">Фильтр по дате окончания (события, заканчивающиеся не позже указанной даты)</param>
+    /// <param name="page">Номер страницы</param>
+    /// <param name="pageSize">Размер элементов на странице</param>
     /// <remarks>
     /// Возвращает список всех мероприятий
     /// </remarks>
     /// <returns>Список мероприятий</returns>
     /// <response code="200">Успешно возвращен список мероприятий</response>
+    /// <response code="400">Неверные параметры фильтрации</response>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<EventDTO>), StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<EventDTO>> GetAll()
+    public ActionResult<IEnumerable<EventDTO>> GetAll(
+        [FromQuery] string? title,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10
+    )
     {
-        var events = _eventService.GetAll();
+        var filter = new EventFilterDto
+        {
+            Title = title,
+            From = from,
+            To = to,
+            PageNumber = page,
+            PageSize = pageSize
+        };
+
+        var events = _eventService.GetPaginated(filter);
         return Ok(events);
     }
-    
+
     /// <summary>
     /// Получить мероприятие по идентификатору
     /// </summary>
@@ -50,19 +71,19 @@ public class EventsController : ControllerBase
     /// <response code="404">Мероприятие с указанным идентификатором не найдено</response>    
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(EventDTO), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]    
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<EventDTO> GetById(Guid id)
     {
         var eventItem = _eventService.GetById(id);
-        
+
         if (eventItem == null)
         {
             return NotFound();
         }
-        
+
         return Ok(eventItem);
     }
-    
+
     /// <summary>
     /// Создать новое мероприятие
     /// </summary>
@@ -83,9 +104,9 @@ public class EventsController : ControllerBase
     /// <response code="400">Неверные данные запроса (ошибка валидации)</response>    
     [HttpPost]
     [ProducesResponseType(typeof(CreateEventDTO), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]    
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public ActionResult<EventDTO> Create(CreateEventDTO eventItem)
-    {     
+    {
         try
         {
             var createdEvent = _eventService.Create(eventItem);
@@ -96,7 +117,7 @@ public class EventsController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
-    
+
     /// <summary>
     /// Обновить существующее мероприятие
     /// </summary>
@@ -119,18 +140,18 @@ public class EventsController : ControllerBase
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(UpdateEventDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]    
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<Event> Update(Guid id, UpdateEventDTO eventItem)
     {
         try
         {
             var updatedEvent = _eventService.Update(id, eventItem);
-            
+
             if (updatedEvent == null)
             {
                 return NotFound();
             }
-            
+
             return Ok(updatedEvent);
         }
         catch (ArgumentException ex)
@@ -138,7 +159,7 @@ public class EventsController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
-    
+
     /// <summary>
     /// Удалить мероприятие
     /// </summary>
@@ -158,12 +179,12 @@ public class EventsController : ControllerBase
     public IActionResult Delete(Guid id)
     {
         var deleted = _eventService.Delete(id);
-        
+
         if (!deleted)
         {
             return NotFound();
         }
-        
+
         return NoContent();
     }
 }
