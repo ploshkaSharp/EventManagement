@@ -16,65 +16,39 @@ Swagger для упрощения тестирования и документи
 - **Swashbuckle.AspNetCore** (Swagger)
 
 ## Структура проекта
+
+```bash
 EventManagement/
-
 ├── Controllers/
-
-│ └── EventsController.cs  *#Эндпоинты API*
-
+│ └── EventsController.cs         #Эндпоинты API
 ├── DTO/
-
-│ ├── EventDTO.cs  *#DTO объекты с валидацией*
-
-│ ├── EventFilterDTO.cs *#DTO для параметров фильтрации*
-
-│ └── PaginateResultDTO.cs *#DTO для пагинированного результата*
-
+│ ├── EventDTO.cs                 #DTO объекты с валидацией
+│ ├── EventFilterDTO.cs           #DTO для параметров фильтрации
+│ └── PaginateResultDTO.cs        #DTO для пагинированного результата
 ├── Exceptions/
-
-│ ├── BadRequestException.cs  *#Исключение - Некорректный запрос*
-
-│ ├── NotFoundException.cs *#Исключение - Ресурс не найден*
-
-│ └── ValidationException.cs *#Исключение - Ошибка валидации*
-
+│ ├── BadRequestException.cs      #Исключение - Некорректный запрос
+│ ├── NotFoundException.cs        #Исключение - Ресурс не найден
+│ └── ValidationException.cs      #Исключение - Ошибка валидации
 ├── Mappers/
-
-│ └── EventMapper.cs  *#Маппинг DTO объектов*
-
+│ └── EventMapper.cs              #Маппинг DTO объектов
 ├── Middleware/
-
-│ └── GlobalExceptionHandlingMiddleware.cs  *#Глобальная обработка исключений (middleware)*
-
+│ └── GlobalExceptionHandlingMiddleware.cs  #Глобальная обработка исключений (middleware)
 ├── Models/
-
-│ ├── ErrorResponse.cs *#Модель ответа об ошибке в формате Problem Details (RFC 7807)*
-
-│ └── Event.cs  *#Доменная модель (сущность)*
-
+│ ├── ErrorResponse.cs            #Модель ответа об ошибке в формате Problem Details (RFC 7807)
+│ └── Event.cs                    #Доменная модель (сущность)
 ├── Services/
-
-│ ├── EventService.cs  *#Реализация бизнес-логики*
-
-│ └── IEventService.cs  *#Интерфейс сервиса*
-
+│ ├── EventService.cs             #Реализация бизнес-логики
+│ └── IEventService.cs            #Интерфейс сервиса
 ├── Tests/
-
 │ └── Data/
-
-│ │   └── DataGenerator.cs  *#Генератор тестовых данных*
-
-│ └──  Services/
-
-│ │    └── EventServiceTest.cs  *#Тестовые сценарии (успешные, неуспешные, пограничные)*
-
-│ └── Tests.csproj  *#Проект с тестами*
-
-├── Program.cs  *#Точка входа в приложение с конфигурацией DI*
-
-└── appsettings.json  *#Настройки приложения*
-
-└── appsettings.Development.json  *#Настройки приложения (окружение разработчика)*
+│ │   └── DataGenerator.cs        #Генератор тестовых данных
+│ └── Services/
+│ │   └── EventServiceTest.cs     #Тестовые сценарии (успешные, неуспешные, пограничные)
+│ └── Tests.csproj                #Проект с тестами
+├── Program.cs                    #Точка входа в приложение с конфигурацией DI
+└── appsettings.json              #Настройки приложения
+└── appsettings.Development.json  #Настройки приложения (окружение разработчика)
+```
 
 ## Установка и запуск проекта
 
@@ -119,24 +93,19 @@ EventManagement/
 
 ## Реализованные методы
 
- Метод  │ URL          │ Описание                         │ HTTP Ответы
-───────────────────────────────────────────────────────────────────────────────────────
+```bash
 
- GET    │ /events      │ Получить список всех мероприятий │ 200 OK
-
-        │              │ С возможносью фильтрации по      │
-
-        │              │ названию, дате старта, дате      │
-
-        │              │ окончания и пагинации            │
-
- GET    │ /events/{id} │ Получить мероприятие по ID       │ 200 OK / 404 Not Found
- 
- POST   │ /events      │ Создать мероприятие              │ 201 Created / 400 Bad Request
- 
- PUT    │ /events/{id} │ Обновить мероприятие             │ 200 Ok / 404 Not Found / 400 Bad Request
- 
- DELETE │ /events/{id} │ Удалить мероприятие              │ 204 No Content / 404 Not Found
+ Метод  │ URL          │ Описание                         │ HTTP Ответы                               |
+ -------|--------------|----------------------------------|-------------------------------------------|
+ GET    │ /events      │ Получить список всех мероприятий │ 200 OK                                    |
+        │              │ С возможносью фильтрации по      │                                           |
+        │              │ названию, дате старта, дате      │                                           |
+        │              │ окончания и пагинации            │                                           |
+ GET    │ /events/{id} │ Получить мероприятие по ID       │ 200 OK / 404 Not Found                    |
+ POST   │ /events      │ Создать мероприятие              │ 201 Created / 400 Bad Request             |
+ PUT    │ /events/{id} │ Обновить мероприятие             │ 200 Ok / 404 Not Found / 400 Bad Request  |
+ DELETE │ /events/{id} │ Удалить мероприятие              │ 204 No Content / 404 Not Found            |
+ ```
 
 ### Примеры запросов
    **Создание мероприятия:**
