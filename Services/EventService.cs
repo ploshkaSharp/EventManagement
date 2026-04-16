@@ -191,17 +191,9 @@ public class EventService : IEventService
       throw new NotFoundException(nameof(Event), id);
     }
 
-    var isExistEvent = _events.Values.Any(e =>
-                       e.Title.Equals(eventUpdated.Title, StringComparison.OrdinalIgnoreCase));
-
     if (string.IsNullOrEmpty(eventUpdated.Title))
     {
       throw new ValidationException("Title is required.");
-    }
-
-    if (isExistEvent)
-    {
-      throw new ValidationException($"Event with title '{eventUpdated.Title}' already exists");
     }
 
     if (eventUpdated.StartAt >= eventUpdated.EndAt)
