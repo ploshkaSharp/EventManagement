@@ -3,7 +3,7 @@ using EventManagement.DTOs;
 namespace EventManagement.Services;
 
 /// <summary>
-/// Мероприятие (интерфейс)
+/// Мероприятия (интерфейс)
 /// </summary>
 public interface IEventService
 {
@@ -16,10 +16,9 @@ public interface IEventService
   /// Получить пагинированный список мероприятий
   /// </summary>
   /// <param name="filter">Параметры фильтра</param>
-  /// <returns></returns>
   PaginatedResult<EventDTO> GetPaginated(EventFilterDto filter);
   /// <summary>
-  /// Уникальный идентификатор мероприятия
+  /// Получить мероприятия по уникальному идентификатору
   /// </summary>
   /// <example>3fa85f64-5717-4562-b3fc-2c963f66afa6</example>
   EventDTO? GetById(Guid id);

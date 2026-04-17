@@ -60,7 +60,7 @@ public class EventServiceTests
     }
 
     /// <summary>
-    /// Получить сущесвтующее мероприятие по Guid
+    /// Получить существующее мероприятие по Guid
     /// </summary>
     [Fact]
     public void GetById_WithExistingId_ShouldReturnEvent()
@@ -109,7 +109,7 @@ public class EventServiceTests
 
 
     /// <summary>
-    /// Удалить сущесвтующее мероприятие по Guid
+    /// Удалить существующее мероприятие по Guid
     /// </summary>
     [Fact]
     public void Delete_WithExistingId_ShouldDeleteEvent()
