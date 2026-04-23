@@ -59,6 +59,7 @@ public class GlobalExceptionHandlingMiddleware
     switch (exception)
     {
       case ValidationException validationEx:
+        response.StatusCode = (int)HttpStatusCode.BadRequest;
         errorResponse = CreateErrorResponse(context,
                                             HttpStatusCode.BadRequest,
                                             "Validation Error",
@@ -72,6 +73,7 @@ public class GlobalExceptionHandlingMiddleware
         break;
 
       case NotFoundException notFoundEx:
+        response.StatusCode = (int)HttpStatusCode.NotFound;
         errorResponse = CreateErrorResponse(context,
                                             HttpStatusCode.NotFound,
                                             "Resource Not Found",
@@ -84,6 +86,7 @@ public class GlobalExceptionHandlingMiddleware
         break;
 
       case BadRequestException badRequestEx:
+        response.StatusCode = (int)HttpStatusCode.BadRequest;
         errorResponse = CreateErrorResponse(context,
                                             HttpStatusCode.BadRequest,
                                             "Bad Request",
@@ -96,6 +99,7 @@ public class GlobalExceptionHandlingMiddleware
         break;
 
       case ArgumentException argEx:
+        response.StatusCode = (int)HttpStatusCode.BadRequest;
         errorResponse = CreateErrorResponse(context,
                                             HttpStatusCode.BadRequest,
                                             "Invalid Argument",
@@ -108,6 +112,7 @@ public class GlobalExceptionHandlingMiddleware
         break;
 
       default:
+        response.StatusCode = (int)HttpStatusCode.InternalServerError;
         errorResponse = CreateErrorResponse(context,
                                             HttpStatusCode.InternalServerError,
                                             "Internal Server Error",
@@ -128,7 +133,7 @@ public class GlobalExceptionHandlingMiddleware
     {
       PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
       WriteIndented = true
-    });
+    });    
 
     await response.WriteAsync(jsonResponse);
   }
