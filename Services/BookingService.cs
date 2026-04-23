@@ -37,7 +37,7 @@ public class BookingService : IBookingService
 
     if (eventItem == null)
     {
-      throw new NotFoundException($"Event '{nameof(Event)}' not found", eventId);
+      throw new NotFoundException(nameof(Event), eventId);
     }
 
     if (eventItem.StartAt < DateTime.UtcNow)
@@ -70,6 +70,7 @@ public class BookingService : IBookingService
   /// </summary>
   /// <param name="bookingId">Идентификатор брони</param>
   /// <returns>Информация о брони</returns>
+  /// <exception cref="NotFoundException"></exception>
   public async Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId)
   {
     var booking = await Task.Run(() =>
@@ -80,7 +81,7 @@ public class BookingService : IBookingService
 
     if (booking == null)
     {
-      throw new NotFoundException("Booking not found", bookingId);
+      throw new NotFoundException(nameof(Booking), bookingId);
     }
 
     return BookingMapper.ToDto(booking);

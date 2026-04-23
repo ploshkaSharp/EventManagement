@@ -29,6 +29,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 // Singleton (in-memory)
 builder.Services.AddSingleton<IEventService, EventService>();
+builder.Services.AddSingleton<IBookingService, BookingService>();
 
 var app = builder.Build();
 // middleware для глобальной обработки ошибок. Ставить первым в pipeline для перехвата всех исключений

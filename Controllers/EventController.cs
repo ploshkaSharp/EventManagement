@@ -14,12 +14,14 @@ namespace EventManagement.Controllers;
 public class EventsController : ControllerBase
 {
     private readonly IEventService _eventService;
+    private readonly IBookingService _bookingService;
     /// <summary>
     /// Контроллер для управления мероприятиями
     /// </summary>        
-    public EventsController(IEventService eventService)
+    public EventsController(IEventService eventService, IBookingService bookingService)
     {
         _eventService = eventService;
+        _bookingService = bookingService;
     }
 
     /// <summary>
@@ -186,5 +188,56 @@ public class EventsController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Создать бронирование на мероприятие
+    /// </summary>
+    /// <param name="id">Идентификатор мероприятия (GUID)</param>
+    /// <remarks>
+    /// Пример запроса:
+    /// POST /events/fd1c1927-dd18-4e08-bc6f-a5517290d729/book
+    /// 
+    /// Пример ответа:
+    /// {
+    ///   "id": "06643d61-2689-49df-aa08-42c0ab9a8577",
+    ///   "eventId": "fd1c1927-dd18-4e08-bc6f-a5517290d729",
+    ///   "status": 0,
+    ///   "createdAt": "2026-04-23T10:30:00Z",
+    ///   "processedAt": null
+    /// }
+    /// </remarks>
+    /// <returns>Информация о созданной брони</returns>
+    /// <response code="202">Бронирование успешно создано и принято в обработку</response>
+    /// <response code="404">Мероприятие не найдено</response>
+    /// <response code="400">Невозможно создать бронирование (мероприятие уже началось)</response>
+    [HttpPost("{id}/book")]
+    [ProducesResponseType(typeof(BookingDTO), StatusCodes.Status202Accepted)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<BookingDTO>> BookEvent(Guid id)
+    {
+        // Проверить существование мероприятия
+        var eventItem = _eventService.GetById(id);
+
+        if (eventItem == null)
+        {
+            return NotFound();
+        }
+
+        if (eventItem.StartAt < DateTime.UtcNow)
+        {
+            return BadRequest("Can not book an event that has already started");
+        }
+
+        // Создать бронь
+        var booking = await _bookingService.CreateBookingAsync(id);
+
+        // Вернуть 202 Accepted с Location header
+        return AcceptedAtAction(
+            "GetBooking",
+            "Bookings",
+            new { id = booking.Id },
+            booking);
     }
 }
