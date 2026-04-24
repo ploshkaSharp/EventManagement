@@ -13,14 +13,17 @@ public class BookingService : IBookingService
 {
   private readonly ConcurrentDictionary<Guid, Booking> _bookings = new();
   private readonly IEventService _eventService;
+  private readonly ILogger<BookingService> _logger;
 
   /// <summary>
   /// 
   /// </summary>
   /// <param name="eventService"></param>
-  public BookingService(IEventService eventService)
+  /// <param name="logger"></param>
+  public BookingService(IEventService eventService, ILogger<BookingService> logger)
   {
     _eventService = eventService;
+    _logger = logger;
   }
 
   /// <summary>
@@ -85,5 +88,55 @@ public class BookingService : IBookingService
     }
 
     return BookingMapper.ToDto(booking);
+  }
+
+  /// <summary>
+  /// Получить список бронирований по статусу
+  /// </summary>
+  /// <param name="status">Статус бронирования</param>
+  /// <returns>Список инфо о брони</returns>
+  public async Task<IEnumerable<BookingDTO>> GetBookingByStatusAsync(BookingStatus status)
+  {
+    var pendingBookings = await Task.Run(() =>
+        _bookings.Values
+            .Where(b => b.Status == status)
+            .OrderBy(b => b.CreatedAt)
+            .Select(BookingMapper.ToDto)
+            );
+
+    return pendingBookings;
+  }
+
+  /// <summary>
+  /// Обновить статус брони
+  /// </summary>
+  /// <param name="bookingId">ИД брони</param>
+  /// <param name="status">Новый статус</param>
+  /// <returns>true если удалось обновить, fasle если не удалось</returns>
+  public async Task<bool> UpdateBookingStatusAsync(Guid bookingId, BookingStatus status)
+  {
+    var result = await Task.Run(() =>
+    {
+      if (!_bookings.TryGetValue(bookingId, out var booking))
+      {
+        _logger.LogWarning($"Not found booking with id='{bookingId.ToString()}'");
+        return false;
+      }
+
+      // Можно обновить статус только из Pending
+      if (booking.Status != BookingStatus.Pending)
+      {
+        _logger.LogWarning($"Can not update status. Status of booking id='{bookingId.ToString()}' is not Pending ('{booking.Status.ToString()}')");
+        return false;
+      }
+
+      booking.Status = status;
+      booking.ProcessedAt = DateTime.UtcNow;
+      _bookings[bookingId] = booking;
+
+      return true;
+    });
+
+    return result;
   }
 }
