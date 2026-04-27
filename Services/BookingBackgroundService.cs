@@ -24,10 +24,9 @@ public class BookingBackgroundService : BackgroundService
   }
 
   /// <summary>
-  /// 
+  /// Периодический опрос на наличие созданных бронирований
   /// </summary>
-  /// <param name="cancellationToken"></param>
-  /// <returns></returns>
+  /// <param name="cancellationToken">Токен отмены</param>
   protected override async Task ExecuteAsync(CancellationToken cancellationToken)
   {
     _logger.LogInformation("Booking background service started");
@@ -50,15 +49,13 @@ public class BookingBackgroundService : BackgroundService
   }
 
   /// <summary>
-  /// 
+  /// Обработка созданных броней
   /// </summary>
-  /// <param name="cancellationToken"></param>
-  /// <returns></returns>
+  /// <param name="cancellationToken">Токен отмены</param>
   private async Task ProcessPendingBookingsAsync(CancellationToken cancellationToken)
   {
     using var scope = _serviceProvider.CreateScope();
     var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-
     var pendingBookings = await bookingService.GetBookingByStatusAsync(BookingStatus.Pending);    
 
     if (pendingBookings.Any())
@@ -73,8 +70,7 @@ public class BookingBackgroundService : BackgroundService
 
       try
       {
-        _logger.LogInformation("Processing booking {BookingId} for event {EventId}",
-            booking.Id, booking.EventId);
+        _logger.LogInformation("Processing booking {BookingId} for event {EventId}", booking.Id, booking.EventId);
 
         // Имитация обращения к внешней системе
         await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
