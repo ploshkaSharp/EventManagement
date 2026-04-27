@@ -24,6 +24,7 @@ public class EventsController : ControllerBase
         _bookingService = bookingService;
     }
 
+    #region === Мероприятия ===
     /// <summary>
     /// Получить список всех мероприятий
     /// </summary>
@@ -189,7 +190,9 @@ public class EventsController : ControllerBase
 
         return NoContent();
     }
+    #endregion
 
+    #region === Бронирование ===
     /// <summary>
     /// Создать бронирование на мероприятие
     /// </summary>
@@ -240,4 +243,5 @@ public class EventsController : ControllerBase
             new { id = booking.Id },
             booking);
     }
+    #endregion
 }
