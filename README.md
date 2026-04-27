@@ -1,11 +1,11 @@
 # Event Management
-REST API для управления мероприятиями с CRUD-операциями (создание, просмотр, обновление, удаление).
+REST API для управления мероприятиями и их бронированием с CRUD-операциями (создание, просмотр, обновление, удаление).
 
 Хранение мероприятий в памяти (in-memory).
 
 Валидация входных данных (обязательность заполнения, дата окончания должна быть позже даты начала).
 
-Интерфейс для изоляции бизнес-логики (`IEventService`).
+Интерфейсы для изоляции бизнес-логики (`IEventService`, `IBookingService`).
 
 Swagger для упрощения тестирования и документирования.
 
@@ -14,15 +14,18 @@ Swagger для упрощения тестирования и документи
 
 - **.NET 10 (ASP.NET Core Web API, C#)**
 - **Swashbuckle.AspNetCore** (Swagger)
+- **xUnit**
 
 ## Структура проекта
 
 ```bash
 EventManagement/
 ├── Controllers/
-│ └── EventsController.cs         #Эндпоинты API
+│ ├── BookingController.cs        #Эндпоинты API (бронирование)
+│ └── EventsController.cs         #Эндпоинты API (мероприятия)
 ├── DTO/
-│ ├── EventDTO.cs                 #DTO объекты с валидацией
+│ ├── BookingDTO.cs               #DTO объекты (бронирование)
+│ ├── EventDTO.cs                 #DTO объекты (мероприятия)
 │ ├── EventFilterDTO.cs           #DTO для параметров фильтрации
 │ └── PaginateResultDTO.cs        #DTO для пагинированного результата
 ├── Exceptions/
@@ -30,23 +33,30 @@ EventManagement/
 │ ├── NotFoundException.cs        #Исключение - Ресурс не найден
 │ └── ValidationException.cs      #Исключение - Ошибка валидации
 ├── Mappers/
-│ └── EventMapper.cs              #Маппинг DTO объектов
+│ ├── BookingMapper.cs            #Маппинг DTO объектов (бронирование)
+│ └── EventMapper.cs              #Маппинг DTO объектов (мероприятия)
 ├── Middleware/
 │ └── GlobalExceptionHandlingMiddleware.cs  #Глобальная обработка исключений (middleware)
 ├── Models/
+│ ├── Booking.cs                  #Модель бронирования мероприятия
+│ ├── BookingStatus.cs            #Перечисление статусов бронирования 
 │ ├── ErrorResponse.cs            #Модель ответа об ошибке в формате Problem Details (RFC 7807)
 │ └── Event.cs                    #Доменная модель (сущность)
 ├── Services/
-│ ├── EventService.cs             #Реализация бизнес-логики
-│ └── IEventService.cs            #Интерфейс сервиса
+│ ├── BookingBackgroundService.cs #Фоновый сервис для обработки бронирований
+│ ├── BookingService.cs           #Реализация бизнес-логики управления бронированиями
+│ ├── EventService.cs             #Реализация бизнес-логики управления мероприятиями
+│ ├── IBookingService.cs          #Интерфейс сервиса управления бронированием
+│ └── IEventService.cs            #Интерфейс сервиса управления мероприятиями
 ├── Tests/
-│ └── Data/
+│ ├── Data/
 │ │   └── DataGenerator.cs        #Генератор тестовых данных
 │ └── Services/
+│ │   ├── BookingServiceTest.cs   #Тестовые сценарии для бронирования
 │ │   └── EventServiceTest.cs     #Тестовые сценарии (успешные, неуспешные, пограничные)
 │ └── Tests.csproj                #Проект с тестами
 ├── Program.cs                    #Точка входа в приложение с конфигурацией DI
-└── appsettings.json              #Настройки приложения
+├── appsettings.json              #Настройки приложения
 └── appsettings.Development.json  #Настройки приложения (окружение разработчика)
 ```
 
@@ -95,16 +105,18 @@ EventManagement/
 
 ```bash
 
- Метод  │ URL          │ Описание                         │ HTTP Ответы                               |
- -------|--------------|----------------------------------|-------------------------------------------|
- GET    │ /events      │ Получить список всех мероприятий │ 200 OK                                    |
-        │              │ С возможносью фильтрации по      │                                           |
-        │              │ названию, дате старта, дате      │                                           |
-        │              │ окончания и пагинации            │                                           |
- GET    │ /events/{id} │ Получить мероприятие по ID       │ 200 OK / 404 Not Found                    |
- POST   │ /events      │ Создать мероприятие              │ 201 Created / 400 Bad Request             |
- PUT    │ /events/{id} │ Обновить мероприятие             │ 200 Ok / 404 Not Found / 400 Bad Request  |
- DELETE │ /events/{id} │ Удалить мероприятие              │ 204 No Content / 404 Not Found            |
+ Метод  │ URL               │ Описание                         │ HTTP Ответы                                    |
+ -------|-------------------|----------------------------------|------------------------------------------------|
+ GET    │ /events           │ Получить список всех мероприятий │ 200 OK                                         |
+        │                   │ с возможносью фильтрации по      │                                                |
+        │                   │ названию, дате старта, дате      │                                                |
+        │                   │ окончания и пагинации            │                                                |
+ GET    │ /events/{id}      │ Получить мероприятие по ID       │ 200 OK / 404 Not Found                         |
+ POST   │ /events           │ Создать мероприятие              │ 201 Created / 400 Bad Request                  |
+ PUT    │ /events/{id}      │ Обновить мероприятие             │ 200 Ok / 404 Not Found / 400 Bad Request       |
+ DELETE │ /events/{id}      │ Удалить мероприятие              │ 204 No Content / 404 Not Found                 |
+ GET    │ /bookings/{id}    │ Получить бронирование по ID      │ 200 OK / 404 Not Found                         |
+ POST   │ /events/{id}/book │ Создать бронь на мероприятие     │ 202 Accepted / 404 Not Found / 400 Bad Request |
  ```
 
 ### Примеры запросов
@@ -162,6 +174,20 @@ EventManagement/
    curl -X 'DELETE' \
      'http://localhost:5000/Events/3fa85f64-5717-4562-b3fc-2c963f66afa6' \
      -H 'accept: */*'    
+   ```
+   
+   **Создание брони:**
+   ```bash
+   curl -X 'POST' \
+     'http://localhost:5000/Events/3fa85f64-5717-4562-b3fc-2c963f66afa6/book' \
+     -H 'accept: application/json' \
+     -H 'Content-Type: application/json'    
+   ```
+
+   **Вывод бронирования по ID (Guid):**
+   ```bash
+   curl -X GET 'https://localhost:5000/Bookings/fd1c1927-dd18-4e08-bc6f-a5517290d729' \
+      -H 'accept: application/json'
    ```   
 
 ## Формат ответа об ошибках:
