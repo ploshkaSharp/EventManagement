@@ -30,11 +30,13 @@ public class BookingService : IBookingService
   /// Создать бронь
   /// </summary>
   /// <param name="eventId">ИД мероприятия</param>
+  /// <param name="cancellationToken">Токен отмены</param>
   /// <returns></returns>
   /// <exception cref="NotFoundException"></exception>
   /// <exception cref="BadRequestException"></exception>
-  public async Task<BookingDTO> CreateBookingAsync(Guid eventId)
+  public async Task<BookingDTO> CreateBookingAsync(Guid eventId, CancellationToken cancellationToken)
   {
+    cancellationToken.ThrowIfCancellationRequested();
     // Проверить существование мероприятия
     var eventItem = await Task.Run(() => _eventService.GetById(eventId));
 
@@ -56,6 +58,7 @@ public class BookingService : IBookingService
       CreatedAt = DateTimeOffset.Now
     };
 
+    cancellationToken.ThrowIfCancellationRequested();
     // Добавить бронь
     var added = await Task.Run(() => _bookings.TryAdd(booking.Id, booking));
 
@@ -71,10 +74,12 @@ public class BookingService : IBookingService
   /// Найти бронь по ИД
   /// </summary>
   /// <param name="bookingId">Идентификатор брони</param>
+  /// <param name="cancellationToken">Токен отмены</param>
   /// <returns>Информация о брони</returns>
   /// <exception cref="NotFoundException"></exception>
-  public async Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId)
+  public async Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId, CancellationToken cancellationToken)
   {
+    cancellationToken.ThrowIfCancellationRequested();
     var booking = await Task.Run(() =>
     {
       _bookings.TryGetValue(bookingId, out var book);
@@ -93,9 +98,11 @@ public class BookingService : IBookingService
   /// Получить список бронирований по статусу
   /// </summary>
   /// <param name="status">Статус бронирования</param>
+  /// <param name="cancellationToken">Токен отмены</param>
   /// <returns>Список инфо о брони</returns>
-  public async Task<IEnumerable<BookingDTO>> GetBookingByStatusAsync(BookingStatus status)
+  public async Task<IEnumerable<BookingDTO>> GetBookingByStatusAsync(BookingStatus status, CancellationToken cancellationToken)
   {
+    cancellationToken.ThrowIfCancellationRequested();
     var pendingBookings = await Task.Run(() =>
         _bookings.Values
             .Where(b => b.Status == status)
@@ -111,9 +118,11 @@ public class BookingService : IBookingService
   /// </summary>
   /// <param name="bookingId">ИД брони</param>
   /// <param name="status">Новый статус</param>
+  /// <param name="cancellationToken">Токен отмены</param>
   /// <returns>true если удалось обновить, fasle если не удалось</returns>
-  public async Task<bool> UpdateBookingStatusAsync(Guid bookingId, BookingStatus status)
+  public async Task<bool> UpdateBookingStatusAsync(Guid bookingId, BookingStatus status, CancellationToken cancellationToken)
   {
+    cancellationToken.ThrowIfCancellationRequested();
     var result = await Task.Run(() =>
     {
       if (!_bookings.TryGetValue(bookingId, out var booking))

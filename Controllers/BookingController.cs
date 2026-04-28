@@ -27,6 +27,7 @@ public class BookingsController : ControllerBase
   /// Получить бронирование по идентификатору
   /// </summary>
   /// <param name="id">Идентификатор бронирования (GUID)</param>
+  /// <param name="cancellationToken">Токен отмены</param>
   /// <remarks>
   /// Пример запроса:
   /// GET /bookings/fd1c1927-dd18-4e08-bc6f-a5517290d729
@@ -46,9 +47,9 @@ public class BookingsController : ControllerBase
   [HttpGet("{id}")]
   [ProducesResponseType(typeof(BookingDTO), StatusCodes.Status200OK)]
   [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-  public async Task<ActionResult<BookingDTO>> GetBooking(Guid id)
+  public async Task<ActionResult<BookingDTO>> GetBooking(Guid id, CancellationToken cancellationToken)
   {
-    var booking = await _bookingService.GetBookingByIdAsync(id);
+    var booking = await _bookingService.GetBookingByIdAsync(id, cancellationToken);
 
     if (booking == null)
     {
