@@ -97,8 +97,8 @@ public class EventsController : ControllerBase
     /// {
     ///   "title": "Tech Conference 2026",
     ///   "description": "Annual technology conference",
-    ///   "startAt": "2026-05-15T10:00:00Z",
-    ///   "endAt": "2026-05-15T18:00:00Z"
+    ///   "startAt": "2026-05-15T10:00:00+04:00",
+    ///   "endAt": "2026-05-15T18:00:00+04:00"
     /// }
     /// 
     /// </remarks>
@@ -132,8 +132,8 @@ public class EventsController : ControllerBase
     /// {
     ///   "title": "Updated Conference 2026",
     ///   "description": "Updated technology conference",
-    ///   "startAt": "2026-06-15T10:00:00Z",
-    ///   "endAt": "2026-06-15T18:00:00Z"
+    ///   "startAt": "2026-06-15T10:00:00+04:00",
+    ///   "endAt": "2026-06-15T18:00:00+04:00"
     /// }
     /// </remarks>
     /// <returns>Обновленное мероприятие</returns>
@@ -206,7 +206,7 @@ public class EventsController : ControllerBase
     ///   "id": "06643d61-2689-49df-aa08-42c0ab9a8577",
     ///   "eventId": "fd1c1927-dd18-4e08-bc6f-a5517290d729",
     ///   "status": 0,
-    ///   "createdAt": "2026-04-23T10:30:00Z",
+    ///   "createdAt": "2026-04-23T10:30:00+04:00",
     ///   "processedAt": null
     /// }
     /// </remarks>

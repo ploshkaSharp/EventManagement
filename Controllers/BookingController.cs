@@ -36,7 +36,7 @@ public class BookingsController : ControllerBase
   ///   "id": "fd1c1927-dd18-4e08-bc6f-a5517290d729",
   ///   "eventId": "06643d61-2689-49df-aa08-42c0ab9a8577",
   ///   "status": 0,
-  ///   "createdAt": "2026-04-23T10:30:00Z",
+  ///   "createdAt": "2026-04-23T10:30:00+04:00",
   ///   "processedAt": null
   /// }
   /// </remarks>

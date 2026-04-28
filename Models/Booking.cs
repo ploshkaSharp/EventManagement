@@ -26,12 +26,12 @@ public class Booking
   /// <summary>
   /// Дата и время создания брони
   /// </summary>
-  /// <example>2026-05-15T10:00:00Z</example>
+  /// <example>2026-05-15T10:00:00+04:00</example>
   public DateTimeOffset CreatedAt { get; set; }
 
   /// <summary>
   /// Дата и время обработки брони
   /// </summary>
-  /// <example>2026-05-15T11:00:00Z</example>
+  /// <example>2026-05-15T11:00:00+04:00</example>
   public DateTimeOffset ProcessedAt { get; set; }
 }

@@ -16,7 +16,7 @@ public class EventFilterDto
   /// <summary>
   /// События, которые начинаются не раньше указанной даты
   /// </summary>
-  /// <example>2026-05-01T00:00:00Z</example>
+  /// <example>2026-05-01T00:00:00+04:00</example>
   public DateTimeOffset? From { get; set; }
 
   /// <summary>

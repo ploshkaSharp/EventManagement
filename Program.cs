@@ -36,12 +36,8 @@ var app = builder.Build();
 // middleware для глобальной обработки ошибок. Ставить первым в pipeline для перехвата всех исключений
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
