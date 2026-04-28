@@ -11,10 +11,10 @@ public class BookingBackgroundService : BackgroundService
   private readonly ILogger<BookingBackgroundService> _logger;
   private readonly TimeSpan _processingInterval = TimeSpan.FromSeconds(5);
   /// <summary>
-  /// 
+  /// Constructor
   /// </summary>
-  /// <param name="serviceProvider"></param>
-  /// <param name="logger"></param>
+  /// <param name="serviceProvider">Провайдер сервисов</param>
+  /// <param name="logger">Логгер</param>
   public BookingBackgroundService(
       IServiceProvider serviceProvider,
       ILogger<BookingBackgroundService> logger)
@@ -26,23 +26,27 @@ public class BookingBackgroundService : BackgroundService
   /// <summary>
   /// Периодический опрос на наличие созданных бронирований
   /// </summary>
-  /// <param name="cancellationToken">Токен отмены</param>
-  protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+  /// <param name="stoppingToken">Токен отмены</param>
+  protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
     _logger.LogInformation("Booking background service started");
 
-    while (!cancellationToken.IsCancellationRequested)
+    while (!stoppingToken.IsCancellationRequested)
     {
       try
       {
-        await ProcessPendingBookingsAsync(cancellationToken);
+        await ProcessPendingBookingsAsync(stoppingToken);
+      }
+      catch (OperationCanceledException)
+      {
+        _logger.LogInformation("Operation canceled. Stopping process");
       }
       catch (Exception ex)
       {
         _logger.LogError(ex, "Error occurred while processing pending bookings");
       }
 
-      await Task.Delay(_processingInterval, cancellationToken);
+      await Task.Delay(_processingInterval, stoppingToken);
     }
 
     _logger.LogInformation("Booking background service stopped");
@@ -56,14 +60,15 @@ public class BookingBackgroundService : BackgroundService
   {
     using var scope = _serviceProvider.CreateScope();
     var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-    var pendingBookings = await bookingService.GetBookingByStatusAsync(BookingStatus.Pending);    
+    var pendingBookings = await bookingService.GetBookingByStatusAsync(BookingStatus.Pending);
+    var pendingList = pendingBookings.ToList();  
 
-    if (pendingBookings.Any())
+    if (pendingList.Any())
     {
-      _logger.LogInformation("Found {Count} pending bookings to process", pendingBookings.Count());      
+      _logger.LogInformation("Found {Count} pending bookings to process", pendingList.Count);      
     }
 
-    foreach (var booking in pendingBookings)
+    foreach (var booking in pendingList)
     {
       if (cancellationToken.IsCancellationRequested)
         break;
