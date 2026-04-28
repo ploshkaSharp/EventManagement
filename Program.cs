@@ -16,7 +16,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Event Management API",
         Version = "v1",
-        Description = "API для управления мероприятиями"
+        Description = "API для управления мероприятиями и их бронированием"
     });
 
     // Включение XML-комментариев для документации
@@ -29,17 +29,15 @@ builder.Services.AddSwaggerGen(c =>
 });
 // Singleton (in-memory)
 builder.Services.AddSingleton<IEventService, EventService>();
+builder.Services.AddSingleton<IBookingService, BookingService>();
+builder.Services.AddHostedService<BookingBackgroundService>();
 
 var app = builder.Build();
 // middleware для глобальной обработки ошибок. Ставить первым в pipeline для перехвата всех исключений
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
