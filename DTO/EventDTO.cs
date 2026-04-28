@@ -23,15 +23,15 @@ public class EventDTO
   /// <example>Description of the technology conference</example>  
   public string? Description { get; set; }
   /// <summary>
-  /// Дата и время начала мероприятия (UTC)
+  /// Дата и время начала мероприятия 
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example>  
-  public DateTime StartAt { get; set; }
+  public DateTimeOffset StartAt { get; set; }
   /// <summary>
-  /// Дата и время окончания мероприятия (UTC)
+  /// Дата и время окончания мероприятия
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example>  
-  public DateTime EndAt { get; set; }
+  public DateTimeOffset EndAt { get; set; }
 }
 
 /// <summary>
@@ -51,15 +51,15 @@ public class CreateEventDTO
   /// <example>Description of the technology conference</example>
   public string? Description { get; set; }
   /// <summary>
-  /// Дата и время начала мероприятия (UTC)
+  /// Дата и время начала мероприятия
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example> 
-  public DateTime StartAt { get; set; }
+  public DateTimeOffset StartAt { get; set; }
   /// <summary>
-  /// Дата и время окончания мероприятия (UTC)
+  /// Дата и время окончания мероприятия
   /// </summary>
   /// <example>2026-06-15T11:00:00Z</example>    
-  public DateTime EndAt { get; set; }
+  public DateTimeOffset EndAt { get; set; }
 }
 
 /// <summary>
@@ -79,13 +79,13 @@ public class UpdateEventDTO
   /// <example>Description of the technology conference</example>
   public string? Description { get; set; }
   /// <summary>
-  /// Дата и время начала мероприятия (UTC)
+  /// Дата и время начала мероприятия
   /// </summary>
   /// <example>2026-06-15T10:00:00Z</example>   
-  public DateTime StartAt { get; set; }
+  public DateTimeOffset StartAt { get; set; }
   /// <summary>
-  /// Дата и время окончания мероприятия (UTC)
+  /// Дата и время окончания мероприятия
   /// </summary>
   /// <example>2026-06-15T11:00:00Z</example>  
-  public DateTime EndAt { get; set; } 
+  public DateTimeOffset EndAt { get; set; } 
 }

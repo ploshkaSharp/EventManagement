@@ -159,7 +159,7 @@ public class EventServiceTests
     {
         // Arrange
         var service = TestDataGenerator.CreateEventServiceWithSeedData();
-        var fromDate = new DateTime(2030, 6, 1, 0, 0, 0, DateTimeKind.Utc);
+        var fromDate = new DateTimeOffset(2030, 6, 1, 0, 0, 0, new TimeSpan(+4, 0, 0));
         var filter = new EventFilterDto
         {
             From = fromDate
@@ -181,7 +181,7 @@ public class EventServiceTests
     {
         // Arrange
         var service = TestDataGenerator.CreateEventServiceWithSeedData();
-        var toDate = new DateTime(2030, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        var toDate = new DateTimeOffset(2030, 9, 1, 0, 0, 0, new TimeSpan(+4, 0, 0));
         var filter = new EventFilterDto
         {
             To = toDate
@@ -203,8 +203,9 @@ public class EventServiceTests
     {
         // Arrange
         var service = TestDataGenerator.CreateEventServiceWithSeedData();
-        var fromDate = new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        var toDate = new DateTime(2030, 7, 1, 0, 0, 0, DateTimeKind.Utc);
+        var localOffset = new TimeSpan(+4, 0, 0);
+        var fromDate = new DateTimeOffset(2030, 1, 1, 0, 0, 0, localOffset);
+        var toDate = new DateTimeOffset(2030, 7, 1, 0, 0, 0, localOffset);
         var filter = new EventFilterDto
         {
             From = fromDate,
@@ -307,8 +308,9 @@ public class EventServiceTests
     {
         // Arrange
         var service = TestDataGenerator.CreateEventServiceWithSeedData();
-        var fromDate = new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        var toDate = new DateTime(2030, 6, 1, 0, 0, 0, DateTimeKind.Utc);
+        var localOffset = new TimeSpan(+4, 0, 0);
+        var fromDate = new DateTimeOffset(2030, 1, 1, 0, 0, 0, localOffset);
+        var toDate = new DateTimeOffset(2030, 6, 1, 0, 0, 0, localOffset);
         var filter = new EventFilterDto
         {
             Title = "expo",
@@ -401,8 +403,8 @@ public class EventServiceTests
         {
             Title = string.Empty,
             Description = "Test",
-            StartAt = DateTime.UtcNow.AddDays(10),
-            EndAt = DateTime.UtcNow.AddDays(15)
+            StartAt = DateTimeOffset.Now.AddDays(10),
+            EndAt = DateTimeOffset.Now.AddDays(15)
         };
 
         // Act
@@ -426,8 +428,8 @@ public class EventServiceTests
         {
             Title = null!,
             Description = "Test",
-            StartAt = DateTime.UtcNow.AddDays(10),
-            EndAt = DateTime.UtcNow.AddDays(15)
+            StartAt = DateTimeOffset.Now.AddDays(10),
+            EndAt = DateTimeOffset.Now.AddDays(15)
         };
 
         // Act
@@ -450,8 +452,8 @@ public class EventServiceTests
         {
             Title = "Composit expo 2030",
             Description = "Duplicate event",
-            StartAt = DateTime.UtcNow.AddDays(10),
-            EndAt = DateTime.UtcNow.AddDays(15)
+            StartAt = DateTimeOffset.Now.AddDays(10),
+            EndAt = DateTimeOffset.Now.AddDays(15)
         };
 
         // Act
@@ -474,8 +476,8 @@ public class EventServiceTests
         {
             Title = "Past Event",
             Description = "Test",
-            StartAt = DateTime.UtcNow.AddDays(-1),
-            EndAt = DateTime.UtcNow.AddDays(1)
+            StartAt = DateTimeOffset.Now.AddDays(-1),
+            EndAt = DateTimeOffset.Now.AddDays(1)
         };
 
         // Act
@@ -498,8 +500,8 @@ public class EventServiceTests
         {
             Title = "Invalid Dates Event",
             Description = "Test",
-            StartAt = DateTime.UtcNow.AddDays(10),
-            EndAt = DateTime.UtcNow.AddDays(8)
+            StartAt = DateTimeOffset.Now.AddDays(10),
+            EndAt = DateTimeOffset.Now.AddDays(8)
         };
 
         // Act
@@ -525,8 +527,8 @@ public class EventServiceTests
         {
             Title = "Updated Event",
             Description = "Test",
-            StartAt = DateTime.UtcNow.AddDays(12),
-            EndAt = DateTime.UtcNow.AddDays(10)
+            StartAt = DateTimeOffset.Now.AddDays(12),
+            EndAt = DateTimeOffset.Now.AddDays(10)
         };
 
         // Act
@@ -552,8 +554,8 @@ public class EventServiceTests
         {
             Title = "Updated Event",
             Description = "Test",
-            StartAt = DateTime.UtcNow.AddDays(-1),
-            EndAt = DateTime.UtcNow.AddDays(1)
+            StartAt = DateTimeOffset.Now.AddDays(-1),
+            EndAt = DateTimeOffset.Now.AddDays(1)
         };
 
         // Act

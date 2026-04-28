@@ -43,8 +43,8 @@ public class EventsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<EventDTO>), StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<EventDTO>> GetAll(
         [FromQuery] string? title,
-        [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to,
+        [FromQuery] DateTimeOffset? from,
+        [FromQuery] DateTimeOffset? to,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10
     )
@@ -228,7 +228,7 @@ public class EventsController : ControllerBase
             return NotFound();
         }
 
-        if (eventItem.StartAt < DateTime.UtcNow)
+        if (eventItem.StartAt < DateTimeOffset.Now)
         {
             return BadRequest("Can not book an event that has already started");
         }

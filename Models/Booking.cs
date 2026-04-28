@@ -24,14 +24,14 @@ public class Booking
   public BookingStatus Status { get; set; }
 
   /// <summary>
-  /// Дата и время создания брони (UTC)
+  /// Дата и время создания брони
   /// </summary>
   /// <example>2026-05-15T10:00:00Z</example>
-  public DateTime CreatedAt { get; set; }
+  public DateTimeOffset CreatedAt { get; set; }
 
   /// <summary>
-  /// Дата и время обработки брони (UTC)
+  /// Дата и время обработки брони
   /// </summary>
   /// <example>2026-05-15T11:00:00Z</example>
-  public DateTime? ProcessedAt { get; set; }
+  public DateTimeOffset ProcessedAt { get; set; }
 }

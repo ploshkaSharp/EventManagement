@@ -13,42 +13,43 @@ public static class TestDataGenerator
     /// <returns>Тестовые мероприятия</returns>
     public static List<CreateEventDTO> GetTestEvents()
     {
+        var localOffset = new TimeSpan(+4, 0, 0);
         return new List<CreateEventDTO>
         {
             new CreateEventDTO
             {
                 Title = "HouseHold Expo 2030",
                 Description = "Technology conference",
-                StartAt = new DateTime(2030, 3, 17, 10, 0, 0, DateTimeKind.Utc),
-                EndAt = new DateTime(2030, 3, 19, 18, 0, 0, DateTimeKind.Utc)
+                StartAt = new DateTimeOffset(2030, 3, 17, 10, 0, 0, localOffset),
+                EndAt = new DateTimeOffset(2030, 3, 19, 18, 0, 0, localOffset)
             },
             new CreateEventDTO
             {
                 Title = "Composit expo 2030",
                 Description = "Business review",
-                StartAt = new DateTime(2030, 6, 10, 14, 0, 0, DateTimeKind.Utc),
-                EndAt = new DateTime(2030, 6, 12, 16, 0, 0, DateTimeKind.Utc)
+                StartAt = new DateTimeOffset(2030, 6, 10, 14, 0, 0, localOffset),
+                EndAt = new DateTimeOffset(2030, 6, 12, 16, 0, 0, localOffset)
             },
             new CreateEventDTO
             {
                 Title = "Baltic Rally",
                 Description = "Summer celebration",
-                StartAt = new DateTime(2030, 7, 20, 19, 0, 0, DateTimeKind.Utc),
-                EndAt = new DateTime(2030, 7, 20, 23, 0, 0, DateTimeKind.Utc)
+                StartAt = new DateTimeOffset(2030, 7, 20, 19, 0, 0, localOffset),
+                EndAt = new DateTimeOffset(2030, 7, 20, 23, 0, 0, localOffset)
             },
             new CreateEventDTO
             {
                 Title = "Tomorrowland Thailand",
                 Description = "Retail forum",
-                StartAt = new DateTime(2030, 8, 5, 9, 0, 0, DateTimeKind.Utc),
-                EndAt = new DateTime(2030, 8, 5, 17, 0, 0, DateTimeKind.Utc)
+                StartAt = new DateTimeOffset(2030, 8, 5, 9, 0, 0, localOffset),
+                EndAt = new DateTimeOffset(2030, 8, 5, 17, 0, 0, localOffset)
             },
             new CreateEventDTO
             {
                 Title = "Wild Siberia Extreme Triathlon",
                 Description = "Sport event",
-                StartAt = new DateTime(2030, 9, 12, 10, 0, 0, DateTimeKind.Utc),
-                EndAt = new DateTime(2030, 9, 12, 18, 0, 0, DateTimeKind.Utc)
+                StartAt = new DateTimeOffset(2030, 9, 12, 10, 0, 0, localOffset),
+                EndAt = new DateTimeOffset(2030, 9, 12, 18, 0, 0, localOffset)
             }
         };
     }
@@ -63,8 +64,8 @@ public static class TestDataGenerator
         {
             Title = "New Test Event",
             Description = "Test Description",
-            StartAt = DateTime.UtcNow.AddDays(30),
-            EndAt = DateTime.UtcNow.AddDays(34)
+            StartAt = DateTimeOffset.Now.AddDays(30),
+            EndAt = DateTimeOffset.Now.AddDays(34)
         };
     }
 
@@ -78,8 +79,8 @@ public static class TestDataGenerator
         {
             Title = "Updated Test Event",
             Description = "Updated Description",
-            StartAt = DateTime.UtcNow.AddDays(45),
-            EndAt = DateTime.UtcNow.AddDays(46).AddHours(5)
+            StartAt = DateTimeOffset.Now.AddDays(45),
+            EndAt = DateTimeOffset.Now.AddDays(46).AddHours(5)
         };
     }
 

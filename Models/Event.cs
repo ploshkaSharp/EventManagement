@@ -21,13 +21,13 @@ public class Event
   /// <example>Annual technology conference with industry experts</example>
   public string? Description { get; set; }
   /// <summary>
-  /// Дата и время начала мероприятия (UTC)
+  /// Дата и время начала мероприятия
   /// </summary>
   /// <example>2026-05-15T10:00:00Z</example>
-  public DateTime StartAt { get; set; }
+  public DateTimeOffset StartAt { get; set; }
   /// <summary>
-  /// Дата и время окончания мероприятия (UTC)
+  /// Дата и время окончания мероприятия
   /// </summary>
   /// <example>2026-05-15T18:00:00Z</example>
-  public DateTime EndAt { get; set; }
+  public DateTimeOffset EndAt { get; set; }
 }

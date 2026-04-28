@@ -50,7 +50,7 @@ public class EventService : IEventService
       throw new ValidationException($"Event with title '{eventCreated.Title}' already exists");
     }
 
-    if (eventCreated.StartAt < DateTime.UtcNow)
+    if (eventCreated.StartAt < DateTimeOffset.Now)
     {
       throw new ValidationException("StartAt must be more than now.");
     }
@@ -95,7 +95,7 @@ public class EventService : IEventService
       throw new ValidationException($"StartAt must be less than EndAt ('{eventUpdated.EndAt}')");
     }
 
-    if (eventUpdated.StartAt < DateTime.UtcNow)
+    if (eventUpdated.StartAt < DateTimeOffset.Now)
     {
       throw new ValidationException("StartAt must be more than now.");
     }
@@ -178,7 +178,7 @@ public class EventService : IEventService
   /// </summary>
   /// <param name="query">Запрос фильтрации</param>
   /// <param name="from">С даты</param>
-  private IQueryable<Event> FromDateFilter(IQueryable<Event> query, DateTime? from)
+  private IQueryable<Event> FromDateFilter(IQueryable<Event> query, DateTimeOffset? from)
   {
     if (!from.HasValue)
       return query;
@@ -191,7 +191,7 @@ public class EventService : IEventService
   /// </summary>
   /// <param name="query">Запрос фильтрации</param>
   /// <param name="to">До даты</param>  
-  private IQueryable<Event> ToDateFilter(IQueryable<Event> query, DateTime? to)
+  private IQueryable<Event> ToDateFilter(IQueryable<Event> query, DateTimeOffset? to)
   {
     if (!to.HasValue)
       return query;

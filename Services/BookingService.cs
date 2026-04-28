@@ -43,7 +43,7 @@ public class BookingService : IBookingService
       throw new NotFoundException(nameof(Event), eventId);
     }
 
-    if (eventItem.StartAt < DateTime.UtcNow)
+    if (eventItem.StartAt < DateTimeOffset.Now)
     {
       throw new BadRequestException("Can not book an event that has already started");
     }
@@ -53,8 +53,7 @@ public class BookingService : IBookingService
       Id = Guid.NewGuid(),
       EventId = eventId,
       Status = BookingStatus.Pending,
-      CreatedAt = DateTime.UtcNow,
-      ProcessedAt = null
+      CreatedAt = DateTimeOffset.Now
     };
 
     // Добавить бронь
@@ -131,7 +130,7 @@ public class BookingService : IBookingService
       }
 
       booking.Status = status;
-      booking.ProcessedAt = DateTime.UtcNow;
+      booking.ProcessedAt = DateTimeOffset.Now;
       _bookings[bookingId] = booking;
 
       return true;
