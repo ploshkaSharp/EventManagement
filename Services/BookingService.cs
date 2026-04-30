@@ -30,15 +30,13 @@ public class BookingService : IBookingService
   /// Создать бронь
   /// </summary>
   /// <param name="eventId">ИД мероприятия</param>
-  /// <param name="cancellationToken">Токен отмены</param>
   /// <returns></returns>
   /// <exception cref="NotFoundException"></exception>
   /// <exception cref="BadRequestException"></exception>
-  public async Task<BookingDTO> CreateBookingAsync(Guid eventId, CancellationToken cancellationToken)
+  public async Task<BookingDTO> CreateBookingAsync(Guid eventId)
   {
-    cancellationToken.ThrowIfCancellationRequested();
     // Проверить существование мероприятия
-    var eventItem = await Task.Run(() => _eventService.GetById(eventId));
+    var eventItem = _eventService.GetById(eventId);
 
     if (eventItem == null)
     {
@@ -58,9 +56,8 @@ public class BookingService : IBookingService
       CreatedAt = DateTimeOffset.Now
     };
 
-    cancellationToken.ThrowIfCancellationRequested();
     // Добавить бронь
-    var added = await Task.Run(() => _bookings.TryAdd(booking.Id, booking));
+    var added = _bookings.TryAdd(booking.Id, booking);
 
     if (!added)
     {
@@ -74,41 +71,31 @@ public class BookingService : IBookingService
   /// Найти бронь по ИД
   /// </summary>
   /// <param name="bookingId">Идентификатор брони</param>
-  /// <param name="cancellationToken">Токен отмены</param>
   /// <returns>Информация о брони</returns>
   /// <exception cref="NotFoundException"></exception>
-  public async Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId, CancellationToken cancellationToken)
+  public async Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId)
   {
-    cancellationToken.ThrowIfCancellationRequested();
-    var booking = await Task.Run(() =>
-    {
-      _bookings.TryGetValue(bookingId, out var book);
-      return book;
-    });
+    _bookings.TryGetValue(bookingId, out var booking);
 
     if (booking == null)
     {
       throw new NotFoundException(nameof(Booking), bookingId);
     }
 
-    return BookingMapper.ToDto(booking);
+    return BookingMapper.ToDto(booking);    
   }
 
   /// <summary>
   /// Получить список бронирований по статусу
   /// </summary>
   /// <param name="status">Статус бронирования</param>
-  /// <param name="cancellationToken">Токен отмены</param>
   /// <returns>Список инфо о брони</returns>
-  public async Task<IEnumerable<BookingDTO>> GetBookingByStatusAsync(BookingStatus status, CancellationToken cancellationToken)
+  public async Task<IEnumerable<BookingDTO>> GetBookingByStatusAsync(BookingStatus status)
   {
-    cancellationToken.ThrowIfCancellationRequested();
-    var pendingBookings = await Task.Run(() =>
-        _bookings.Values
+    var pendingBookings = _bookings.Values
             .Where(b => b.Status == status)
             .OrderBy(b => b.CreatedAt)
-            .Select(BookingMapper.ToDto)
-            );
+            .Select(BookingMapper.ToDto);
 
     return pendingBookings;
   }
@@ -118,33 +105,26 @@ public class BookingService : IBookingService
   /// </summary>
   /// <param name="bookingId">ИД брони</param>
   /// <param name="status">Новый статус</param>
-  /// <param name="cancellationToken">Токен отмены</param>
   /// <returns>true если удалось обновить, fasle если не удалось</returns>
-  public async Task<bool> UpdateBookingStatusAsync(Guid bookingId, BookingStatus status, CancellationToken cancellationToken)
+  public async Task<bool> UpdateBookingStatusAsync(Guid bookingId, BookingStatus status)
   {
-    cancellationToken.ThrowIfCancellationRequested();
-    var result = await Task.Run(() =>
+    if (!_bookings.TryGetValue(bookingId, out var booking))
     {
-      if (!_bookings.TryGetValue(bookingId, out var booking))
-      {
-        _logger.LogWarning($"Not found booking with id='{bookingId.ToString()}'");
-        return false;
-      }
+      _logger.LogWarning($"Not found booking with id='{bookingId.ToString()}'");
+      return false;
+    }
 
-      // Можно обновить статус только из Pending
-      if (booking.Status != BookingStatus.Pending)
-      {
-        _logger.LogWarning($"Can not update status. Status of booking id='{bookingId.ToString()}' is not Pending ('{booking.Status.ToString()}')");
-        return false;
-      }
+    // Можно обновить статус только из Pending
+    if (booking.Status != BookingStatus.Pending)
+    {
+      _logger.LogWarning($"Can not update status. Status of booking id='{bookingId.ToString()}' is not Pending ('{booking.Status.ToString()}')");
+      return false;
+    }
 
-      booking.Status = status;
-      booking.ProcessedAt = DateTimeOffset.Now;
-      _bookings[bookingId] = booking;
+    booking.Status = status;
+    booking.ProcessedAt = DateTimeOffset.Now;
+    _bookings[bookingId] = booking;
 
-      return true;
-    });
-
-    return result;
+    return true;
   }
 }

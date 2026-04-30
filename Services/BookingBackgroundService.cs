@@ -60,7 +60,7 @@ public class BookingBackgroundService : BackgroundService
   {
     using var scope = _serviceProvider.CreateScope();
     var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-    var pendingBookings = await bookingService.GetBookingByStatusAsync(BookingStatus.Pending, cancellationToken);
+    var pendingBookings = await bookingService.GetBookingByStatusAsync(BookingStatus.Pending);
     var pendingList = pendingBookings.ToList();  
 
     if (pendingList.Any())
@@ -85,7 +85,7 @@ public class BookingBackgroundService : BackgroundService
         await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
 
         // Перевести бронь в статус Confirmed
-        var success = await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Confirmed, cancellationToken);
+        var success = await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Confirmed);
 
         if (success)
         {

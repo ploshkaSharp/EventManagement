@@ -197,7 +197,6 @@ public class EventsController : ControllerBase
     /// Создать бронирование на мероприятие
     /// </summary>
     /// <param name="id">Идентификатор мероприятия (GUID)</param>
-    /// <param name="cancellationToken">Токен отмены</param>
     /// <remarks>
     /// Пример запроса:
     /// POST /events/fd1c1927-dd18-4e08-bc6f-a5517290d729/book
@@ -219,7 +218,7 @@ public class EventsController : ControllerBase
     [ProducesResponseType(typeof(BookingDTO), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BookingDTO>> BookEvent(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<BookingDTO>> BookEvent(Guid id)
     {
         // Проверить существование мероприятия
         var eventItem = _eventService.GetById(id);
@@ -235,7 +234,7 @@ public class EventsController : ControllerBase
         }
 
         // Создать бронь
-        var booking = await _bookingService.CreateBookingAsync(id, cancellationToken);
+        var booking = await _bookingService.CreateBookingAsync(id);
 
         // Вернуть 202 Accepted с Location header
         return AcceptedAtAction(
