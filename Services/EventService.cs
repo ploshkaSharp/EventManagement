@@ -26,7 +26,7 @@ public class EventService : IEventService
       throw new NotFoundException(nameof(Event), id);
     }
     return EventMapper.ToDto(eventItem);
-  }  
+  }
 
   /// <summary>
   /// Создать новое мероприятие
@@ -75,6 +75,64 @@ public class EventService : IEventService
       throw new BadRequestException("Failed to create event");
     }
     return EventMapper.ToDto(eventItem);
+  }
+
+  /// <summary>
+  /// Создать новое мероприятие
+  /// </summary>
+  /// <param name="eventCreated">Данные для создания мероприятия</param>
+  /// <returns>DTO созданного мероприятия</returns>
+  /// <exception cref="ValidationException"></exception>
+  public Task<EventDTO> CreateAsync(CreateEventDTO eventCreated)
+  {
+    var isExistEvent = _events.Values.Any(e =>
+                       e.Title.Equals(eventCreated.Title, StringComparison.OrdinalIgnoreCase));
+
+
+    if (isExistEvent)
+    {
+      throw new ValidationException($"Event with title '{eventCreated.Title}' already exists");
+    }
+
+    ValidateEvent(eventCreated.Title, eventCreated.StartAt, eventCreated.EndAt, eventCreated.TotalSeats);
+
+    var eventItem = EventMapper.ToEntity(eventCreated);
+
+    _events.TryAdd(eventItem.Id, eventItem);
+
+    return Task.FromResult(EventMapper.ToDto(eventItem));
+  }
+
+  /// <summary>
+  /// Валидация полей мероприятия
+  /// </summary>
+  /// <param name="title">Наименование мероприятия</param>
+  /// <param name="startAt">Дата и время начала</param>
+  /// <param name="endAt">Дата и время окончания</param>
+  /// <param name="totalSeats">Общее количество мест</param>
+  /// <exception cref="ArgumentException"></exception>
+  /// <exception cref="ValidationException"></exception>
+  private void ValidateEvent(string title, DateTimeOffset startAt, DateTimeOffset endAt, int totalSeats)
+  {
+    if (string.IsNullOrEmpty(title))
+    {
+      throw new ArgumentException("Title is required");
+    }
+
+    if (startAt < DateTimeOffset.Now)
+    {
+      throw new ValidationException("StartAt must be more than now.");
+    }
+
+    if (startAt >= endAt)
+    {
+      throw new ValidationException($"StartAt must be less than EndAt");
+    }
+
+    if (totalSeats <= 0)
+    {
+      throw new ValidationException("TotalSeats must be greater than 0");
+    }
   }
 
   /// <summary>
