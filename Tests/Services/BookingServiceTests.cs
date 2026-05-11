@@ -22,14 +22,13 @@ public class BookingServiceTests
     var eventService = new EventService();
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
-    var ct = new CancellationToken();
 
     // Создать событие
     var createEventDto = TestDataGenerator.GetValidCreateEventDto();
     var createdEvent = eventService.Create(createEventDto);
 
     // Act
-    var booking = await bookingService.CreateBookingAsync(createdEvent.Id, ct);
+    var booking = await bookingService.CreateBookingAsync(createdEvent.Id);
 
     // Assert
     Assert.NotNull(booking);
@@ -49,16 +48,15 @@ public class BookingServiceTests
     var eventService = new EventService();
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
-    var ct = new CancellationToken();
 
     // Создать событие
     var createEventDto = TestDataGenerator.GetValidCreateEventDto();
     var createdEvent = eventService.Create(createEventDto);
 
     // Act
-    var booking1 = await bookingService.CreateBookingAsync(createdEvent.Id, ct);
-    var booking2 = await bookingService.CreateBookingAsync(createdEvent.Id, ct);
-    var booking3 = await bookingService.CreateBookingAsync(createdEvent.Id, ct);
+    var booking1 = await bookingService.CreateBookingAsync(createdEvent.Id);
+    var booking2 = await bookingService.CreateBookingAsync(createdEvent.Id);
+    var booking3 = await bookingService.CreateBookingAsync(createdEvent.Id);
 
     // Assert
     Assert.NotNull(booking1);
@@ -85,15 +83,14 @@ public class BookingServiceTests
     var eventService = new EventService();
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
-    var ct = new CancellationToken();
 
     // Создать событие и бронь
     var createEventDto = TestDataGenerator.GetValidCreateEventDto();
     var createdEvent = eventService.Create(createEventDto);
-    var createdBooking = await bookingService.CreateBookingAsync(createdEvent.Id, ct);
+    var createdBooking = await bookingService.CreateBookingAsync(createdEvent.Id);
 
     // Act
-    var retrievedBooking = await bookingService.GetBookingByIdAsync(createdBooking.Id, ct);
+    var retrievedBooking = await bookingService.GetBookingByIdAsync(createdBooking.Id);
 
     // Assert
     Assert.NotNull(retrievedBooking);
@@ -114,26 +111,25 @@ public class BookingServiceTests
     var eventService = new EventService();
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
-    var ct = new CancellationToken();
 
     // Создать событие и бронь
     var createEventDto = TestDataGenerator.GetValidCreateEventDto();
     var createdEvent = eventService.Create(createEventDto);
-    var createdBooking = await bookingService.CreateBookingAsync(createdEvent.Id, ct);
+    var createdBooking = await bookingService.CreateBookingAsync(createdEvent.Id);
 
     // Проверить первоначальный статус
-    var bookingBefore = await bookingService.GetBookingByIdAsync(createdBooking.Id, ct);
+    var bookingBefore = await bookingService.GetBookingByIdAsync(createdBooking.Id);
     Assert.NotNull(bookingBefore);
     Assert.Equal(BookingStatus.Pending, bookingBefore.Status);
     Assert.Equal(DateTimeOffset.MinValue, bookingBefore.ProcessedAt);
 
     // Act - обновить статус
-    var updateSuccess = await bookingService.UpdateBookingStatusAsync(createdBooking.Id, BookingStatus.Confirmed, ct);
+    var updateSuccess = await bookingService.UpdateBookingStatusAsync(createdBooking.Id, BookingStatus.Confirmed);
 
     // Assert - проверить обновленный статус
     Assert.True(updateSuccess);
 
-    var bookingAfter = await bookingService.GetBookingByIdAsync(createdBooking.Id, ct);
+    var bookingAfter = await bookingService.GetBookingByIdAsync(createdBooking.Id);
     Assert.NotNull(bookingAfter);
     Assert.Equal(BookingStatus.Confirmed, bookingAfter.Status);
     Assert.NotEqual(DateTimeOffset.MinValue, bookingAfter.ProcessedAt);
@@ -149,22 +145,21 @@ public class BookingServiceTests
     var eventService = new EventService();
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
-    var ct = new CancellationToken();
 
     // Создать событие
     var createEventDto = TestDataGenerator.GetValidCreateEventDto();
     var createdEvent = eventService.Create(createEventDto);
 
     // Создать несколько броней
-    var booking1 = await bookingService.CreateBookingAsync(createdEvent.Id, ct);
-    var booking2 = await bookingService.CreateBookingAsync(createdEvent.Id, ct);
-    var booking3 = await bookingService.CreateBookingAsync(createdEvent.Id, ct);
+    var booking1 = await bookingService.CreateBookingAsync(createdEvent.Id);
+    var booking2 = await bookingService.CreateBookingAsync(createdEvent.Id);
+    var booking3 = await bookingService.CreateBookingAsync(createdEvent.Id);
 
     // Подтвердить одну бронь
-    await bookingService.UpdateBookingStatusAsync(booking2.Id, BookingStatus.Confirmed, ct);
+    await bookingService.UpdateBookingStatusAsync(booking2.Id, BookingStatus.Confirmed);
 
     // Act
-    var pendingBookings = await bookingService.GetBookingByStatusAsync(BookingStatus.Pending, ct);
+    var pendingBookings = await bookingService.GetBookingByStatusAsync(BookingStatus.Pending);
 
     // Assert
     Assert.NotNull(pendingBookings);
@@ -186,17 +181,16 @@ public class BookingServiceTests
     var eventService = new EventService();
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
-    var ct = new CancellationToken();
 
     // Создать событие
     var createEventDto = TestDataGenerator.GetValidCreateEventDto();
     var createdEvent = eventService.Create(createEventDto);
 
     // Act - создать бронь
-    var createdBooking = await bookingService.CreateBookingAsync(createdEvent.Id, ct);
+    var createdBooking = await bookingService.CreateBookingAsync(createdEvent.Id);
 
     // Act - получить бронь
-    var retrievedBooking = await bookingService.GetBookingByIdAsync(createdBooking.Id, ct);
+    var retrievedBooking = await bookingService.GetBookingByIdAsync(createdBooking.Id);
 
     // Assert
     Assert.NotNull(retrievedBooking);
@@ -217,7 +211,6 @@ public class BookingServiceTests
     var eventService = new EventService();
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
-    var ct = new CancellationToken();
 
     // Создать событие
     var createEventDto = TestDataGenerator.GetValidCreateEventDto();
@@ -227,7 +220,7 @@ public class BookingServiceTests
     var tasks = new List<Task<BookingDTO>>();
     for (int i = 0; i < 10; i++)
     {
-      tasks.Add(bookingService.CreateBookingAsync(createdEvent.Id, ct));
+      tasks.Add(bookingService.CreateBookingAsync(createdEvent.Id));
     }
 
     var bookings = await Task.WhenAll(tasks);
@@ -254,12 +247,11 @@ public class BookingServiceTests
     var eventService = new EventService();
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
-    var ct = new CancellationToken();
     var nonExistentEventId = Guid.NewGuid();
 
     // Act & Assert
     var exception = await Assert.ThrowsAsync<NotFoundException>(async () =>
-        await bookingService.CreateBookingAsync(nonExistentEventId, ct));
+        await bookingService.CreateBookingAsync(nonExistentEventId));
 
     Assert.Contains(nonExistentEventId.ToString(), exception.Message);
   }
@@ -274,7 +266,6 @@ public class BookingServiceTests
     var eventService = new EventService();
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
-    var ct = new CancellationToken();
 
     // Создать событие
     var createEventDto = TestDataGenerator.GetValidCreateEventDto();
@@ -286,7 +277,7 @@ public class BookingServiceTests
 
     // Act & Assert
     var exception = await Assert.ThrowsAsync<NotFoundException>(async () =>
-        await bookingService.CreateBookingAsync(eventId, ct));
+        await bookingService.CreateBookingAsync(eventId));
 
     Assert.Contains(eventId.ToString(), exception.Message);
   }
@@ -301,12 +292,11 @@ public class BookingServiceTests
     var eventService = new EventService();
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
-    var ct = new CancellationToken();
     var nonExistentBookingId = Guid.NewGuid();
 
     // Act & Assert
     var exception = await Assert.ThrowsAsync<NotFoundException>(async () =>
-        await bookingService.GetBookingByIdAsync(nonExistentBookingId, ct));
+        await bookingService.GetBookingByIdAsync(nonExistentBookingId));
     Assert.Contains($"Entity 'Booking' with id '{nonExistentBookingId}' was not found", exception.Message);
   }
 
@@ -320,11 +310,10 @@ public class BookingServiceTests
     var eventService = new EventService();
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
-    var ct = new CancellationToken();
     var nonExistentBookingId = Guid.NewGuid();
 
     // Act
-    var result = await bookingService.UpdateBookingStatusAsync(nonExistentBookingId, BookingStatus.Confirmed, ct);
+    var result = await bookingService.UpdateBookingStatusAsync(nonExistentBookingId, BookingStatus.Confirmed);
 
     // Assert
     Assert.False(result);
@@ -340,24 +329,23 @@ public class BookingServiceTests
     var eventService = new EventService();
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
-    var ct = new CancellationToken();
 
     // Создать событие и бронь
     var createEventDto = TestDataGenerator.GetValidCreateEventDto();
     var createdEvent = eventService.Create(createEventDto);
-    var booking = await bookingService.CreateBookingAsync(createdEvent.Id, ct);
+    var booking = await bookingService.CreateBookingAsync(createdEvent.Id);
 
     // Подтвердить бронь
-    await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Confirmed, ct);
+    await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Confirmed);
 
     // Act - снова обновить статус
-    var result = await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Rejected, ct);
+    var result = await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Rejected);
 
     // Assert
     Assert.False(result);
 
     // Проверить что статус не изменился
-    var updatedBooking = await bookingService.GetBookingByIdAsync(booking.Id, ct);
+    var updatedBooking = await bookingService.GetBookingByIdAsync(booking.Id);
     Assert.NotNull(updatedBooking);
     Assert.Equal(BookingStatus.Confirmed, updatedBooking.Status);
   }
