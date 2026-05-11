@@ -60,6 +60,11 @@ public class EventService : IEventService
       throw new ValidationException($"StartAt must be less than EndAt ('{eventCreated.EndAt}')");
     }
 
+    if (eventCreated.TotalSeats <= 0)
+    {
+      throw new ValidationException("TotalSeats must be greater than 0");
+    }
+
     if (eventItem.Id == Guid.Empty)
     {
       eventItem.Id = Guid.NewGuid();
