@@ -116,7 +116,7 @@ public class EventService : IEventService
 
     return _events.Remove(id);
   }
-  #region === Валидация ===
+  #region    === Валидация ===
   /// <summary>
   /// Валидация полей мероприятия
   /// </summary>

@@ -85,6 +85,20 @@ public class GlobalExceptionHandlingMiddleware
             notFoundEx.Message);
         break;
 
+      case NoAvailableSeatsException noAvailableEx:
+        response.StatusCode = (int)HttpStatusCode.Conflict;
+        errorResponse = CreateErrorResponse(context,
+                                            HttpStatusCode.Conflict,
+                                            "Conflict",
+                                            noAvailableEx.Message,
+                                            noAvailableEx.Errors);
+        _logger.LogWarning(exception,
+            "Resource not found. Method: {Method}, Path: {Path}, Errors: {Errors}",
+            context.Request.Method,
+            context.Request.Path,
+            JsonSerializer.Serialize(noAvailableEx.Errors));
+        break;         
+
       case BadRequestException badRequestEx:
         response.StatusCode = (int)HttpStatusCode.BadRequest;
         errorResponse = CreateErrorResponse(context,
@@ -109,20 +123,7 @@ public class GlobalExceptionHandlingMiddleware
             context.Request.Method,
             context.Request.Path,
             argEx.Message);
-        break;
-
-      case NoAvailableSeatsException noAvailableEx:
-        response.StatusCode = (int)HttpStatusCode.Conflict;
-        errorResponse = CreateErrorResponse(context,
-                                            HttpStatusCode.Conflict,
-                                            "Conflict",
-                                            noAvailableEx.Message);
-        _logger.LogWarning(exception,
-            "Resource not found. Method: {Method}, Path: {Path}, Message: {Message}",
-            context.Request.Method,
-            context.Request.Path,
-            noAvailableEx.Message);
-        break;        
+        break;       
 
       default:
         response.StatusCode = (int)HttpStatusCode.InternalServerError;

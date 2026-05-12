@@ -234,12 +234,7 @@ public class EventsController : ControllerBase
         if (eventItem.StartAt < DateTimeOffset.Now)
         {
           return BadRequest("Can not book an event that has already started");
-        }
-
-        if (eventItem.AvailableSeats <= 0)
-        {
-          return Conflict($"No available seats for event '{eventItem.Title}'");
-        }        
+        }      
 
         // Создать бронь
         var booking = await _bookingService.CreateBookingAsync(id);
