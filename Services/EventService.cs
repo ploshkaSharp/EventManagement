@@ -32,55 +32,6 @@ public class EventService : IEventService
   /// Создать новое мероприятие
   /// </summary>
   /// <param name="eventCreated">Данные для создания мероприятия</param>
-  /// <returns>DTO созданного мероприятия</returns>    
-  public EventDTO Create(CreateEventDTO eventCreated)
-  {
-    var eventItem = EventMapper.ToEntity(eventCreated);
-
-    var isExistEvent = _events.Values.Any(e =>
-                       e.Title.Equals(eventCreated.Title, StringComparison.OrdinalIgnoreCase));
-
-    if (string.IsNullOrEmpty(eventCreated.Title))
-    {
-      throw new ValidationException("Title is required.");
-    }
-
-    if (isExistEvent)
-    {
-      throw new ValidationException($"Event with title '{eventCreated.Title}' already exists");
-    }
-
-    if (eventCreated.StartAt < DateTimeOffset.Now)
-    {
-      throw new ValidationException("StartAt must be more than now.");
-    }
-
-    if (eventCreated.StartAt >= eventCreated.EndAt)
-    {
-      throw new ValidationException($"StartAt must be less than EndAt ('{eventCreated.EndAt}')");
-    }
-
-    if (eventCreated.TotalSeats <= 0)
-    {
-      throw new ValidationException("TotalSeats must be greater than 0");
-    }
-
-    if (eventItem.Id == Guid.Empty)
-    {
-      eventItem.Id = Guid.NewGuid();
-    }
-
-    if (!_events.TryAdd(eventItem.Id, eventItem))
-    {
-      throw new BadRequestException("Failed to create event");
-    }
-    return EventMapper.ToDto(eventItem);
-  }
-
-  /// <summary>
-  /// Создать новое мероприятие
-  /// </summary>
-  /// <param name="eventCreated">Данные для создания мероприятия</param>
   /// <returns>DTO созданного мероприятия</returns>
   /// <exception cref="ValidationException"></exception>
   public Task<EventDTO> CreateAsync(CreateEventDTO eventCreated)

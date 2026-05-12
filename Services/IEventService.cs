@@ -26,7 +26,7 @@ public interface IEventService
   /// Создать новое мероприятие
   /// </summary>
   /// <param name="eventCreated">Данные для создания мероприятия</param>
-  EventDTO Create(CreateEventDTO eventCreated);
+  Task<EventDTO> CreateAsync(CreateEventDTO eventCreated);
   /// <summary>
   /// Обновить существующее мероприятие
   /// </summary>
