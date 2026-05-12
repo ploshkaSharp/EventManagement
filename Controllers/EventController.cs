@@ -109,11 +109,11 @@ public class EventsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(CreateEventDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<EventDTO>> Create([FromBody] CreateEventDTO eventItem)
+    public ActionResult<EventDTO> Create([FromBody] CreateEventDTO eventItem)
     {
         try
         {
-            var createdEvent = await _eventService.CreateAsync(eventItem);
+            var createdEvent = _eventService.Create(eventItem);
             return CreatedAtAction(nameof(GetById), new { id = createdEvent.Id }, createdEvent);
         }
         catch (ArgumentException ex)

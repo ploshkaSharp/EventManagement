@@ -41,13 +41,13 @@ public class EventService : IEventService
   /// Создать новое мероприятие
   /// </summary>
   /// <param name="eventCreated">Данные для создания мероприятия</param>
-  /// <returns>DTO созданного мероприятия</returns>
-  /// <exception cref="ValidationException"></exception>
-  public Task<EventDTO> CreateAsync(CreateEventDTO eventCreated)
+  /// <returns>DTO созданного мероприятия</returns>    
+  public EventDTO Create(CreateEventDTO eventCreated)
   {
+    var eventItem = EventMapper.ToEntity(eventCreated);
+
     var isExistEvent = _events.Values.Any(e =>
                        e.Title.Equals(eventCreated.Title, StringComparison.OrdinalIgnoreCase));
-
 
     if (isExistEvent)
     {
@@ -56,43 +56,16 @@ public class EventService : IEventService
 
     ValidateEvent(eventCreated.Title, eventCreated.StartAt, eventCreated.EndAt, eventCreated.TotalSeats);
 
-    var eventItem = EventMapper.ToEntity(eventCreated);
-
-    _events.TryAdd(eventItem.Id, eventItem);
-
-    return Task.FromResult(EventMapper.ToDto(eventItem));
-  }
-
-  /// <summary>
-  /// Валидация полей мероприятия
-  /// </summary>
-  /// <param name="title">Наименование мероприятия</param>
-  /// <param name="startAt">Дата и время начала</param>
-  /// <param name="endAt">Дата и время окончания</param>
-  /// <param name="totalSeats">Общее количество мест</param>
-  /// <exception cref="ArgumentException"></exception>
-  /// <exception cref="ValidationException"></exception>
-  private void ValidateEvent(string title, DateTimeOffset startAt, DateTimeOffset endAt, int totalSeats)
-  {
-    if (string.IsNullOrEmpty(title))
+    if (eventItem.Id == Guid.Empty)
     {
-      throw new ArgumentException("Title is required");
+      eventItem.Id = Guid.NewGuid();
     }
 
-    if (startAt < DateTimeOffset.Now)
+    if (!_events.TryAdd(eventItem.Id, eventItem))
     {
-      throw new ValidationException("StartAt must be more than now.");
+      throw new BadRequestException("Failed to create event");
     }
-
-    if (startAt >= endAt)
-    {
-      throw new ValidationException($"StartAt must be less than EndAt");
-    }
-
-    if (totalSeats <= 0)
-    {
-      throw new ValidationException("TotalSeats must be greater than 0");
-    }
+    return EventMapper.ToDto(eventItem);
   }
 
   /// <summary>
@@ -143,6 +116,39 @@ public class EventService : IEventService
 
     return _events.Remove(id);
   }
+  #region === Валидация ===
+  /// <summary>
+  /// Валидация полей мероприятия
+  /// </summary>
+  /// <param name="title">Наименование мероприятия</param>
+  /// <param name="startAt">Дата и время начала</param>
+  /// <param name="endAt">Дата и время окончания</param>
+  /// <param name="totalSeats">Общее количество мест</param>
+  /// <exception cref="ArgumentException"></exception>
+  /// <exception cref="ValidationException"></exception>
+  private void ValidateEvent(string title, DateTimeOffset startAt, DateTimeOffset endAt, int totalSeats)
+  {
+    if (string.IsNullOrEmpty(title))
+    {
+      throw new ArgumentException("Title is required");
+    }
+
+    if (startAt < DateTimeOffset.Now)
+    {
+      throw new ValidationException("StartAt must be more than now.");
+    }
+
+    if (startAt >= endAt)
+    {
+      throw new ValidationException($"StartAt must be less than EndAt");
+    }
+
+    if (totalSeats <= 0)
+    {
+      throw new ValidationException("TotalSeats must be greater than 0");
+    }
+  }  
+  #endregion
   #endregion
 
   #region === Фильтрация ===
@@ -265,7 +271,7 @@ public class EventService : IEventService
   /// <result>true - бронирование удалось, false - не удалось</result>
   public bool TryReserveSeats(Guid eventId, int count = 1)
   {
-    _logger.LogDebug($"Попытка забронировать {count} мест на меоприятие {eventId}");
+    _logger.LogDebug($"Попытка забронировать {count} мест на мероприятие {eventId}");
 
     if (!_events.ContainsKey(eventId))
     {

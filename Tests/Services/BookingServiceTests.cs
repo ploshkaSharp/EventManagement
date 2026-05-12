@@ -19,16 +19,17 @@ public class BookingServiceTests
   public async Task CreateBooking_ForExistingEvent_ShouldReturnBookingWithPendingStatus()
   {
     // Arrange
-    var eventService = new EventService();
+    var loggerEvent = new NullLogger<EventService>();
+    var eventService = new EventService(loggerEvent);    
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
 
     // Создать событие
     var createEventDto = TestDataGenerator.GetValidCreateEventDto();
-    var createdEvent = eventService.Create(createEventDto);
+    var createdEvent =  eventService.Create(createEventDto);
 
     // Act
-    var booking = await bookingService.CreateBookingAsync(createdEvent.Id);
+    var booking =  await bookingService.CreateBookingAsync(createdEvent.Id);
 
     // Assert
     Assert.NotNull(booking);
@@ -45,7 +46,8 @@ public class BookingServiceTests
   public async Task CreateBooking_MultipleBookingsForSameEvent_ShouldCreateUniqueIds()
   {
     // Arrange
-    var eventService = new EventService();
+    var loggerEvent = new NullLogger<EventService>();
+    var eventService = new EventService(loggerEvent);
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
 
@@ -80,7 +82,8 @@ public class BookingServiceTests
   public async Task GetBookingById_WithExistingBooking_ShouldReturnCorrectBooking()
   {
     // Arrange
-    var eventService = new EventService();
+    var loggerEvent = new NullLogger<EventService>();
+    var eventService = new EventService(loggerEvent);
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
 
@@ -108,7 +111,8 @@ public class BookingServiceTests
   public async Task GetBookingById_WithUpdateStatus_ShouldReflectStatusChangeAfterProcessing()
   {
     // Arrange
-    var eventService = new EventService();
+    var loggerEvent = new NullLogger<EventService>();
+    var eventService = new EventService(loggerEvent);
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
 
@@ -142,7 +146,8 @@ public class BookingServiceTests
   public async Task GetPendingBookings_ShouldReturnOnlyPendingBookings()
   {
     // Arrange
-    var eventService = new EventService();
+    var loggerEvent = new NullLogger<EventService>();
+    var eventService = new EventService(loggerEvent);
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
 
@@ -178,7 +183,8 @@ public class BookingServiceTests
   public async Task CreateBooking_ThenGetBooking_ShouldReturnSameBooking()
   {
     // Arrange
-    var eventService = new EventService();
+    var loggerEvent = new NullLogger<EventService>();
+    var eventService = new EventService(loggerEvent);
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
 
@@ -208,7 +214,8 @@ public class BookingServiceTests
   public async Task ConcurrentBookings_ShouldBeProcessedCorrectly()
   {
     // Arrange
-    var eventService = new EventService();
+    var loggerEvent = new NullLogger<EventService>();
+    var eventService = new EventService(loggerEvent);
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
 
@@ -244,7 +251,8 @@ public class BookingServiceTests
   public async Task CreateBooking_ForNonExistentEvent_ShouldThrowNotFoundException()
   {
     // Arrange
-    var eventService = new EventService();
+    var loggerEvent = new NullLogger<EventService>();
+    var eventService = new EventService(loggerEvent);
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
     var nonExistentEventId = Guid.NewGuid();
@@ -263,7 +271,8 @@ public class BookingServiceTests
   public async Task CreateBooking_ForDeletedEvent_ShouldThrowNotFoundException()
   {
     // Arrange
-    var eventService = new EventService();
+    var loggerEvent = new NullLogger<EventService>();
+    var eventService = new EventService(loggerEvent);
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
 
@@ -289,7 +298,8 @@ public class BookingServiceTests
   public async Task GetBookingById_WithNonExistentId_ShouldThrowNotFoundException()
   {
     // Arrange
-    var eventService = new EventService();
+    var loggerEvent = new NullLogger<EventService>();
+    var eventService = new EventService(loggerEvent);
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
     var nonExistentBookingId = Guid.NewGuid();
@@ -307,7 +317,8 @@ public class BookingServiceTests
   public async Task UpdateBookingStatus_ForNonExistentBooking_ShouldReturnFalse()
   {
     // Arrange
-    var eventService = new EventService();
+    var loggerEvent = new NullLogger<EventService>();
+    var eventService = new EventService(loggerEvent);
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
     var nonExistentBookingId = Guid.NewGuid();
@@ -326,7 +337,8 @@ public class BookingServiceTests
   public async Task UpdateBookingStatus_ForAlreadyProcessedBooking_ShouldReturnFalse()
   {
     // Arrange
-    var eventService = new EventService();
+    var loggerEvent = new NullLogger<EventService>();
+    var eventService = new EventService(loggerEvent);
     var logger = new NullLogger<BookingService>();
     var bookingService = new BookingService(eventService, logger);
 
