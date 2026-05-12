@@ -45,7 +45,7 @@ public class EventDTO
 /// <summary>
 /// DTO для создания нового мероприятия
 /// </summary>
-[SwaggerSchema(Required = new[] { "title", "startAt", "endAt" })]
+[SwaggerSchema(Required = new[] { "title", "startAt", "endAt", "totalSeats" })]
 public class CreateEventDTO 
 {
   /// <summary>

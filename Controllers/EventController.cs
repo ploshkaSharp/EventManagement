@@ -98,7 +98,8 @@ public class EventsController : ControllerBase
     ///   "title": "Tech Conference 2026",
     ///   "description": "Annual technology conference",
     ///   "startAt": "2026-05-15T10:00:00+04:00",
-    ///   "endAt": "2026-05-15T18:00:00+04:00"
+    ///   "endAt": "2026-05-15T18:00:00+04:00",
+    ///   "totalSeats" : "200"
     /// }
     /// 
     /// </remarks>
