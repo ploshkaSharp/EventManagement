@@ -287,5 +287,22 @@ public class EventService : IEventService
 
     return result;
   }
+
+  /// <summary>
+  /// Вернуть забронированые места
+  /// </summary>
+  /// <result>true - возврат удался, false - не удалось</result>
+  public bool ReleaseSeats(Guid eventId, int count = 1)
+  {
+    if (_events.ContainsKey(eventId))
+    {
+      _events[eventId].ReleaseSeats(count);
+    }
+    else
+    {
+      return false;
+    }
+    return true;
+  }
   #endregion
 }
