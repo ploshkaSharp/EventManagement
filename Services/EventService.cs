@@ -11,6 +11,15 @@ namespace EventManagement.Services;
 public class EventService : IEventService
 {
   private readonly Dictionary<Guid, Event> _events = new();
+  private readonly ILogger<EventService> _logger;
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="logger">Логгер</param>
+  public EventService(ILogger<EventService> logger)
+  {
+    _logger = logger;
+  }
 
   #region === CRUD ===
   /// <summary>
@@ -246,6 +255,37 @@ public class EventService : IEventService
         filter.PageNumber,
         filter.PageSize
     );
+  }
+  #endregion
+
+  #region === Бронирование ===
+  /// <summary>
+  /// Попытка забронировать места на мероприятии
+  /// </summary>
+  /// <result>true - бронирование удалось, false - не удалось</result>
+  public bool TryReserveSeats(Guid eventId, int count = 1)
+  {
+    _logger.LogDebug($"Попытка забронировать {count} мест на меоприятие {eventId}");
+
+    if (!_events.ContainsKey(eventId))
+    {
+      _logger.LogDebug($"Мероприятие {eventId} не найдено");
+      return false;
+    }
+
+    var eventItem = _events[eventId];
+    var result = eventItem.TryReserveSeats(count);
+
+    if (result)
+    {
+      _logger.LogDebug($"Успешно забронировано {count} мест на мероприятие {eventId}. Отсалось доступных мест: {eventItem.AvailableSeats}");
+    }
+    else
+    {
+      _logger.LogDebug($"Не удалось забронировать {count} мест на мероприятие {eventId}. Только {eventItem.AvailableSeats} доступных мест для бронирования.");
+    }
+
+    return result;
   }
   #endregion
 }

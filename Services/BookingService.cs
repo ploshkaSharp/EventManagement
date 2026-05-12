@@ -14,6 +14,7 @@ public class BookingService : IBookingService
   private readonly ConcurrentDictionary<Guid, Booking> _bookings = new();
   private readonly IEventService _eventService;
   private readonly ILogger<BookingService> _logger;
+  private readonly object _bookingLock = new(); // Блокировка для критической секции
 
   /// <summary>
   /// 
@@ -35,36 +36,46 @@ public class BookingService : IBookingService
   /// <exception cref="BadRequestException"></exception>
   public async Task<BookingDTO> CreateBookingAsync(Guid eventId)
   {
-    // Проверить существование мероприятия
-    var eventItem = _eventService.GetById(eventId);
-
-    if (eventItem == null)
+    lock (_bookingLock)
     {
-      throw new NotFoundException(nameof(Event), eventId);
+      // Проверить существование мероприятия
+      var eventItem = _eventService.GetById(eventId);
+
+      if (eventItem == null)
+      {
+        throw new NotFoundException(nameof(Event), eventId);
+      }
+
+      if (eventItem.StartAt < DateTimeOffset.Now)
+      {
+        throw new BadRequestException("Can not book an event that has already started");
+      }
+
+      // Забронировать место
+      if (!_eventService.TryReserveSeats(eventId, 1))
+      {
+        _logger.LogWarning($"No available seats for event {eventId}");
+        throw new NoAvailableSeatsException($"No available seats for event '{eventItem.Title}'");
+      }
+
+      var booking = new Booking
+      {
+        Id = Guid.NewGuid(),
+        EventId = eventId,
+        Status = BookingStatus.Pending,
+        CreatedAt = DateTimeOffset.Now
+      };
+
+      // Добавить бронь
+      var added = _bookings.TryAdd(booking.Id, booking);
+
+      if (!added)
+      {
+        throw new BadRequestException("Failed to create booking");
+      }
+
+      return BookingMapper.ToDto(booking);
     }
-
-    if (eventItem.StartAt < DateTimeOffset.Now)
-    {
-      throw new BadRequestException("Can not book an event that has already started");
-    }
-
-    var booking = new Booking
-    {
-      Id = Guid.NewGuid(),
-      EventId = eventId,
-      Status = BookingStatus.Pending,
-      CreatedAt = DateTimeOffset.Now
-    };
-
-    // Добавить бронь
-    var added = _bookings.TryAdd(booking.Id, booking);
-
-    if (!added)
-    {
-      throw new BadRequestException("Failed to create booking");
-    }
-
-    return BookingMapper.ToDto(booking);
   }
 
   /// <summary>
@@ -82,7 +93,7 @@ public class BookingService : IBookingService
       throw new NotFoundException(nameof(Booking), bookingId);
     }
 
-    return BookingMapper.ToDto(booking);    
+    return BookingMapper.ToDto(booking);
   }
 
   /// <summary>
