@@ -52,7 +52,7 @@ EventManagement/
 │ ├── Data/
 │ │   └── DataGenerator.cs           #Генератор тестовых данных
 │ └── Services/
-│ │   ├── BookingServiceSeatsTest.cs #Тестовые сценарии для бронирования
+│ │   ├── BookingServiceSeatsTest.cs #Тестовые сценарии логики мест для бронирования
 │ │   ├── BookingServiceTest.cs      #Тестовые сценарии для бронирования
 │ │   └── EventServiceTest.cs        #Тестовые сценарии (успешные, неуспешные, пограничные)
 │ └── Tests.csproj                   #Проект с тестами
