@@ -11,7 +11,7 @@ public class BookingBackgroundService : BackgroundService
 {
   private readonly IServiceProvider _serviceProvider;
   private readonly ILogger<BookingBackgroundService> _logger;
-  private readonly TimeSpan _processingInterval = TimeSpan.FromSeconds(5);
+  private readonly TimeSpan _processingInterval = Constants.processingInterval;
   private readonly SemaphoreSlim _processingSemaphore = new(1, 1);
   /// <summary>
   /// Constructor
@@ -97,7 +97,7 @@ public class BookingBackgroundService : BackgroundService
       _logger.LogInformation("Processing booking {BookingId} for event {EventId}", booking.Id, booking.EventId);
 
       // Имитация обращения к внешней системе
-      await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+      await Task.Delay(Constants.processingDelay, cancellationToken);
 
       // Захват семафора перед обновлением хранилища
       await _processingSemaphore.WaitAsync(cancellationToken);
