@@ -191,10 +191,14 @@ public class BookingServiceSeatsTests
     var afterReject = _eventService.GetById(createdEvent.Id);
     Assert.NotNull(afterReject);
     Assert.Equal(5, afterReject.AvailableSeats);
+    var updatedBooking = await _bookingService.GetBookingByIdAsync(booking.Id);
+    Assert.NotNull(updatedBooking);
+    Assert.Equal(BookingStatus.Rejected, updatedBooking.Status);
+    Assert.NotNull(updatedBooking.ProcessedAt);        
 
     // Можно создать новую бронь
     var newBooking = await _bookingService.CreateBookingAsync(createdEvent.Id);
-    Assert.NotNull(newBooking);
+    Assert.NotNull(newBooking);    
   }
 
   #endregion
