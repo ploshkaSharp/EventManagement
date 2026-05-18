@@ -55,7 +55,7 @@ public class BookingService : IBookingService
       if (!_eventService.TryReserveSeats(eventId, 1))
       {
         _logger.LogWarning($"No available seats for event {eventId}");
-        throw new NoAvailableSeatsException($"No available seats for event '{eventItem.Title}'");
+        throw new NoAvailableSeatsException("No available seats for this event");
       }
 
       var booking = new Booking
