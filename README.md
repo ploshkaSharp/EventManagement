@@ -21,43 +21,76 @@ Swagger для упрощения тестирования и документи
 ```bash
 EventManagement/
 ├── Controllers/
-│ ├── BookingController.cs        #Эндпоинты API (бронирование)
-│ └── EventsController.cs         #Эндпоинты API (мероприятия)
+│ ├── BookingController.cs           #Эндпоинты API (бронирование)
+│ └── EventsController.cs            #Эндпоинты API (мероприятия)
 ├── DTO/
-│ ├── BookingDTO.cs               #DTO объекты (бронирование)
-│ ├── EventDTO.cs                 #DTO объекты (мероприятия)
-│ ├── EventFilterDTO.cs           #DTO для параметров фильтрации
-│ └── PaginateResultDTO.cs        #DTO для пагинированного результата
+│ ├── BookingDTO.cs                  #DTO объекты (бронирование)
+│ ├── EventDTO.cs                    #DTO объекты (мероприятия)
+│ ├── EventFilterDTO.cs              #DTO для параметров фильтрации
+│ └── PaginateResultDTO.cs           #DTO для пагинированного результата
 ├── Exceptions/
-│ ├── BadRequestException.cs      #Исключение - Некорректный запрос
-│ ├── NotFoundException.cs        #Исключение - Ресурс не найден
-│ └── ValidationException.cs      #Исключение - Ошибка валидации
+│ ├── BadRequestException.cs         #Исключение - Некорректный запрос
+│ ├── NotFoundException.cs           #Исключение - Ресурс не найден
+│ └── ValidationException.cs         #Исключение - Ошибка валидации
 ├── Mappers/
-│ ├── BookingMapper.cs            #Маппинг DTO объектов (бронирование)
-│ └── EventMapper.cs              #Маппинг DTO объектов (мероприятия)
+│ ├── BookingMapper.cs               #Маппинг DTO объектов (бронирование)
+│ └── EventMapper.cs                 #Маппинг DTO объектов (мероприятия)
 ├── Middleware/
 │ └── GlobalExceptionHandlingMiddleware.cs  #Глобальная обработка исключений (middleware)
 ├── Models/
-│ ├── Booking.cs                  #Модель бронирования мероприятия
-│ ├── BookingStatus.cs            #Перечисление статусов бронирования 
-│ ├── ErrorResponse.cs            #Модель ответа об ошибке в формате Problem Details (RFC 7807)
-│ └── Event.cs                    #Доменная модель (сущность)
+│ ├── Booking.cs                     #Модель бронирования мероприятия
+│ ├── BookingStatus.cs               #Перечисление статусов бронирования 
+│ ├── ErrorResponse.cs               #Модель ответа об ошибке в формате Problem Details (RFC 7807)
+│ └── Event.cs                       #Доменная модель (сущность)
 ├── Services/
-│ ├── BookingBackgroundService.cs #Фоновый сервис для обработки бронирований
-│ ├── BookingService.cs           #Реализация бизнес-логики управления бронированиями
-│ ├── EventService.cs             #Реализация бизнес-логики управления мероприятиями
-│ ├── IBookingService.cs          #Интерфейс сервиса управления бронированием
-│ └── IEventService.cs            #Интерфейс сервиса управления мероприятиями
+│ ├── BookingBackgroundService.cs    #Фоновый сервис для обработки бронирований
+│ ├── BookingService.cs              #Реализация бизнес-логики управления бронированиями
+│ ├── EventService.cs                #Реализация бизнес-логики управления мероприятиями
+│ ├── IBookingService.cs             #Интерфейс сервиса управления бронированием
+│ └── IEventService.cs               #Интерфейс сервиса управления мероприятиями
 ├── Tests/
 │ ├── Data/
-│ │   └── DataGenerator.cs        #Генератор тестовых данных
+│ │   └── DataGenerator.cs           #Генератор тестовых данных
 │ └── Services/
-│ │   ├── BookingServiceTest.cs   #Тестовые сценарии для бронирования
-│ │   └── EventServiceTest.cs     #Тестовые сценарии (успешные, неуспешные, пограничные)
-│ └── Tests.csproj                #Проект с тестами
-├── Program.cs                    #Точка входа в приложение с конфигурацией DI
-├── appsettings.json              #Настройки приложения
-└── appsettings.Development.json  #Настройки приложения (окружение разработчика)
+│ │   ├── BookingServiceSeatsTest.cs #Тестовые сценарии логики мест для бронирования
+│ │   ├── BookingServiceTest.cs      #Тестовые сценарии для бронирования
+│ │   └── EventServiceTest.cs        #Тестовые сценарии (успешные, неуспешные, пограничные)
+│ └── Tests.csproj                   #Проект с тестами
+├── Program.cs                       #Точка входа в приложение с конфигурацией DI
+├── appsettings.json                 #Настройки приложения
+└── appsettings.Development.json     #Настройки приложения (окружение разработчика)
+```
+
+## Мероприятия
+
+### Модель мероприятия 
+```
+  /// Уникальный идентификатор мероприятия (Guid)
+  Id 
+  
+  /// Название мероприятия
+  Title
+
+  /// Описание мероприятия (необязательное)
+  Description
+
+  /// Дата и время начала мероприятия
+  StartAt
+  
+  /// Дата и время окончания мероприятия  
+  EndAt
+  
+  /// Общее количество мест на мероприятии  
+  TotalSeats
+  
+  /// Текущее количество свободных мест  
+  AvailableSeats
+  
+  /// Попытаться забронировать места (с указанием количества мест, по умолчанию 1)
+  TryReserveSeats
+  
+  /// Освободить места (с указанием количества мест, по умолчанию 1)
+  ReleaseSeats
 ```
 
 ## Бронирование
@@ -142,18 +175,18 @@ EventManagement/
 
 ```bash
 
- Метод  │ URL               │ Описание                         │ HTTP Ответы                                    |
- -------|-------------------|----------------------------------|------------------------------------------------|
- GET    │ /events           │ Получить список всех мероприятий │ 200 OK                                         |
-        │                   │ с возможносью фильтрации по      │                                                |
-        │                   │ названию, дате старта, дате      │                                                |
-        │                   │ окончания и пагинации            │                                                |
- GET    │ /events/{id}      │ Получить мероприятие по ID       │ 200 OK / 404 Not Found                         |
- POST   │ /events           │ Создать мероприятие              │ 201 Created / 400 Bad Request                  |
- PUT    │ /events/{id}      │ Обновить мероприятие             │ 200 Ok / 404 Not Found / 400 Bad Request       |
- DELETE │ /events/{id}      │ Удалить мероприятие              │ 204 No Content / 404 Not Found                 |
- GET    │ /bookings/{id}    │ Получить бронирование по ID      │ 200 OK / 404 Not Found                         |
- POST   │ /events/{id}/book │ Создать бронь на мероприятие     │ 202 Accepted / 404 Not Found / 400 Bad Request |
+ Метод  │ URL               │ Описание                         │ HTTP Ответы                                                  |
+ -------|-------------------|----------------------------------|--------------------------------------------------------------|
+ GET    │ /events           │ Получить список всех мероприятий │ 200 OK                                                       |
+        │                   │ с возможносью фильтрации по      │                                                              |
+        │                   │ названию, дате старта, дате      │                                                              |
+        │                   │ окончания и пагинации            │                                                              |
+ GET    │ /events/{id}      │ Получить мероприятие по ID       │ 200 OK / 404 Not Found                                       |
+ POST   │ /events           │ Создать мероприятие              │ 201 Created / 400 Bad Request                                |
+ PUT    │ /events/{id}      │ Обновить мероприятие             │ 200 Ok / 404 Not Found / 400 Bad Request                     |
+ DELETE │ /events/{id}      │ Удалить мероприятие              │ 204 No Content / 404 Not Found                               |
+ GET    │ /bookings/{id}    │ Получить бронирование по ID      │ 200 OK / 404 Not Found                                       |
+ POST   │ /events/{id}/book │ Создать бронь на мероприятие     │ 202 Accepted / 404 Not Found / 400 Bad Request / 409 Conflict|
  ```
 
 ### Примеры запросов
@@ -167,7 +200,8 @@ EventManagement/
           "title": "Cобрание коллектива",
           "description": "По повестке дня",
           "startAt": "2026-04-01T10:00:00+04:00",
-          "endAt": "2026-04-01T11:00:00+04:00"
+          "endAt": "2026-04-01T11:00:00+04:00",
+          "totalSeats" : 50
         }'     
    ```
 

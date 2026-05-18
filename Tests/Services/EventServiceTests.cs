@@ -411,7 +411,7 @@ public class EventServiceTests
         Action act = () => service.Create(createDto);
 
         // Assert
-        var exception = Assert.Throws<ValidationException>(act);
+        var exception = Assert.Throws<ArgumentException>(act);
         Assert.Contains("Title is required", exception.Message);
 
     }
@@ -436,7 +436,7 @@ public class EventServiceTests
         Action act = () => service.Create(createDto);
 
         // Assert
-        var exception = Assert.Throws<ValidationException>(act);
+        var exception = Assert.Throws<ArgumentException>(act);
         Assert.Contains("Title is required", exception.Message);
     }
 

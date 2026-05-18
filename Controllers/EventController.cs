@@ -98,7 +98,8 @@ public class EventsController : ControllerBase
     ///   "title": "Tech Conference 2026",
     ///   "description": "Annual technology conference",
     ///   "startAt": "2026-05-15T10:00:00+04:00",
-    ///   "endAt": "2026-05-15T18:00:00+04:00"
+    ///   "endAt": "2026-05-15T18:00:00+04:00",
+    ///   "totalSeats" : "200"
     /// }
     /// 
     /// </remarks>
@@ -108,7 +109,7 @@ public class EventsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(CreateEventDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public ActionResult<EventDTO> Create(CreateEventDTO eventItem)
+    public ActionResult<EventDTO> Create([FromBody] CreateEventDTO eventItem)
     {
         try
         {
@@ -214,10 +215,12 @@ public class EventsController : ControllerBase
     /// <response code="202">Бронирование успешно создано и принято в обработку</response>
     /// <response code="404">Мероприятие не найдено</response>
     /// <response code="400">Невозможно создать бронирование (мероприятие уже началось)</response>
+    /// <response code="409">Нет свободных мест на мероприятии</response>
     [HttpPost("{id}/book")]
     [ProducesResponseType(typeof(BookingDTO), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]    
     public async Task<ActionResult<BookingDTO>> BookEvent(Guid id)
     {
         // Проверить существование мероприятия
@@ -225,13 +228,13 @@ public class EventsController : ControllerBase
 
         if (eventItem == null)
         {
-            return NotFound();
+          return NotFound();
         }
 
         if (eventItem.StartAt < DateTimeOffset.Now)
         {
-            return BadRequest("Can not book an event that has already started");
-        }
+          return BadRequest("Can not book an event that has already started");
+        }      
 
         // Создать бронь
         var booking = await _bookingService.CreateBookingAsync(id);

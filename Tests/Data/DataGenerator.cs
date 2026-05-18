@@ -1,5 +1,6 @@
 ﻿using EventManagement.DTOs;
 using EventManagement.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace EventManagement.Tests;
 /// <summary>
@@ -21,35 +22,40 @@ public static class TestDataGenerator
                 Title = "HouseHold Expo 2030",
                 Description = "Technology conference",
                 StartAt = new DateTimeOffset(2030, 3, 17, 10, 0, 0, localOffset),
-                EndAt = new DateTimeOffset(2030, 3, 19, 18, 0, 0, localOffset)
+                EndAt = new DateTimeOffset(2030, 3, 19, 18, 0, 0, localOffset),
+                TotalSeats = 10
             },
             new CreateEventDTO
             {
                 Title = "Composit expo 2030",
                 Description = "Business review",
                 StartAt = new DateTimeOffset(2030, 6, 10, 14, 0, 0, localOffset),
-                EndAt = new DateTimeOffset(2030, 6, 12, 16, 0, 0, localOffset)
+                EndAt = new DateTimeOffset(2030, 6, 12, 16, 0, 0, localOffset),
+                TotalSeats = 10
             },
             new CreateEventDTO
             {
                 Title = "Baltic Rally",
                 Description = "Summer celebration",
                 StartAt = new DateTimeOffset(2030, 7, 20, 19, 0, 0, localOffset),
-                EndAt = new DateTimeOffset(2030, 7, 20, 23, 0, 0, localOffset)
+                EndAt = new DateTimeOffset(2030, 7, 20, 23, 0, 0, localOffset),
+                TotalSeats = 10
             },
             new CreateEventDTO
             {
                 Title = "Tomorrowland Thailand",
                 Description = "Retail forum",
                 StartAt = new DateTimeOffset(2030, 8, 5, 9, 0, 0, localOffset),
-                EndAt = new DateTimeOffset(2030, 8, 5, 17, 0, 0, localOffset)
+                EndAt = new DateTimeOffset(2030, 8, 5, 17, 0, 0, localOffset),
+                TotalSeats = 10
             },
             new CreateEventDTO
             {
                 Title = "Wild Siberia Extreme Triathlon",
                 Description = "Sport event",
                 StartAt = new DateTimeOffset(2030, 9, 12, 10, 0, 0, localOffset),
-                EndAt = new DateTimeOffset(2030, 9, 12, 18, 0, 0, localOffset)
+                EndAt = new DateTimeOffset(2030, 9, 12, 18, 0, 0, localOffset),
+                TotalSeats = 10
             }
         };
     }
@@ -65,7 +71,8 @@ public static class TestDataGenerator
             Title = "New Test Event",
             Description = "Test Description",
             StartAt = DateTimeOffset.Now.AddDays(30),
-            EndAt = DateTimeOffset.Now.AddDays(34)
+            EndAt = DateTimeOffset.Now.AddDays(34),
+            TotalSeats = 10
         };
     }
 
@@ -90,7 +97,7 @@ public static class TestDataGenerator
     /// <returns>"Пустой" экземпляр сервиса мероприятий</returns>
     public static EventService CreateFreshEventService()
     {
-        return new EventService();
+        return new EventService(NullLogger<EventService>.Instance);
     }
 
     /// <summary>
@@ -99,12 +106,12 @@ public static class TestDataGenerator
     /// <returns>экземпляр сервиса мероприятия с тестовыми мероприятиями</returns>
     public static EventService CreateEventServiceWithSeedData()
     {
-        var service = new EventService();
+        var service = new EventService(NullLogger<EventService>.Instance);     
         var events = GetTestEvents();
 
         foreach (var eventDto in events)
         {
-            service.Create(eventDto);
+          service.Create(eventDto);
         }
 
         return service;

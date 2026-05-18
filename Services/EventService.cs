@@ -11,6 +11,15 @@ namespace EventManagement.Services;
 public class EventService : IEventService
 {
   private readonly Dictionary<Guid, Event> _events = new();
+  private readonly ILogger<EventService> _logger;
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="logger">Логгер</param>
+  public EventService(ILogger<EventService> logger)
+  {
+    _logger = logger;
+  }
 
   #region === CRUD ===
   /// <summary>
@@ -26,7 +35,7 @@ public class EventService : IEventService
       throw new NotFoundException(nameof(Event), id);
     }
     return EventMapper.ToDto(eventItem);
-  }  
+  }
 
   /// <summary>
   /// Создать новое мероприятие
@@ -40,25 +49,12 @@ public class EventService : IEventService
     var isExistEvent = _events.Values.Any(e =>
                        e.Title.Equals(eventCreated.Title, StringComparison.OrdinalIgnoreCase));
 
-    if (string.IsNullOrEmpty(eventCreated.Title))
-    {
-      throw new ValidationException("Title is required.");
-    }
-
     if (isExistEvent)
     {
       throw new ValidationException($"Event with title '{eventCreated.Title}' already exists");
     }
 
-    if (eventCreated.StartAt < DateTimeOffset.Now)
-    {
-      throw new ValidationException("StartAt must be more than now.");
-    }
-
-    if (eventCreated.StartAt >= eventCreated.EndAt)
-    {
-      throw new ValidationException($"StartAt must be less than EndAt ('{eventCreated.EndAt}')");
-    }
+    ValidateEvent(eventCreated.Title, eventCreated.StartAt, eventCreated.EndAt, eventCreated.TotalSeats);
 
     if (eventItem.Id == Guid.Empty)
     {
@@ -120,6 +116,39 @@ public class EventService : IEventService
 
     return _events.Remove(id);
   }
+  #region    === Валидация ===
+  /// <summary>
+  /// Валидация полей мероприятия
+  /// </summary>
+  /// <param name="title">Наименование мероприятия</param>
+  /// <param name="startAt">Дата и время начала</param>
+  /// <param name="endAt">Дата и время окончания</param>
+  /// <param name="totalSeats">Общее количество мест</param>
+  /// <exception cref="ArgumentException"></exception>
+  /// <exception cref="ValidationException"></exception>
+  private void ValidateEvent(string title, DateTimeOffset startAt, DateTimeOffset endAt, int totalSeats)
+  {
+    if (string.IsNullOrEmpty(title))
+    {
+      throw new ArgumentException("Title is required");
+    }
+
+    if (startAt < DateTimeOffset.Now)
+    {
+      throw new ValidationException("StartAt must be more than now.");
+    }
+
+    if (startAt >= endAt)
+    {
+      throw new ValidationException($"StartAt must be less than EndAt");
+    }
+
+    if (totalSeats <= 0)
+    {
+      throw new ValidationException("TotalSeats must be greater than 0");
+    }
+  }  
+  #endregion
   #endregion
 
   #region === Фильтрация ===
@@ -232,6 +261,54 @@ public class EventService : IEventService
         filter.PageNumber,
         filter.PageSize
     );
+  }
+  #endregion
+
+  #region === Бронирование ===
+  /// <summary>
+  /// Попытка забронировать места на мероприятии
+  /// </summary>
+  /// <result>true - бронирование удалось, false - не удалось</result>
+  public bool TryReserveSeats(Guid eventId, int count = 1)
+  {
+    _logger.LogDebug($"Попытка забронировать {count} мест на мероприятие {eventId}");
+
+    if (!_events.ContainsKey(eventId))
+    {
+      _logger.LogDebug($"Мероприятие {eventId} не найдено");
+      return false;
+    }
+
+    var eventItem = _events[eventId];
+    var result = eventItem.TryReserveSeats(count);
+
+    if (result)
+    {
+      _logger.LogDebug($"Успешно забронировано {count} мест на мероприятие {eventId}. Отсалось доступных мест: {eventItem.AvailableSeats}");
+    }
+    else
+    {
+      _logger.LogDebug($"Не удалось забронировать {count} мест на мероприятие {eventId}. Только {eventItem.AvailableSeats} доступных мест для бронирования.");
+    }
+
+    return result;
+  }
+
+  /// <summary>
+  /// Вернуть забронированые места
+  /// </summary>
+  /// <result>true - возврат удался, false - не удалось</result>
+  public bool ReleaseSeats(Guid eventId, int count = 1)
+  {
+    if (_events.ContainsKey(eventId))
+    {
+      _events[eventId].ReleaseSeats(count);
+    }
+    else
+    {
+      return false;
+    }
+    return true;
   }
   #endregion
 }

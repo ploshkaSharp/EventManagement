@@ -21,7 +21,9 @@ public static class EventMapper
       Title = eventItem.Title,
       Description = eventItem.Description,
       StartAt = eventItem.StartAt,
-      EndAt = eventItem.EndAt
+      EndAt = eventItem.EndAt,
+      TotalSeats = eventItem.TotalSeats,
+      AvailableSeats = eventItem.AvailableSeats
     };
   }
 
@@ -48,7 +50,9 @@ public static class EventMapper
       Title = createDto.Title,
       Description = createDto.Description,
       StartAt = createDto.StartAt,
-      EndAt = createDto.EndAt
+      EndAt = createDto.EndAt,
+      TotalSeats = createDto.TotalSeats,
+      AvailableSeats = createDto.TotalSeats
     };
   }
 

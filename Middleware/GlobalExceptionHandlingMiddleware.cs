@@ -85,6 +85,20 @@ public class GlobalExceptionHandlingMiddleware
             notFoundEx.Message);
         break;
 
+      case NoAvailableSeatsException noAvailableEx:
+        response.StatusCode = (int)HttpStatusCode.Conflict;
+        errorResponse = CreateErrorResponse(context,
+                                            HttpStatusCode.Conflict,
+                                            "Conflict",
+                                            noAvailableEx.Message,
+                                            noAvailableEx.Errors);
+        _logger.LogWarning(exception,
+            "Resource not found. Method: {Method}, Path: {Path}, Errors: {Errors}",
+            context.Request.Method,
+            context.Request.Path,
+            JsonSerializer.Serialize(noAvailableEx.Errors));
+        break;         
+
       case BadRequestException badRequestEx:
         response.StatusCode = (int)HttpStatusCode.BadRequest;
         errorResponse = CreateErrorResponse(context,
@@ -109,7 +123,7 @@ public class GlobalExceptionHandlingMiddleware
             context.Request.Method,
             context.Request.Path,
             argEx.Message);
-        break;
+        break;       
 
       default:
         response.StatusCode = (int)HttpStatusCode.InternalServerError;
@@ -167,6 +181,9 @@ public class GlobalExceptionHandlingMiddleware
       case HttpStatusCode.NotFound:
         errorResponse.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
         break;
+      case HttpStatusCode.Conflict:
+        errorResponse.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.8";
+        break;                
       case HttpStatusCode.InternalServerError:
         errorResponse.Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1";
         break;

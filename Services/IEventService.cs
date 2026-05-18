@@ -38,4 +38,14 @@ public interface IEventService
   /// </summary>
   /// <param name="id">Идентификатор мероприятия для удаления (GUID)</param>  
   bool Delete(Guid id);
+  /// <summary>
+  /// Попытка забронировать места на мероприятии
+  /// </summary>
+  /// <result>true - бронирование удалось, false - не удалось</result>
+  bool TryReserveSeats(Guid eventId, int count = 1);
+  /// <summary>
+  /// Вернуть забронированые места
+  /// </summary>
+  /// <result>true - возврат удался, false - не удалось</result>
+  bool ReleaseSeats(Guid eventId, int count = 1);  
 }
