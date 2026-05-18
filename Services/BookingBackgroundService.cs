@@ -1,4 +1,5 @@
 using EventManagement.DTOs;
+using EventManagement.Exceptions;
 using EventManagement.Models;
 
 namespace EventManagement.Services;
@@ -77,6 +78,14 @@ public class BookingBackgroundService : BackgroundService
     await Task.WhenAll(tasks);
   }
 
+  /// <summary>
+  /// Обработать бронирование
+  /// </summary>
+  /// <param name="booking">Инфо о бронировании</param>
+  /// <param name="bookingService">Сервис бронирования</param>
+  /// <param name="eventService">Сервис мероприятий</param>
+  /// <param name="cancellationToken">Токен отмены</param>
+  /// <returns></returns>
   private async Task ProcessBookingAsync(
           BookingDTO booking,
           IBookingService bookingService,
@@ -98,17 +107,6 @@ public class BookingBackgroundService : BackgroundService
         // Проверить существование события
         var eventItem = eventService.GetById(booking.EventId);
 
-        if (eventItem == null)
-        {
-          // Если мероприятие удалено отклонить бронь
-          _logger.LogWarning("Event {EventId} not found, rejecting booking {BookingId}",
-              booking.EventId, booking.Id);
-
-          await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Rejected);
-
-          return;
-        }
-
         // Подтвердить бронь
         var success = await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Confirmed);
 
@@ -125,6 +123,13 @@ public class BookingBackgroundService : BackgroundService
             _logger.LogError("Failed cancel booking 1 seat for the event {EventId}", booking.EventId);
         }
       }
+      catch (NotFoundException)
+      {
+        _logger.LogWarning("Event {EventId} not found, rejecting booking {BookingId}", booking.EventId, booking.Id);
+        
+        // Если мероприятие не найдено отклонить бронь и вернуть место
+        await DeclineBookingAsync(booking, bookingService, eventService, cancellationToken);
+      }
       finally
       {
         _processingSemaphore.Release();
@@ -134,10 +139,8 @@ public class BookingBackgroundService : BackgroundService
     {
       _logger.LogWarning("Processing of booking {BookingId} was cancelled", booking.Id);
 
-      // Отменить бронь и вернуть место
-      await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Rejected);
-      if (!eventService.ReleaseSeats(booking.EventId, 1))
-        _logger.LogError("Failed cancel booking 1 seat for the event {EventId}", booking.EventId);
+      // Если операция отменена, то отменить бронь и вернуть место
+      await DeclineBookingAsync(booking, bookingService, eventService, cancellationToken);
     }
     catch (Exception ex)
     {
@@ -146,14 +149,31 @@ public class BookingBackgroundService : BackgroundService
       // При любой ошибке отклонить бронь и вернуть место
       try
       {
-        await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Rejected);
-        if (!eventService.ReleaseSeats(booking.EventId, 1))
-          _logger.LogError("Failed cancel booking 1 seat for the event {EventId}", booking.EventId);
+        await DeclineBookingAsync(booking, bookingService, eventService, cancellationToken);
       }
       catch (Exception innerEx)
       {
         _logger.LogError(innerEx, "Failed to reject booking {BookingId} after error", booking.Id);
       }
     }
+  }
+
+  /// <summary>
+  /// Отменить бронь с возвратом места
+  /// </summary>
+  /// <param name="booking">Инфо о бронировании</param>
+  /// <param name="bookingService">Сервис бронирования</param>
+  /// <param name="eventService">Сервис мероприятий</param>
+  /// <param name="cancellationToken">Токен отмены</param>
+  /// <returns></returns>
+  private async Task DeclineBookingAsync(
+          BookingDTO booking,
+          IBookingService bookingService,
+          IEventService eventService,
+          CancellationToken cancellationToken)
+  {
+    await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Rejected);
+    if (!eventService.ReleaseSeats(booking.EventId, 1))
+      _logger.LogError("Failed cancel booking 1 seat for the event {EventId}", booking.EventId);
   }
 }
