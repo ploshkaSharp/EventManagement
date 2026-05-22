@@ -58,13 +58,7 @@ public class BookingService : IBookingService
         throw new NoAvailableSeatsException("No available seats for this event");
       }
 
-      var booking = new Booking
-      {
-        Id = Guid.NewGuid(),
-        EventId = eventId,
-        Status = BookingStatus.Pending,
-        CreatedAt = DateTimeOffset.Now
-      };
+      var booking = new Booking(eventId){};
 
       // Добавить бронь
       var added = _bookings.TryAdd(booking.Id, booking);
