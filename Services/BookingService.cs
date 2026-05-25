@@ -1,8 +1,9 @@
-using System.Collections.Concurrent;
 using EventManagement.Models;
 using EventManagement.DTOs;
 using EventManagement.Exceptions;
 using EventManagement.Mappers;
+using EventManagement.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Services;
 
@@ -11,19 +12,18 @@ namespace EventManagement.Services;
 /// </summary>
 public class BookingService : IBookingService
 {
-  private readonly ConcurrentDictionary<Guid, Booking> _bookings = new();
-  private readonly IEventService _eventService;
+  private readonly AppDbContext _context;
   private readonly ILogger<BookingService> _logger;
-  private readonly object _bookingLock = new(); // Блокировка для критической секции
+  private static readonly SemaphoreSlim _bookingLock = new(1, 1); // Блокировка для критической секции
 
   /// <summary>
   /// 
   /// </summary>
-  /// <param name="eventService"></param>
+  /// <param name="context"></param>
   /// <param name="logger"></param>
-  public BookingService(IEventService eventService, ILogger<BookingService> logger)
+  public BookingService(AppDbContext context, ILogger<BookingService> logger)
   {
-    _eventService = eventService;
+    _context = context;
     _logger = logger;
   }
 
@@ -35,11 +35,13 @@ public class BookingService : IBookingService
   /// <exception cref="NotFoundException"></exception>
   /// <exception cref="BadRequestException"></exception>
   public async Task<BookingDTO> CreateBookingAsync(Guid eventId)
-  {
-    lock (_bookingLock)
+  { 
+    _logger.LogInformation("Attempting to create booking for event {EventId}", eventId);
+
+    await _bookingLock.WaitAsync();
     {
       // Проверить существование мероприятия
-      var eventItem = _eventService.GetById(eventId);
+      var eventItem = await _context.Events.FirstOrDefaultAsync(e => e.Id == eventId);
 
       if (eventItem == null)
       {
@@ -52,7 +54,7 @@ public class BookingService : IBookingService
       }
 
       // Забронировать место
-      if (!_eventService.TryReserveSeats(eventId, 1))
+      if (!eventItem.TryReserveSeats(1))
       {
         _logger.LogWarning($"No available seats for event {eventId}");
         throw new NoAvailableSeatsException("No available seats for this event");
@@ -60,13 +62,9 @@ public class BookingService : IBookingService
 
       var booking = new Booking(eventId){};
 
-      // Добавить бронь
-      var added = _bookings.TryAdd(booking.Id, booking);
-
-      if (!added)
-      {
-        throw new BadRequestException("Failed to create booking");
-      }
+      // Добавить бронь      
+      _context.Bookings.Add(booking);
+      await _context.SaveChangesAsync();
 
       return BookingMapper.ToDto(booking);
     }
@@ -80,7 +78,9 @@ public class BookingService : IBookingService
   /// <exception cref="NotFoundException"></exception>
   public async Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId)
   {
-    _bookings.TryGetValue(bookingId, out var booking);
+    _logger.LogDebug("Retrieving booking {BookingId}", bookingId);
+
+    var booking = await _context.Bookings.FirstOrDefaultAsync(e => e.Id == bookingId);    
 
     if (booking == null)
     {
@@ -97,12 +97,14 @@ public class BookingService : IBookingService
   /// <returns>Список инфо о брони</returns>
   public async Task<IEnumerable<BookingDTO>> GetBookingByStatusAsync(BookingStatus status)
   {
-    var pendingBookings = _bookings.Values
+    _logger.LogDebug("Get booking by status {Status}", status);
+
+    var pendingBookings = await _context.Bookings
             .Where(b => b.Status == status)
             .OrderBy(b => b.CreatedAt)
-            .Select(BookingMapper.ToDto);
+            .ToListAsync();            
 
-    return pendingBookings;
+    return pendingBookings.Select(BookingMapper.ToDto);
   }
 
   /// <summary>
@@ -113,7 +115,10 @@ public class BookingService : IBookingService
   /// <returns>true если удалось обновить, fasle если не удалось</returns>
   public async Task<bool> UpdateBookingStatusAsync(Guid bookingId, BookingStatus status)
   {
-    if (!_bookings.TryGetValue(bookingId, out var booking))
+    _logger.LogDebug("Attempting to update booking {BookingId} status to {Status}", bookingId, status);
+
+    var booking = await _context.Bookings.FirstOrDefaultAsync(e => e.Id == bookingId);
+    if (booking == null)
     {
       _logger.LogWarning($"Not found booking with id='{bookingId.ToString()}'");
       return false;
@@ -128,7 +133,7 @@ public class BookingService : IBookingService
 
     booking.Status = status;
     booking.ProcessedAt = DateTimeOffset.Now;
-    _bookings[bookingId] = booking;
+    await _context.SaveChangesAsync();
 
     return true;
   }
