@@ -41,7 +41,7 @@ public class EventsController : ControllerBase
     /// <response code="400">Неверные параметры фильтрации</response>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<EventDTO>), StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<EventDTO>> GetAll(
+    public async Task<ActionResult<IEnumerable<EventDTO>>> GetAll(
         [FromQuery] string? title,
         [FromQuery] DateTimeOffset? from,
         [FromQuery] DateTimeOffset? to,
@@ -58,7 +58,7 @@ public class EventsController : ControllerBase
             PageSize = pageSize
         };
 
-        var events = _eventService.GetPaginated(filter);
+        var events = await _eventService.GetPaginatedAsync(filter);
         return Ok(events);
     }
 
@@ -75,9 +75,9 @@ public class EventsController : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(EventDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<EventDTO> GetById(Guid id)
+    public async Task<ActionResult<EventDTO>> GetById(Guid id)
     {
-        var eventItem = _eventService.GetById(id);
+        var eventItem = await _eventService.GetByIdAsync(id);
 
         if (eventItem == null)
         {
@@ -109,11 +109,11 @@ public class EventsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(CreateEventDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public ActionResult<EventDTO> Create([FromBody] CreateEventDTO eventItem)
+    public async Task<ActionResult<EventDTO>> Create([FromBody] CreateEventDTO eventItem)
     {
         try
         {
-            var createdEvent = _eventService.Create(eventItem);
+            var createdEvent = await _eventService.CreateAsync(eventItem);
             return CreatedAtAction(nameof(GetById), new { id = createdEvent.Id }, createdEvent);
         }
         catch (ArgumentException ex)
@@ -145,11 +145,11 @@ public class EventsController : ControllerBase
     [ProducesResponseType(typeof(UpdateEventDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<Event> Update(Guid id, UpdateEventDTO eventItem)
+    public async Task<ActionResult<Event>> Update(Guid id, UpdateEventDTO eventItem)
     {
         try
         {
-            var updatedEvent = _eventService.Update(id, eventItem);
+            var updatedEvent = await _eventService.UpdateAsync(id, eventItem);
 
             if (updatedEvent == null)
             {
@@ -180,9 +180,9 @@ public class EventsController : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public IActionResult Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = _eventService.Delete(id);
+        var deleted = await _eventService.DeleteAsync(id);
 
         if (!deleted)
         {
@@ -224,7 +224,7 @@ public class EventsController : ControllerBase
     public async Task<ActionResult<BookingDTO>> BookEvent(Guid id)
     {
         // Проверить существование мероприятия
-        var eventItem = _eventService.GetById(id);
+        var eventItem = await _eventService.GetByIdAsync(id);
 
         if (eventItem == null)
         {
