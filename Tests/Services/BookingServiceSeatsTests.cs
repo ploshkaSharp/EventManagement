@@ -27,8 +27,8 @@ public class BookingServiceSeatsTests
     var createEventDto = new CreateEventDTO
     {
       Title = "Test Event",
-      StartAt = DateTimeOffset.Now.AddDays(30),
-      EndAt = DateTimeOffset.Now.AddDays(30).AddHours(4),
+      StartAt = DateTime.Now.AddDays(30),
+      EndAt = DateTime.Now.AddDays(30).AddHours(4),
       TotalSeats = 10
     };
 
@@ -51,8 +51,8 @@ public class BookingServiceSeatsTests
     var createEventDto = new CreateEventDTO
     {
       Title = "Test Event",
-      StartAt = DateTimeOffset.Now.AddDays(30),
-      EndAt = DateTimeOffset.Now.AddDays(30).AddHours(4),
+      StartAt = DateTime.Now.AddDays(30),
+      EndAt = DateTime.Now.AddDays(30).AddHours(4),
       TotalSeats = 5
     };
 
@@ -83,8 +83,8 @@ public class BookingServiceSeatsTests
     var createEventDto = new CreateEventDTO
     {
       Title = "Test Event",
-      StartAt = DateTimeOffset.Now.AddDays(30),
-      EndAt = DateTimeOffset.Now.AddDays(30).AddHours(4),
+      StartAt = DateTime.Now.AddDays(30),
+      EndAt = DateTime.Now.AddDays(30).AddHours(4),
       TotalSeats = 1
     };
 
@@ -119,8 +119,8 @@ public class BookingServiceSeatsTests
     var createEventDto = new CreateEventDTO
     {
       Title = "Test Event",
-      StartAt = DateTimeOffset.Now.AddDays(30),
-      EndAt = DateTimeOffset.Now.AddDays(30).AddHours(4),
+      StartAt = DateTime.Now.AddDays(30),
+      EndAt = DateTime.Now.AddDays(30).AddHours(4),
       TotalSeats = 0
     };
 
@@ -142,8 +142,8 @@ public class BookingServiceSeatsTests
     var createEventDto = new CreateEventDTO
     {
       Title = "Test Event",
-      StartAt = DateTimeOffset.Now.AddDays(30),
-      EndAt = DateTimeOffset.Now.AddDays(30).AddHours(4),
+      StartAt = DateTime.Now.AddDays(30),
+      EndAt = DateTime.Now.AddDays(30).AddHours(4),
       TotalSeats = 10
     };
 
@@ -168,8 +168,8 @@ public class BookingServiceSeatsTests
     var createEventDto = new CreateEventDTO
     {
       Title = "Test Event",
-      StartAt = DateTimeOffset.Now.AddDays(30),
-      EndAt = DateTimeOffset.Now.AddDays(30).AddHours(4),
+      StartAt = DateTime.Now.AddDays(30),
+      EndAt = DateTime.Now.AddDays(30).AddHours(4),
       TotalSeats = 5
     };
 
@@ -211,8 +211,8 @@ public class BookingServiceSeatsTests
     var createEventDto = new CreateEventDTO
     {
       Title = "Concurrency Test Event",
-      StartAt = DateTimeOffset.Now.AddDays(30),
-      EndAt = DateTimeOffset.Now.AddDays(30).AddHours(4),
+      StartAt = DateTime.Now.AddDays(30),
+      EndAt = DateTime.Now.AddDays(30).AddHours(4),
       TotalSeats = 5
     };
 
@@ -262,8 +262,8 @@ public class BookingServiceSeatsTests
     var createEventDto = new CreateEventDTO
     {
       Title = "Unique Id Test Event",
-      StartAt = DateTimeOffset.Now.AddDays(30),
-      EndAt = DateTimeOffset.Now.AddDays(30).AddHours(4),
+      StartAt = DateTime.Now.AddDays(30),
+      EndAt = DateTime.Now.AddDays(30).AddHours(4),
       TotalSeats = 10
     };
 
@@ -294,8 +294,8 @@ public class BookingServiceSeatsTests
     var createEventDto = new CreateEventDTO
     {
       Title = "Invalid Seats Event",
-      StartAt = DateTimeOffset.Now.AddDays(30),
-      EndAt = DateTimeOffset.Now.AddDays(30).AddHours(4),
+      StartAt = DateTime.Now.AddDays(30),
+      EndAt = DateTime.Now.AddDays(30).AddHours(4),
       TotalSeats = -5
     };
 
@@ -313,8 +313,8 @@ public class BookingServiceSeatsTests
     var createEventDto = new CreateEventDTO
     {
       Title = "Test Event",
-      StartAt = DateTimeOffset.Now.AddDays(30),
-      EndAt = DateTimeOffset.Now.AddDays(30).AddHours(4),
+      StartAt = DateTime.Now.AddDays(30),
+      EndAt = DateTime.Now.AddDays(30).AddHours(4),
       TotalSeats = 3
     };
 
@@ -340,8 +340,8 @@ public class BookingServiceSeatsTests
     var createEventDto = new CreateEventDTO
     {
       Title = "Test Event",
-      StartAt = DateTimeOffset.Now.AddDays(30),
-      EndAt = DateTimeOffset.Now.AddDays(30).AddHours(4),
+      StartAt = DateTime.Now.AddDays(30),
+      EndAt = DateTime.Now.AddDays(30).AddHours(4),
       TotalSeats = 10
     };
 

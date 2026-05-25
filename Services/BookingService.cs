@@ -48,7 +48,7 @@ public class BookingService : IBookingService
         throw new NotFoundException(nameof(Event), eventId);
       }
 
-      if (eventItem.StartAt < DateTimeOffset.Now)
+      if (eventItem.StartAt < DateTime.UtcNow)
       {
         throw new BadRequestException("Can not book an event that has already started");
       }
@@ -132,7 +132,7 @@ public class BookingService : IBookingService
     }
 
     booking.Status = status;
-    booking.ProcessedAt = DateTimeOffset.Now;
+    booking.ProcessedAt = DateTime.UtcNow;
     await _context.SaveChangesAsync();
 
     return true;

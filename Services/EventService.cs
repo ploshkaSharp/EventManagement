@@ -109,7 +109,7 @@ public class EventService : IEventService
       throw new ValidationException($"StartAt must be less than EndAt ('{eventUpdated.EndAt}')");
     }
 
-    if (eventUpdated.StartAt < DateTimeOffset.Now)
+    if (eventUpdated.StartAt < DateTime.UtcNow)
     {
       throw new ValidationException("StartAt must be more than now.");
     }
@@ -156,14 +156,14 @@ public class EventService : IEventService
   /// <param name="totalSeats">Общее количество мест</param>
   /// <exception cref="ArgumentException"></exception>
   /// <exception cref="ValidationException"></exception>
-  private void ValidateEvent(string title, DateTimeOffset startAt, DateTimeOffset endAt, int totalSeats)
+  private void ValidateEvent(string title, DateTime startAt, DateTime endAt, int totalSeats)
   {
     if (string.IsNullOrEmpty(title))
     {
       throw new ArgumentException("Title is required");
     }
 
-    if (startAt < DateTimeOffset.Now)
+    if (startAt < DateTime.UtcNow)
     {
       throw new ValidationException("StartAt must be more than now.");
     }

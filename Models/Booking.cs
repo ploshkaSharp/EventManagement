@@ -20,7 +20,7 @@ public class Booking
     Id = Guid.NewGuid();
     EventId = eventId;
     Status = BookingStatus.Pending;
-    CreatedAt = DateTimeOffset.Now;
+    CreatedAt = DateTime.UtcNow;
     Event = null!;
   }  
 
@@ -45,14 +45,14 @@ public class Booking
   /// <summary>
   /// Дата и время создания брони
   /// </summary>
-  /// <example>2026-05-15T10:00:00+04:00</example>
-  public DateTimeOffset CreatedAt { get; set; }
+  /// <example>2026-05-15T10:00:00Z</example>
+  public DateTime CreatedAt { get; set; }
 
   /// <summary>
   /// Дата и время обработки брони
   /// </summary>
-  /// <example>2026-05-15T11:00:00+04:00</example>
-  public DateTimeOffset ProcessedAt { get; set; }
+  /// <example>2026-05-15T11:00:00Z</example>
+  public DateTime? ProcessedAt { get; set; }
 
   /// <summary>
   /// Навигационное свойство 
@@ -69,7 +69,7 @@ public class Booking
       throw new InvalidOperationException($"Cannot confirm booking with status {Status}");
 
     Status = BookingStatus.Confirmed;
-    ProcessedAt = DateTimeOffset.Now;
+    ProcessedAt = DateTime.UtcNow;
   }
 
   /// <summary>
@@ -82,6 +82,6 @@ public class Booking
       throw new InvalidOperationException($"Cannot reject booking with status {Status}");
 
     Status = BookingStatus.Rejected;
-    ProcessedAt = DateTimeOffset.Now;
+    ProcessedAt = DateTime.UtcNow;
   }
 }

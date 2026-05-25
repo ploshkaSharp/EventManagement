@@ -25,13 +25,13 @@ public class EventDTO
   /// <summary>
   /// Дата и время начала мероприятия 
   /// </summary>
-  /// <example>2026-06-15T10:00:00+04:00</example>  
-  public DateTimeOffset StartAt { get; set; }
+  /// <example>2026-06-15T10:00:00Z</example>  
+  public DateTime StartAt { get; set; }
   /// <summary>
   /// Дата и время окончания мероприятия
   /// </summary>
-  /// <example>2026-06-15T10:00:00+04:00</example>  
-  public DateTimeOffset EndAt { get; set; }
+  /// <example>2026-06-15T10:00:00Z</example>  
+  public DateTime EndAt { get; set; }
   /// <summary>
   /// Общее количество мест на событии
   /// </summary>
@@ -61,13 +61,13 @@ public class CreateEventDTO
   /// <summary>
   /// Дата и время начала мероприятия
   /// </summary>
-  /// <example>2026-06-15T10:00:00+04:00</example> 
-  public DateTimeOffset StartAt { get; set; }
+  /// <example>2026-06-15T10:00:00Z</example> 
+  public DateTime StartAt { get; set; }
   /// <summary>
   /// Дата и время окончания мероприятия
   /// </summary>
-  /// <example>2026-06-15T11:00:00+04:00</example>    
-  public DateTimeOffset EndAt { get; set; }
+  /// <example>2026-06-15T11:00:00Z</example>    
+  public DateTime EndAt { get; set; }
   /// <summary>
   /// общее количество мест на событии
   /// </summary>
@@ -93,11 +93,11 @@ public class UpdateEventDTO
   /// <summary>
   /// Дата и время начала мероприятия
   /// </summary>
-  /// <example>2026-06-15T10:00:00+04:00</example>   
-  public DateTimeOffset StartAt { get; set; }
+  /// <example>2026-06-15T10:00:00Z</example>   
+  public DateTime StartAt { get; set; }
   /// <summary>
   /// Дата и время окончания мероприятия
   /// </summary>
-  /// <example>2026-06-15T11:00:00+04:00</example>  
-  public DateTimeOffset EndAt { get; set; } 
+  /// <example>2026-06-15T11:00:00Z</example>  
+  public DateTime EndAt { get; set; } 
 }

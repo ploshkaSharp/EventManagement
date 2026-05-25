@@ -36,7 +36,7 @@ public class BookingServiceTests
     Assert.NotEqual(Guid.Empty, booking.Id);
     Assert.Equal(createdEvent.Id, booking.EventId);
     Assert.Equal(BookingStatus.Pending, booking.Status);
-    Assert.Equal(DateTimeOffset.MinValue, booking.ProcessedAt);
+    Assert.Equal(DateTime.MinValue, booking.ProcessedAt);
   }
 
   /// <summary>
@@ -125,7 +125,7 @@ public class BookingServiceTests
     var bookingBefore = await bookingService.GetBookingByIdAsync(createdBooking.Id);
     Assert.NotNull(bookingBefore);
     Assert.Equal(BookingStatus.Pending, bookingBefore.Status);
-    Assert.Equal(DateTimeOffset.MinValue, bookingBefore.ProcessedAt);
+    Assert.Equal(DateTime.MinValue, bookingBefore.ProcessedAt);
 
     // Act - обновить статус
     var updateSuccess = await bookingService.UpdateBookingStatusAsync(createdBooking.Id, BookingStatus.Confirmed);
@@ -136,7 +136,7 @@ public class BookingServiceTests
     var bookingAfter = await bookingService.GetBookingByIdAsync(createdBooking.Id);
     Assert.NotNull(bookingAfter);
     Assert.Equal(BookingStatus.Confirmed, bookingAfter.Status);
-    Assert.NotEqual(DateTimeOffset.MinValue, bookingAfter.ProcessedAt);
+    Assert.NotEqual(DateTime.MinValue, bookingAfter.ProcessedAt);
   }
 
   /// <summary>

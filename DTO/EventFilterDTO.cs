@@ -16,14 +16,14 @@ public class EventFilterDto
   /// <summary>
   /// События, которые начинаются не раньше указанной даты
   /// </summary>
-  /// <example>2026-05-01T00:00:00+04:00</example>
-  public DateTimeOffset? From { get; set; }
+  /// <example>2026-05-01T00:00:00Z</example>
+  public DateTime? From { get; set; }
 
   /// <summary>
   /// События, которые заканчиваются не позже указанной даты
   /// </summary>
   /// <example>2026-12-31T23:59:59Z</example>
-  public DateTimeOffset? To { get; set; }
+  public DateTime? To { get; set; }
 
   /// <summary>
   /// Номер страницы (по умолчанию 1)

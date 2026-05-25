@@ -18,7 +18,7 @@ public class Event
   /// <param name="title">Название мероприятия</param>
   /// <param name="startAt">Дата и время начала мероприятия</param>
   /// <param name="endAt">Дата и время окончания мероприятия</param>
-  public Event(string title, DateTimeOffset startAt, DateTimeOffset endAt)
+  public Event(string title, DateTime startAt, DateTime endAt)
   {
     Id = Guid.NewGuid();
     Title = title;
@@ -45,13 +45,13 @@ public class Event
   /// <summary>
   /// Дата и время начала мероприятия
   /// </summary>
-  /// <example>2026-05-15T10:00:00+04:00</example>
-  public DateTimeOffset StartAt { get; set; }
+  /// <example>2026-05-15T10:00:00Z</example>
+  public DateTime StartAt { get; set; }
   /// <summary>
   /// Дата и время окончания мероприятия
   /// </summary>
-  /// <example>2026-05-15T18:00:00+04:00</example>
-  public DateTimeOffset EndAt { get; set; }
+  /// <example>2026-05-15T18:00:00Z</example>
+  public DateTime EndAt { get; set; }
   /// <summary>
   /// Общее количество мест на событии
   /// </summary>

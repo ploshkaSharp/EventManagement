@@ -43,8 +43,8 @@ public class EventsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<EventDTO>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<EventDTO>>> GetAll(
         [FromQuery] string? title,
-        [FromQuery] DateTimeOffset? from,
-        [FromQuery] DateTimeOffset? to,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10
     )
@@ -97,8 +97,8 @@ public class EventsController : ControllerBase
     /// {
     ///   "title": "Tech Conference 2026",
     ///   "description": "Annual technology conference",
-    ///   "startAt": "2026-05-15T10:00:00+04:00",
-    ///   "endAt": "2026-05-15T18:00:00+04:00",
+    ///   "startAt": "2026-05-15T10:00:00Z",
+    ///   "endAt": "2026-05-15T18:00:00Z",
     ///   "totalSeats" : "200"
     /// }
     /// 
@@ -133,8 +133,8 @@ public class EventsController : ControllerBase
     /// {
     ///   "title": "Updated Conference 2026",
     ///   "description": "Updated technology conference",
-    ///   "startAt": "2026-06-15T10:00:00+04:00",
-    ///   "endAt": "2026-06-15T18:00:00+04:00"
+    ///   "startAt": "2026-06-15T10:00:00Z",
+    ///   "endAt": "2026-06-15T18:00:00Z"
     /// }
     /// </remarks>
     /// <returns>Обновленное мероприятие</returns>
@@ -207,7 +207,7 @@ public class EventsController : ControllerBase
     ///   "id": "06643d61-2689-49df-aa08-42c0ab9a8577",
     ///   "eventId": "fd1c1927-dd18-4e08-bc6f-a5517290d729",
     ///   "status": 0,
-    ///   "createdAt": "2026-04-23T10:30:00+04:00",
+    ///   "createdAt": "2026-04-23T10:30:00Z",
     ///   "processedAt": null
     /// }
     /// </remarks>
@@ -231,7 +231,7 @@ public class EventsController : ControllerBase
           return NotFound();
         }
 
-        if (eventItem.StartAt < DateTimeOffset.Now)
+        if (eventItem.StartAt < DateTime.UtcNow)
         {
           return BadRequest("Can not book an event that has already started");
         }      
