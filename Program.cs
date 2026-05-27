@@ -14,9 +14,9 @@ builder.Services.AddEndpointsApiExplorer();
 // Configure Database
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-    options.EnableSensitiveDataLogging(builder.Environment.IsDevelopment());
-    options.EnableDetailedErrors(builder.Environment.IsDevelopment());
+  options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+  options.EnableSensitiveDataLogging(builder.Environment.IsDevelopment());
+  options.EnableDetailedErrors(builder.Environment.IsDevelopment());
 });
 
 // Register Services (DbContext is scoped)
@@ -28,20 +28,20 @@ builder.Services.AddHostedService<BookingBackgroundService>();
 // Настройка Swagger с поддержкой XML-комментариев
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Event Management API",
-        Version = "v1",
-        Description = "API для управления мероприятиями и их бронированием"
-    });
+  c.SwaggerDoc("v1", new OpenApiInfo
+  {
+    Title = "Event Management API",
+    Version = "v1",
+    Description = "API для управления мероприятиями и их бронированием"
+  });
 
-    // Включение XML-комментариев для документации
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath);
+  // Включение XML-комментариев для документации
+  var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+  var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+  c.IncludeXmlComments(xmlPath);
 
-    // Добавление аннотаций для типов ответов
-    c.EnableAnnotations();
+  // Добавление аннотаций для типов ответов
+  c.EnableAnnotations();
 });
 
 var app = builder.Build();
@@ -49,8 +49,8 @@ var app = builder.Build();
 // Ensure database is created
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
+  var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+  db.Database.EnsureCreated();
 }
 
 // middleware для глобальной обработки ошибок. Ставить первым в pipeline для перехвата всех исключений
