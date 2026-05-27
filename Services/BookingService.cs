@@ -37,8 +37,8 @@ public class BookingService : IBookingService
   public async Task<BookingDTO> CreateBookingAsync(Guid eventId)
   { 
     _logger.LogInformation("Attempting to create booking for event {EventId}", eventId);
-
     await _bookingLock.WaitAsync();
+    try
     {
       // Проверить существование мероприятия
       var eventItem = await _context.Events.FirstOrDefaultAsync(e => e.Id == eventId);
@@ -63,10 +63,15 @@ public class BookingService : IBookingService
       var booking = new Booking(eventId){};
 
       // Добавить бронь      
-      _context.Bookings.Add(booking);
+      _context.Bookings.Add(booking);    
       await _context.SaveChangesAsync();
 
       return BookingMapper.ToDto(booking);
+    }
+    finally
+    {
+      _bookingLock.Release();
+      
     }
   }
 
