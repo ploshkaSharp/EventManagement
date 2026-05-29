@@ -27,7 +27,8 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
         
         builder.Property(b => b.Status)
             .IsRequired()
-            .HasConversion<string>();
+            .HasConversion<string>()
+            .HasMaxLength(20);
         
         builder.Property(b => b.CreatedAt)
             .IsRequired();

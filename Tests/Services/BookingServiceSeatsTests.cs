@@ -249,8 +249,6 @@ public class BookingServiceSeatsTests : IDisposable
         using var scope = _serviceProvider.CreateScope();
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
 
-        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-
         var createEventDto = new CreateEventDTO
         {
             Title = "Concurrency Test Event",
@@ -268,10 +266,9 @@ public class BookingServiceSeatsTests : IDisposable
         {
             tasks.Add(Task.Run(async () =>
             {                
-                //using var innerScope = _serviceProvider.CreateScope();
-                //var innerBookingService = innerScope.ServiceProvider.GetRequiredService<IBookingService>();
-                //return await innerBookingService.CreateBookingAsync(eventId);                    
-                return await bookingService.CreateBookingAsync(eventId);
+                using var innerScope = _serviceProvider.CreateScope();
+                var innerBookingService = innerScope.ServiceProvider.GetRequiredService<IBookingService>();
+                return await innerBookingService.CreateBookingAsync(eventId);                    
             }));
         }
 
@@ -294,10 +291,12 @@ public class BookingServiceSeatsTests : IDisposable
 
         Assert.Equal(5, successfulBookings.Count);
         var noSeatExceptions = exceptions.Count(e => e is NoAvailableSeatsException);
-        Assert.Equal(15, noSeatExceptions);
+        Assert.Equal(15, noSeatExceptions);        
 
         // Проверить конечное состояние
-        var finalEvent = await eventService.GetByIdAsync(eventId);
+        using var finalScope = _serviceProvider.CreateScope();
+        var finalEventService = finalScope.ServiceProvider.GetRequiredService<IEventService>();
+        var finalEvent = await finalEventService.GetByIdAsync(eventId);
         Assert.NotNull(finalEvent);
         Assert.Equal(0, finalEvent.AvailableSeats);      
     }
