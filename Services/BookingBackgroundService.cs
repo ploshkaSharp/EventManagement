@@ -111,8 +111,6 @@ public class BookingBackgroundService : BackgroundService
       var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
       var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
 
-      await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
-
       try
       {
         // Проверить существование бронирования и мероприятия      
@@ -131,7 +129,6 @@ public class BookingBackgroundService : BackgroundService
           _logger.LogWarning("Event {EventId} not found, rejecting booking {BookingId}", booking.EventId, bookingId);
           booking.Reject();
           await context.SaveChangesAsync(cancellationToken);
-          await transaction.CommitAsync(cancellationToken);
           return;
         }
 
@@ -150,11 +147,9 @@ public class BookingBackgroundService : BackgroundService
         }
 
         await context.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
       }
       catch
       {
-        await transaction.RollbackAsync(cancellationToken);
         throw;
       }
       finally

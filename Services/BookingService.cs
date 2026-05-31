@@ -63,7 +63,7 @@ public class BookingService : IBookingService
       var booking = new Booking(eventId){};
 
       // Добавить бронь      
-      _context.Bookings.Add(booking);    
+      await _context.Bookings.AddAsync(booking);    
       await _context.SaveChangesAsync();
 
       return BookingMapper.ToDto(booking);

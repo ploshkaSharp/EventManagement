@@ -75,7 +75,7 @@ public class EventService : IEventService
       TotalSeats = eventCreated.TotalSeats
     };
 
-    _context.Events.Add(eventItem);
+    await _context.Events.AddAsync(eventItem);
     await _context.SaveChangesAsync();
 
     return EventMapper.ToDto(eventItem);
