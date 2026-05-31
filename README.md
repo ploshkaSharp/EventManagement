@@ -1,8 +1,6 @@
 # Event Management
 REST API для управления мероприятиями и их бронированием с CRUD-операциями (создание, просмотр, обновление, удаление).
 
-Хранение мероприятий в памяти (in-memory).
-
 Валидация входных данных (обязательность заполнения, дата окончания должна быть позже даты начала).
 
 Интерфейсы для изоляции бизнес-логики (`IEventService`, `IBookingService`).
@@ -13,7 +11,7 @@ Swagger для упрощения тестирования и документи
 ## Cтек разработки
 
 - **.NET 10 (ASP.NET Core Web API, EF Core, C#)**
-- ** PostgreSQL **
+- **PostgreSQL**
 - **Swashbuckle.AspNetCore** (Swagger)
 - **xUnit**
 
@@ -152,7 +150,7 @@ EventManagement/
    ```
 
 2. **Настройте строку подключения к БД:**
-   В файле `appsettings.json` в разделе ConnectionStrings замените параметры подключения указанные по умолчанию (хост,порт,имя БД, логин, пароль), если они не совпадают.
+   В файле `appsettings.json` в разделе ConnectionStrings замените параметры подключения указанные по умолчанию (хост, порт, имя БД, логин, пароль), если они не совпадают.
    ```bash
    "DefaultConnection": "Host=localhost;Port=5432;Database=eventapi;Username=postgres;Password=111111"
    ```
