@@ -12,7 +12,8 @@ Swagger для упрощения тестирования и документи
 
 ## Cтек разработки
 
-- **.NET 10 (ASP.NET Core Web API, C#)**
+- **.NET 10 (ASP.NET Core Web API, EF Core, C#)**
+- ** PostgreSQL **
 - **Swashbuckle.AspNetCore** (Swagger)
 - **xUnit**
 
@@ -23,6 +24,11 @@ EventManagement/
 ├── Controllers/
 │ ├── BookingController.cs           #Эндпоинты API (бронирование)
 │ └── EventsController.cs            #Эндпоинты API (мероприятия)
+├── DataAccess/
+│ ├── Configurations/                #Настрока таблиц в БД
+│ │ ├── BookingConfiguration.cs      #Настройка таблицы Bookings
+│ │ └── EventConfiguration.cs        #Настройка таблицы Events
+│ └── AppDbContext.cs                #Контекст БД
 ├── DTO/
 │ ├── BookingDTO.cs                  #DTO объекты (бронирование)
 │ ├── EventDTO.cs                    #DTO объекты (мероприятия)
@@ -30,6 +36,7 @@ EventManagement/
 │ └── PaginateResultDTO.cs           #DTO для пагинированного результата
 ├── Exceptions/
 │ ├── BadRequestException.cs         #Исключение - Некорректный запрос
+│ ├── NotAvailableException.cs       #Исключение - Нет доступных мест
 │ ├── NotFoundException.cs           #Исключение - Ресурс не найден
 │ └── ValidationException.cs         #Исключение - Ошибка валидации
 ├── Mappers/
@@ -45,13 +52,14 @@ EventManagement/
 ├── Services/
 │ ├── BookingBackgroundService.cs    #Фоновый сервис для обработки бронирований
 │ ├── BookingService.cs              #Реализация бизнес-логики управления бронированиями
+│ ├── Constants.cs                   #Константы
 │ ├── EventService.cs                #Реализация бизнес-логики управления мероприятиями
 │ ├── IBookingService.cs             #Интерфейс сервиса управления бронированием
 │ └── IEventService.cs               #Интерфейс сервиса управления мероприятиями
 ├── Tests/
 │ ├── Data/
 │ │   └── DataGenerator.cs           #Генератор тестовых данных
-│ └── Services/
+│ ├── Services/
 │ │   ├── BookingServiceSeatsTest.cs #Тестовые сценарии логики мест для бронирования
 │ │   ├── BookingServiceTest.cs      #Тестовые сценарии для бронирования
 │ │   └── EventServiceTest.cs        #Тестовые сценарии (успешные, неуспешные, пограничные)
@@ -133,7 +141,8 @@ EventManagement/
 ## Установка и запуск проекта
 
 ### Предварительные требования
-- Необходимо наличие установленного [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) 
+- Наличие установленного [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) 
+- Наличие установленной БД PostgreSQL
 
 ### Инструкция по публикации и запуску
 
@@ -141,30 +150,37 @@ EventManagement/
    ```bash
    git clone https://github.com/ploshkaSharp/EventManagement
    ```
-   
-2. **Переключитесь в папку с клонированным репозиторием:**
+
+2. **Настройте строку подключения к БД:**
+   В файле `appsettings.json` в разделе ConnectionStrings замените параметры подключения указанные по умолчанию (хост,порт,имя БД, логин, пароль), если они не совпадают.
+   ```bash
+   "DefaultConnection": "Host=localhost;Port=5432;Database=eventapi;Username=postgres;Password=111111"
+   ```
+   При первом запуске приложения база данных с таблицами создастся автоматически если она не существует.
+
+3. **Переключитесь в папку с клонированным репозиторием:**
    ```bash
    cd EventManagement
    ```
 
-3. **Опубликуйте решение:**
+4. **Опубликуйте решение:**
    ```bash
    dotnet build
    ```
 
-4. **Запустите решение:**
+5. **Запустите решение:**
    ```bash
    dotnet run
    ```
 
-5. **Для запуска тестов переключитесь в папку проекта тестов и запустите тесты:**
+6. **Для запуска тестов переключитесь в папку проекта тестов и запустите тесты:**
 
    ```bash
    cd Tests
    dotnet test
    ```   
 
-6. **Для тестирования решения в swagger:**
+7. **Для тестирования решения в swagger:**
 
    в браузере напишите адрес:
    http://localhost:5000/swagger

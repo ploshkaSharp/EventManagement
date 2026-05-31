@@ -5,6 +5,25 @@ namespace EventManagement.Models;
 /// </summary>
 public class Booking
 {
+  // Приватный конструктор для EF Core
+  private Booking()
+  {
+    Event = null!;
+  }
+
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="eventId"></param>
+  public Booking(Guid eventId)
+  {
+    Id = Guid.NewGuid();
+    EventId = eventId;
+    Status = BookingStatus.Pending;
+    CreatedAt = DateTime.UtcNow;
+    Event = null!;
+  }  
+
   /// <summary>
   /// Уникальный идентификатор брони
   /// </summary>
@@ -26,12 +45,43 @@ public class Booking
   /// <summary>
   /// Дата и время создания брони
   /// </summary>
-  /// <example>2026-05-15T10:00:00+04:00</example>
-  public DateTimeOffset CreatedAt { get; set; }
+  /// <example>2026-05-15T10:00:00Z</example>
+  public DateTime CreatedAt { get; set; }
 
   /// <summary>
   /// Дата и время обработки брони
   /// </summary>
-  /// <example>2026-05-15T11:00:00+04:00</example>
-  public DateTimeOffset ProcessedAt { get; set; }
+  /// <example>2026-05-15T11:00:00Z</example>
+  public DateTime? ProcessedAt { get; set; }
+
+  /// <summary>
+  /// Навигационное свойство 
+  /// </summary>
+  public Event Event { get; private set; }
+
+  /// <summary>
+  /// Подтвердить бронирование
+  /// </summary>
+  /// <exception cref="InvalidOperationException"></exception>
+  public void Confirm()
+  {
+    if (Status != BookingStatus.Pending)
+      throw new InvalidOperationException($"Cannot confirm booking with status {Status}");
+
+    Status = BookingStatus.Confirmed;
+    ProcessedAt = DateTime.UtcNow;
+  }
+
+  /// <summary>
+  /// Отменить бронь
+  /// </summary>
+  /// <exception cref="InvalidOperationException"></exception>
+  public void Reject()
+  {
+    if (Status != BookingStatus.Pending)
+      throw new InvalidOperationException($"Cannot reject booking with status {Status}");
+
+    Status = BookingStatus.Rejected;
+    ProcessedAt = DateTime.UtcNow;
+  }
 }

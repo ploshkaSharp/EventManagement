@@ -25,10 +25,10 @@ public class BookingDTO
   /// <summary>
   /// Дата и время создания брони
   /// </summary>
-  public DateTimeOffset CreatedAt { get; set; }
+  public DateTime CreatedAt { get; set; }
 
   /// <summary>
   /// Дата и время обработки брони
   /// </summary>
-  public DateTimeOffset? ProcessedAt { get; set; }
+  public DateTime? ProcessedAt { get; set; }
 }

@@ -11,41 +11,41 @@ public interface IEventService
   /// Получить список всех мероприятий
   /// </summary>  
   /// <param name="filter">Параметры фильтра</param>
-  IEnumerable<EventDTO> GetAll(EventFilterDto? filter = null);
+  Task<IEnumerable<EventDTO>> GetAllAsync(EventFilterDto? filter = null);
   /// <summary>
   /// Получить пагинированный список мероприятий
   /// </summary>
   /// <param name="filter">Параметры фильтра</param>
-  PaginatedResult<EventDTO> GetPaginated(EventFilterDto filter);
+  Task<PaginatedResult<EventDTO>> GetPaginatedAsync(EventFilterDto filter);
   /// <summary>
   /// Получить мероприятия по уникальному идентификатору
   /// </summary>
   /// <example>3fa85f64-5717-4562-b3fc-2c963f66afa6</example>
-  EventDTO? GetById(Guid id);
+  Task<EventDTO?> GetByIdAsync(Guid id);
   /// <summary>
   /// Создать новое мероприятие
   /// </summary>
   /// <param name="eventCreated">Данные для создания мероприятия</param>
-  EventDTO Create(CreateEventDTO eventCreated);
+  Task<EventDTO> CreateAsync(CreateEventDTO eventCreated);
   /// <summary>
   /// Обновить существующее мероприятие
   /// </summary>
   /// <param name="id">Идентификатор мероприятия для обновления (GUID)</param>
   /// <param name="eventUpdated">Обновленные данные мероприятия</param>  
-  EventDTO? Update(Guid id, UpdateEventDTO eventUpdated);
+  Task<EventDTO?> UpdateAsync(Guid id, UpdateEventDTO eventUpdated);
   /// <summary>
   /// Удалить мероприятие
   /// </summary>
   /// <param name="id">Идентификатор мероприятия для удаления (GUID)</param>  
-  bool Delete(Guid id);
+  Task<bool> DeleteAsync(Guid id);
   /// <summary>
   /// Попытка забронировать места на мероприятии
   /// </summary>
   /// <result>true - бронирование удалось, false - не удалось</result>
-  bool TryReserveSeats(Guid eventId, int count = 1);
+  Task<bool> TryReserveSeatsAsync(Guid eventId, int count = 1);
   /// <summary>
   /// Вернуть забронированые места
   /// </summary>
   /// <result>true - возврат удался, false - не удалось</result>
-  bool ReleaseSeats(Guid eventId, int count = 1);  
+  Task<bool> ReleaseSeatsAsync(Guid eventId, int count = 1);  
 }

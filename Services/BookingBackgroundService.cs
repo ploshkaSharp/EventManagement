@@ -1,6 +1,8 @@
 using EventManagement.DTOs;
 using EventManagement.Exceptions;
 using EventManagement.Models;
+using EventManagement.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Services;
 
@@ -9,20 +11,20 @@ namespace EventManagement.Services;
 /// </summary>
 public class BookingBackgroundService : BackgroundService
 {
-  private readonly IServiceProvider _serviceProvider;
+  private readonly IServiceScopeFactory _scopeFactory;
   private readonly ILogger<BookingBackgroundService> _logger;
   private readonly TimeSpan _processingInterval = Constants.processingInterval;
   private readonly SemaphoreSlim _processingSemaphore = new(1, 1);
   /// <summary>
   /// Constructor
   /// </summary>
-  /// <param name="serviceProvider">Провайдер сервисов</param>
+  /// <param name="scopeFactory"></param>
   /// <param name="logger">Логгер</param>
   public BookingBackgroundService(
-      IServiceProvider serviceProvider,
+      IServiceScopeFactory scopeFactory,
       ILogger<BookingBackgroundService> logger)
   {
-    _serviceProvider = serviceProvider;
+    _scopeFactory = scopeFactory;
     _logger = logger;
   }
 
@@ -61,19 +63,26 @@ public class BookingBackgroundService : BackgroundService
   /// <param name="cancellationToken">Токен отмены</param>
   private async Task ProcessPendingBookingsAsync(CancellationToken cancellationToken)
   {
-    using var scope = _serviceProvider.CreateScope();
-    var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-    var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
-    var pendingBookings = await bookingService.GetBookingByStatusAsync(BookingStatus.Pending);
-    var pendingList = pendingBookings.ToList();
+    List<Guid> pendingBookingIds;
 
-    if (pendingList.Any())
+    // Получить ID pending бронирований в отдельном scope
+    using (var scope = _scopeFactory.CreateScope())
     {
-      _logger.LogInformation("Found {Count} pending bookings to process", pendingList.Count);
+      var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+      pendingBookingIds = await context.Bookings
+          .Where(b => b.Status == BookingStatus.Pending)
+          .Select(b => b.Id)
+          .ToListAsync(cancellationToken);
     }
 
-    var tasks = pendingList.Select(booking =>
-        ProcessBookingAsync(booking, bookingService, eventService, cancellationToken));
+    if (!pendingBookingIds.Any())
+    {
+      return;
+    }
+
+    _logger.LogInformation("Found {Count} pending bookings to process", pendingBookingIds.Count);
+
+    var tasks = pendingBookingIds.Select(bookingId => ProcessBookingAsync(bookingId, cancellationToken));
 
     await Task.WhenAll(tasks);
   }
@@ -81,20 +90,16 @@ public class BookingBackgroundService : BackgroundService
   /// <summary>
   /// Обработать бронирование
   /// </summary>
-  /// <param name="booking">Инфо о бронировании</param>
-  /// <param name="bookingService">Сервис бронирования</param>
-  /// <param name="eventService">Сервис мероприятий</param>
+  /// <param name="bookingId">ИД бронирования</param>
   /// <param name="cancellationToken">Токен отмены</param>
   /// <returns></returns>
   private async Task ProcessBookingAsync(
-          BookingDTO booking,
-          IBookingService bookingService,
-          IEventService eventService,
+          Guid bookingId,
           CancellationToken cancellationToken)
   {
     try
     {
-      _logger.LogInformation("Processing booking {BookingId} for event {EventId}", booking.Id, booking.EventId);
+      _logger.LogInformation("Processing booking {BookingId}", bookingId);
 
       // Имитация обращения к внешней системе
       await Task.Delay(Constants.processingDelay, cancellationToken);
@@ -102,33 +107,50 @@ public class BookingBackgroundService : BackgroundService
       // Захват семафора перед обновлением хранилища
       await _processingSemaphore.WaitAsync(cancellationToken);
 
+      using var scope = _scopeFactory.CreateScope();
+      var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+      var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
       try
       {
-        // Проверить существование события
-        var eventItem = eventService.GetById(booking.EventId);
+        // Проверить существование бронирования и мероприятия      
+        var booking = await context.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId);
 
-        // Подтвердить бронь
-        var success = await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Confirmed);
-
-        if (success)
+        if (booking == null)
         {
-          _logger.LogInformation("Booking {BookingId} successfully confirmed", booking.Id);
+          _logger.LogWarning("Booking {BookingId} not found", bookingId);
+          return;
+        }
+
+        var eventItem = await context.Events.FirstOrDefaultAsync(e => e.Id == booking.EventId);
+
+        if (eventItem == null)
+        {
+          _logger.LogWarning("Event {EventId} not found, rejecting booking {BookingId}", booking.EventId, bookingId);
+          booking.Reject();
+          await context.SaveChangesAsync(cancellationToken);
+          return;
+        }
+
+        // Проверить, что места доступны
+        if (eventItem.AvailableSeats > 0 && eventItem.StartAt >= DateTime.UtcNow)
+        {
+          // Подтвердить бронь 
+          booking.Confirm();
+          _logger.LogInformation("Booking {BookingId} successfully confirmed", bookingId);
         }
         else
         {
-          _logger.LogWarning("Failed to update booking {BookingId} status", booking.Id);
-
-          // Если не удалось подтвердить, вернуть место
-          if (!eventService.ReleaseSeats(booking.EventId, 1))
-            _logger.LogError("Failed cancel booking 1 seat for the event {EventId}", booking.EventId);
+          booking.Reject();
+          eventItem.ReleaseSeats(1);
+          _logger.LogWarning("Booking {BookingId} rejected due to no available seats or event started", bookingId);
         }
+
+        await context.SaveChangesAsync(cancellationToken);
       }
-      catch (NotFoundException)
+      catch
       {
-        _logger.LogWarning("Event {EventId} not found, rejecting booking {BookingId}", booking.EventId, booking.Id);
-        
-        // Если мероприятие не найдено отклонить бронь и вернуть место
-        await DeclineBookingAsync(booking, bookingService, eventService, cancellationToken);
+        throw;
       }
       finally
       {
@@ -137,23 +159,20 @@ public class BookingBackgroundService : BackgroundService
     }
     catch (OperationCanceledException)
     {
-      _logger.LogWarning("Processing of booking {BookingId} was cancelled", booking.Id);
-
-      // Если операция отменена, то отменить бронь и вернуть место
-      await DeclineBookingAsync(booking, bookingService, eventService, cancellationToken);
+      _logger.LogWarning("Processing of booking {BookingId} was cancelled", bookingId);
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "Error processing booking {BookingId}", booking.Id);
+      _logger.LogError(ex, "Error processing booking {BookingId}", bookingId);
 
       // При любой ошибке отклонить бронь и вернуть место
       try
       {
-        await DeclineBookingAsync(booking, bookingService, eventService, cancellationToken);
+        await DeclineBookingAsync(bookingId, cancellationToken);
       }
       catch (Exception innerEx)
       {
-        _logger.LogError(innerEx, "Failed to reject booking {BookingId} after error", booking.Id);
+        _logger.LogError(innerEx, "Failed to reject booking {BookingId} after error", bookingId);
       }
     }
   }
@@ -161,19 +180,15 @@ public class BookingBackgroundService : BackgroundService
   /// <summary>
   /// Отменить бронь с возвратом места
   /// </summary>
-  /// <param name="booking">Инфо о бронировании</param>
-  /// <param name="bookingService">Сервис бронирования</param>
-  /// <param name="eventService">Сервис мероприятий</param>
+  /// <param name="bookingId">ИД бронирования</param>
   /// <param name="cancellationToken">Токен отмены</param>
   /// <returns></returns>
   private async Task DeclineBookingAsync(
-          BookingDTO booking,
-          IBookingService bookingService,
-          IEventService eventService,
+          Guid bookingId,
           CancellationToken cancellationToken)
   {
-    await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Rejected);
-    if (!eventService.ReleaseSeats(booking.EventId, 1))
-      _logger.LogError("Failed cancel booking 1 seat for the event {EventId}", booking.EventId);
+    using var scope = _scopeFactory.CreateScope();
+    var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+    await bookingService.UpdateBookingStatusAsync(bookingId, BookingStatus.Rejected);
   }
 }

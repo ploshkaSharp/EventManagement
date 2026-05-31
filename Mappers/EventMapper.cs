@@ -7,7 +7,7 @@ namespace EventManagement.Mappers;
 /// Маппер для соспоставления
 /// </summary>
 public static class EventMapper
-{   
+{
   /// <summary>
   /// Маппинг в DTO мероприятия
   /// </summary>
@@ -23,7 +23,7 @@ public static class EventMapper
       StartAt = eventItem.StartAt,
       EndAt = eventItem.EndAt,
       TotalSeats = eventItem.TotalSeats,
-      AvailableSeats = eventItem.AvailableSeats
+      AvailableSeats = eventItem.AvailableSeats,
     };
   }
 
@@ -44,15 +44,14 @@ public static class EventMapper
   /// <returns>DTO объект мероприятия</returns>
   public static Event ToEntity(CreateEventDTO createDto)
   {
-    return new Event
+    return new Event(
+        createDto.Title,
+        createDto.StartAt,
+        createDto.EndAt)
     {
-      Id = Guid.NewGuid(),
-      Title = createDto.Title,
       Description = createDto.Description,
-      StartAt = createDto.StartAt,
-      EndAt = createDto.EndAt,
       TotalSeats = createDto.TotalSeats,
-      AvailableSeats = createDto.TotalSeats
+      AvailableSeats = createDto.TotalSeats      
     };
   }
 
@@ -64,13 +63,13 @@ public static class EventMapper
   /// <returns>DTO объект мероприятия</returns>    
   public static Event ToEntity(UpdateEventDTO updateDto, Guid id)
   {
-    return new Event
+    return new Event(
+        updateDto.Title,
+        updateDto.StartAt,
+        updateDto.EndAt)
     {
-      Id = id,
-      Title = updateDto.Title,
-      Description = updateDto.Description,
-      StartAt = updateDto.StartAt,
-      EndAt = updateDto.EndAt
+      Id = id,      
+      Description = updateDto.Description
     };
-  }  
+  }
 }

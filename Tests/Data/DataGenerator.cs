@@ -1,8 +1,12 @@
-﻿using EventManagement.DTOs;
+using EventManagement.DTOs;
 using EventManagement.Services;
+using EventManagement.Data;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Tests;
+
 /// <summary>
 /// Генератор тестовых данных
 /// </summary>
@@ -14,47 +18,46 @@ public static class TestDataGenerator
     /// <returns>Тестовые мероприятия</returns>
     public static List<CreateEventDTO> GetTestEvents()
     {
-        var localOffset = new TimeSpan(+4, 0, 0);
         return new List<CreateEventDTO>
         {
             new CreateEventDTO
             {
                 Title = "HouseHold Expo 2030",
                 Description = "Technology conference",
-                StartAt = new DateTimeOffset(2030, 3, 17, 10, 0, 0, localOffset),
-                EndAt = new DateTimeOffset(2030, 3, 19, 18, 0, 0, localOffset),
+                StartAt = new DateTime(2030, 3, 17, 10, 0, 0, DateTimeKind.Utc),
+                EndAt = new DateTime(2030, 3, 19, 18, 0, 0, DateTimeKind.Utc),
                 TotalSeats = 10
             },
             new CreateEventDTO
             {
                 Title = "Composit expo 2030",
                 Description = "Business review",
-                StartAt = new DateTimeOffset(2030, 6, 10, 14, 0, 0, localOffset),
-                EndAt = new DateTimeOffset(2030, 6, 12, 16, 0, 0, localOffset),
+                StartAt = new DateTime(2030, 6, 10, 14, 0, 0, DateTimeKind.Utc),
+                EndAt = new DateTime(2030, 6, 12, 16, 0, 0, DateTimeKind.Utc),
                 TotalSeats = 10
             },
             new CreateEventDTO
             {
                 Title = "Baltic Rally",
                 Description = "Summer celebration",
-                StartAt = new DateTimeOffset(2030, 7, 20, 19, 0, 0, localOffset),
-                EndAt = new DateTimeOffset(2030, 7, 20, 23, 0, 0, localOffset),
+                StartAt = new DateTime(2030, 7, 20, 19, 0, 0, DateTimeKind.Utc),
+                EndAt = new DateTime(2030, 7, 20, 23, 0, 0, DateTimeKind.Utc),
                 TotalSeats = 10
             },
             new CreateEventDTO
             {
                 Title = "Tomorrowland Thailand",
                 Description = "Retail forum",
-                StartAt = new DateTimeOffset(2030, 8, 5, 9, 0, 0, localOffset),
-                EndAt = new DateTimeOffset(2030, 8, 5, 17, 0, 0, localOffset),
+                StartAt = new DateTime(2030, 8, 5, 9, 0, 0, DateTimeKind.Utc),
+                EndAt = new DateTime(2030, 8, 5, 17, 0, 0, DateTimeKind.Utc),
                 TotalSeats = 10
             },
             new CreateEventDTO
             {
                 Title = "Wild Siberia Extreme Triathlon",
                 Description = "Sport event",
-                StartAt = new DateTimeOffset(2030, 9, 12, 10, 0, 0, localOffset),
-                EndAt = new DateTimeOffset(2030, 9, 12, 18, 0, 0, localOffset),
+                StartAt = new DateTime(2030, 9, 12, 10, 0, 0, DateTimeKind.Utc),
+                EndAt = new DateTime(2030, 9, 12, 18, 0, 0, DateTimeKind.Utc),
                 TotalSeats = 10
             }
         };
@@ -68,10 +71,10 @@ public static class TestDataGenerator
     {
         return new CreateEventDTO
         {
-            Title = "New Test Event",
+            Title = $"New Test Event {Guid.NewGuid()}",
             Description = "Test Description",
-            StartAt = DateTimeOffset.Now.AddDays(30),
-            EndAt = DateTimeOffset.Now.AddDays(34),
+            StartAt = DateTime.UtcNow.AddDays(30),
+            EndAt = DateTime.UtcNow.AddDays(34),
             TotalSeats = 10
         };
     }
@@ -84,36 +87,120 @@ public static class TestDataGenerator
     {
         return new UpdateEventDTO
         {
-            Title = "Updated Test Event",
+            Title = $"Updated Test Event {Guid.NewGuid()}",
             Description = "Updated Description",
-            StartAt = DateTimeOffset.Now.AddDays(45),
-            EndAt = DateTimeOffset.Now.AddDays(46).AddHours(5)
+            StartAt = DateTime.UtcNow.AddDays(45),
+            EndAt = DateTime.UtcNow.AddDays(46).AddHours(5)
         };
     }
 
     /// <summary>
-    /// Создать "пустой" экземпляр сервиса мероприятий
+    /// Создать ServiceProvider с InMemoryDatabase для тестов
     /// </summary>
-    /// <returns>"Пустой" экземпляр сервиса мероприятий</returns>
-    public static EventService CreateFreshEventService()
+    /// <returns>ServiceProvider с настроенным DI</returns>
+    public static ServiceProvider CreateTestServiceProvider()
     {
-        return new EventService(NullLogger<EventService>.Instance);
+        var services = new ServiceCollection();
+        var dbName = Guid.NewGuid().ToString();
+        
+        services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase(dbName));        
+        services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IBookingService, BookingService>();
+        services.AddLogging();
+        
+        return services.BuildServiceProvider();
     }
 
     /// <summary>
-    /// Создать экземпляр сервиса мероприятия с тестовыми данными
+    /// Создать ServiceProvider с InMemoryDatabase и заполненными тестовыми данными
     /// </summary>
-    /// <returns>экземпляр сервиса мероприятия с тестовыми мероприятиями</returns>
-    public static EventService CreateEventServiceWithSeedData()
+    /// <returns>ServiceProvider с настроенным DI и тестовыми данными</returns>
+    public static async Task<ServiceProvider> CreateTestServiceProviderWithSeedDataAsync()
     {
-        var service = new EventService(NullLogger<EventService>.Instance);     
+        var services = new ServiceCollection();
+        var dbName = Guid.NewGuid().ToString();
+        
+        services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase(dbName));
+        services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IBookingService, BookingService>();
+        services.AddLogging();
+        
+        var serviceProvider = services.BuildServiceProvider();
+        
+        // Тестовые данные
+        using var scope = serviceProvider.CreateScope();
+        var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
         var events = GetTestEvents();
-
+        
         foreach (var eventDto in events)
         {
-          service.Create(eventDto);
+            await eventService.CreateAsync(eventDto);
         }
+        
+        return serviceProvider;
+    }
 
-        return service;
+    /// <summary>
+    /// Создать тестовое событие с указанным количеством мест
+    /// </summary>
+    /// <param name="totalSeats">Общее количество мест</param>
+    /// <returns>DTO для создания тестового события</returns>
+    public static CreateEventDTO CreateTestEventWithSeats(int totalSeats)
+    {
+        return new CreateEventDTO
+        {
+            Title = $"Test Event {Guid.NewGuid()}",
+            Description = "Test Description",
+            StartAt = DateTime.UtcNow.AddDays(30),
+            EndAt = DateTime.UtcNow.AddDays(34),
+            TotalSeats = totalSeats
+        };
+    }
+
+    /// <summary>
+    /// Создать тестовое событие с указанными параметрами
+    /// </summary>
+    /// <param name="title">Название события</param>
+    /// <param name="startAt">Дата начала</param>
+    /// <param name="endAt">Дата окончания</param>
+    /// <param name="totalSeats">Количество мест</param>
+    /// <returns>DTO для создания тестового события</returns>
+    public static CreateEventDTO CreateCustomTestEvent(string title, DateTime startAt, DateTime endAt, int totalSeats)
+    {
+        return new CreateEventDTO
+        {
+            Title = title,
+            Description = $"Description for {title}",
+            StartAt = startAt,
+            EndAt = endAt,
+            TotalSeats = totalSeats
+        };
+    }
+
+    /// <summary>
+    /// Получить список тестовых бронирований
+    /// </summary>
+    /// <param name="eventId">Идентификатор события</param>
+    /// <param name="count">Количество бронирований</param>
+    /// <returns>Список DTO для создания бронирований</returns>
+    public static List<BookingDTO> GetTestBookings(Guid eventId, int count)
+    {
+        var bookings = new List<BookingDTO>();
+        for (int i = 0; i < count; i++)
+        {
+            bookings.Add(new BookingDTO { EventId = eventId });
+        }
+        return bookings;
+    }
+
+    /// <summary>
+    /// Очистка базы данных после теста
+    /// </summary>
+    /// <param name="serviceProvider">ServiceProvider для очистки</param>
+    public static async Task CleanupDatabaseAsync(ServiceProvider serviceProvider)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await context.Database.EnsureDeletedAsync();
     }
 }

@@ -41,10 +41,10 @@ public class EventsController : ControllerBase
     /// <response code="400">Неверные параметры фильтрации</response>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<EventDTO>), StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<EventDTO>> GetAll(
+    public async Task<ActionResult<IEnumerable<EventDTO>>> GetAll(
         [FromQuery] string? title,
-        [FromQuery] DateTimeOffset? from,
-        [FromQuery] DateTimeOffset? to,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10
     )
@@ -58,7 +58,7 @@ public class EventsController : ControllerBase
             PageSize = pageSize
         };
 
-        var events = _eventService.GetPaginated(filter);
+        var events = await _eventService.GetPaginatedAsync(filter);
         return Ok(events);
     }
 
@@ -75,9 +75,9 @@ public class EventsController : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(EventDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<EventDTO> GetById(Guid id)
+    public async Task<ActionResult<EventDTO>> GetById(Guid id)
     {
-        var eventItem = _eventService.GetById(id);
+        var eventItem = await _eventService.GetByIdAsync(id);
 
         if (eventItem == null)
         {
@@ -97,8 +97,8 @@ public class EventsController : ControllerBase
     /// {
     ///   "title": "Tech Conference 2026",
     ///   "description": "Annual technology conference",
-    ///   "startAt": "2026-05-15T10:00:00+04:00",
-    ///   "endAt": "2026-05-15T18:00:00+04:00",
+    ///   "startAt": "2026-05-15T10:00:00Z",
+    ///   "endAt": "2026-05-15T18:00:00Z",
     ///   "totalSeats" : "200"
     /// }
     /// 
@@ -109,11 +109,11 @@ public class EventsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(CreateEventDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public ActionResult<EventDTO> Create([FromBody] CreateEventDTO eventItem)
+    public async Task<ActionResult<EventDTO>> Create([FromBody] CreateEventDTO eventItem)
     {
         try
         {
-            var createdEvent = _eventService.Create(eventItem);
+            var createdEvent = await _eventService.CreateAsync(eventItem);
             return CreatedAtAction(nameof(GetById), new { id = createdEvent.Id }, createdEvent);
         }
         catch (ArgumentException ex)
@@ -133,8 +133,8 @@ public class EventsController : ControllerBase
     /// {
     ///   "title": "Updated Conference 2026",
     ///   "description": "Updated technology conference",
-    ///   "startAt": "2026-06-15T10:00:00+04:00",
-    ///   "endAt": "2026-06-15T18:00:00+04:00"
+    ///   "startAt": "2026-06-15T10:00:00Z",
+    ///   "endAt": "2026-06-15T18:00:00Z"
     /// }
     /// </remarks>
     /// <returns>Обновленное мероприятие</returns>
@@ -145,11 +145,11 @@ public class EventsController : ControllerBase
     [ProducesResponseType(typeof(UpdateEventDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<Event> Update(Guid id, UpdateEventDTO eventItem)
+    public async Task<ActionResult<Event>> Update(Guid id, UpdateEventDTO eventItem)
     {
         try
         {
-            var updatedEvent = _eventService.Update(id, eventItem);
+            var updatedEvent = await _eventService.UpdateAsync(id, eventItem);
 
             if (updatedEvent == null)
             {
@@ -180,9 +180,9 @@ public class EventsController : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public IActionResult Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = _eventService.Delete(id);
+        var deleted = await _eventService.DeleteAsync(id);
 
         if (!deleted)
         {
@@ -207,7 +207,7 @@ public class EventsController : ControllerBase
     ///   "id": "06643d61-2689-49df-aa08-42c0ab9a8577",
     ///   "eventId": "fd1c1927-dd18-4e08-bc6f-a5517290d729",
     ///   "status": 0,
-    ///   "createdAt": "2026-04-23T10:30:00+04:00",
+    ///   "createdAt": "2026-04-23T10:30:00Z",
     ///   "processedAt": null
     /// }
     /// </remarks>
@@ -224,14 +224,14 @@ public class EventsController : ControllerBase
     public async Task<ActionResult<BookingDTO>> BookEvent(Guid id)
     {
         // Проверить существование мероприятия
-        var eventItem = _eventService.GetById(id);
+        var eventItem = await _eventService.GetByIdAsync(id);
 
         if (eventItem == null)
         {
           return NotFound();
         }
 
-        if (eventItem.StartAt < DateTimeOffset.Now)
+        if (eventItem.StartAt < DateTime.UtcNow)
         {
           return BadRequest("Can not book an event that has already started");
         }      
