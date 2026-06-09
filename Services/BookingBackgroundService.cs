@@ -3,6 +3,7 @@ using EventManagement.Exceptions;
 using EventManagement.Models;
 using EventManagement.Data;
 using Microsoft.EntityFrameworkCore;
+using EventManagement.Repositories;
 
 namespace EventManagement.Services;
 
@@ -68,11 +69,9 @@ public class BookingBackgroundService : BackgroundService
     // Получить ID pending бронирований в отдельном scope
     using (var scope = _scopeFactory.CreateScope())
     {
-      var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-      pendingBookingIds = await context.Bookings
-          .Where(b => b.Status == BookingStatus.Pending)
-          .Select(b => b.Id)
-          .ToListAsync(cancellationToken);
+      var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+      var pendingBookings = await bookingRepository.GetBookingByStatusAsync(BookingStatus.Pending);
+      pendingBookingIds = pendingBookings.Select(b => b.Id).ToList();      
     }
 
     if (!pendingBookingIds.Any())
@@ -108,13 +107,15 @@ public class BookingBackgroundService : BackgroundService
       await _processingSemaphore.WaitAsync(cancellationToken);
 
       using var scope = _scopeFactory.CreateScope();
-      var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-      var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+      var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+      var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();      
+      //var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+      //var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
 
       try
       {
         // Проверить существование бронирования и мероприятия      
-        var booking = await context.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId);
+        var booking = await bookingRepository.GetByIdAsync(bookingId);        
 
         if (booking == null)
         {
@@ -122,13 +123,13 @@ public class BookingBackgroundService : BackgroundService
           return;
         }
 
-        var eventItem = await context.Events.FirstOrDefaultAsync(e => e.Id == booking.EventId);
+        var eventItem = await eventRepository.GetByIdAsync(booking.EventId);
 
         if (eventItem == null)
         {
           _logger.LogWarning("Event {EventId} not found, rejecting booking {BookingId}", booking.EventId, bookingId);
           booking.Reject();
-          await context.SaveChangesAsync(cancellationToken);
+          await bookingRepository.UpdateAsync(booking);
           return;
         }
 
@@ -141,12 +142,11 @@ public class BookingBackgroundService : BackgroundService
         }
         else
         {
-          booking.Reject();
-          eventItem.ReleaseSeats(1);
+          booking.Reject();          
+          await eventRepository.ReleaseSeatsAsync(eventItem.Id, 1);
           _logger.LogWarning("Booking {BookingId} rejected due to no available seats or event started", bookingId);
         }
-
-        await context.SaveChangesAsync(cancellationToken);
+        await bookingRepository.UpdateAsync(booking);
       }
       catch
       {
@@ -187,7 +187,7 @@ public class BookingBackgroundService : BackgroundService
           Guid bookingId,
           CancellationToken cancellationToken)
   {
-    using var scope = _scopeFactory.CreateScope();
+    using var scope = _scopeFactory.CreateScope();    
     var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
     await bookingService.UpdateBookingStatusAsync(bookingId, BookingStatus.Rejected);
   }
