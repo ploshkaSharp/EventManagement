@@ -2,8 +2,6 @@ using EventManagement.Models;
 using EventManagement.DTOs;
 using EventManagement.Mappers;
 using EventManagement.Exceptions;
-using EventManagement.Data;
-using Microsoft.EntityFrameworkCore;
 using EventManagement.Repositories;
 
 namespace EventManagement.Services;
@@ -57,9 +55,9 @@ public class EventService : IEventService
   {
     _logger.LogInformation("Attempting to create event with title '{Title}'", eventCreatedDTO.Title);
 
-    var isExistEvent = await _eventRepository.GetAllAsync(new EventFilterDto { Title = eventCreatedDTO.Title });
+    var existEvents = await _eventRepository.GetAllAsync(new EventFilterDto { Title = eventCreatedDTO.Title });
 
-    if (isExistEvent != null)
+    if (existEvents.Count() > 0)
     {
       throw new ValidationException($"Event with title '{eventCreatedDTO.Title}' already exists");
     }
@@ -72,7 +70,8 @@ public class EventService : IEventService
       eventCreatedDTO.EndAt)
     {
       Description = eventCreatedDTO.Description,
-      TotalSeats = eventCreatedDTO.TotalSeats
+      TotalSeats = eventCreatedDTO.TotalSeats,
+      AvailableSeats = eventCreatedDTO.TotalSeats
     };
 
     var createdEvent = await _eventRepository.CreateAsync(evetItem);

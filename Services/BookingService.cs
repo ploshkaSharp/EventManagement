@@ -2,8 +2,6 @@ using EventManagement.Models;
 using EventManagement.DTOs;
 using EventManagement.Exceptions;
 using EventManagement.Mappers;
-using EventManagement.Data;
-using Microsoft.EntityFrameworkCore;
 using EventManagement.Repositories;
 
 namespace EventManagement.Services;

@@ -1,8 +1,4 @@
-using EventManagement.DTOs;
-using EventManagement.Exceptions;
 using EventManagement.Models;
-using EventManagement.Data;
-using Microsoft.EntityFrameworkCore;
 using EventManagement.Repositories;
 
 namespace EventManagement.Services;
@@ -71,7 +67,7 @@ public class BookingBackgroundService : BackgroundService
     {
       var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
       var pendingBookings = await bookingRepository.GetBookingByStatusAsync(BookingStatus.Pending);
-      pendingBookingIds = pendingBookings.Select(b => b.Id).ToList();      
+      pendingBookingIds = pendingBookings.Select(b => b.Id).ToList();
     }
 
     if (!pendingBookingIds.Any())
@@ -108,14 +104,12 @@ public class BookingBackgroundService : BackgroundService
 
       using var scope = _scopeFactory.CreateScope();
       var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
-      var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();      
-      //var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-      //var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+      var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
 
       try
       {
         // Проверить существование бронирования и мероприятия      
-        var booking = await bookingRepository.GetByIdAsync(bookingId);        
+        var booking = await bookingRepository.GetByIdAsync(bookingId);
 
         if (booking == null)
         {
@@ -142,7 +136,7 @@ public class BookingBackgroundService : BackgroundService
         }
         else
         {
-          booking.Reject();          
+          booking.Reject();
           await eventRepository.ReleaseSeatsAsync(eventItem.Id, 1);
           _logger.LogWarning("Booking {BookingId} rejected due to no available seats or event started", bookingId);
         }
@@ -187,7 +181,7 @@ public class BookingBackgroundService : BackgroundService
           Guid bookingId,
           CancellationToken cancellationToken)
   {
-    using var scope = _scopeFactory.CreateScope();    
+    using var scope = _scopeFactory.CreateScope();
     var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
     await bookingService.UpdateBookingStatusAsync(bookingId, BookingStatus.Rejected);
   }
