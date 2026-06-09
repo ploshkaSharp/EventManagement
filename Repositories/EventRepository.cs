@@ -5,22 +5,40 @@ using EventManagement.Models;
 
 namespace EventManagement.Repositories;
 
+/// <summary>
+/// Репозиторий мероприятий
+/// </summary>
 public class EventRepository : IEventRepository
 {
   private readonly AppDbContext _context;
   private readonly ILogger<EventRepository> _logger;
 
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="context">Контекст БД</param>
+  /// <param name="logger">Логгер</param>
   public EventRepository(AppDbContext context, ILogger<EventRepository> logger)
   {
     _context = context;
     _logger = logger;
   }
 
+  /// <summary>
+  /// Получить мероприятие по ИД
+  /// </summary>
+  /// <param name="id">ИД мероприятия</param>
+  /// <returns></returns>
   public async Task<Event?> GetByIdAsync(Guid id)
   {
-    return await _context.Events.FindAsync(id);
+    return await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
   }
 
+  /// <summary>
+  /// Получить мероприятия по фильтру
+  /// </summary>
+  /// <param name="filter">Фильтр</param>
+  /// <returns></returns>
   public async Task<IEnumerable<Event>> GetAllAsync(EventFilterDto? filter = null)
   {
     var query = _context.Events.AsQueryable();
@@ -46,6 +64,11 @@ public class EventRepository : IEventRepository
     return await query.OrderBy(e => e.StartAt).ToListAsync();
   }
 
+  /// <summary>
+  /// Получить пагинированный результат мероприятий
+  /// </summary>
+  /// <param name="filter">Фильтр</param>
+  /// <returns></returns>
   public async Task<PaginatedResult<Event>> GetPaginatedAsync(EventFilterDto filter)
   {
     filter.Validate();
@@ -78,6 +101,11 @@ public class EventRepository : IEventRepository
     return new PaginatedResult<Event>(items, totalCount, filter.PageNumber, filter.PageSize);
   }
 
+  /// <summary>
+  /// Создать мероприятие
+  /// </summary>
+  /// <param name="eventItem">Мероприятие</param>
+  /// <returns></returns>
   public async Task<Event> CreateAsync(Event eventItem)
   {
     _context.Events.Add(eventItem);
@@ -85,9 +113,14 @@ public class EventRepository : IEventRepository
     return eventItem;
   }
 
+  /// <summary>
+  /// Обновить информацию о мероприятии
+  /// </summary>
+  /// <param name="eventItem">Мероприятие</param>
+  /// <returns></returns>
   public async Task<Event?> UpdateAsync(Event eventItem)
   {
-    var existingEvent = await _context.Events.FindAsync(eventItem.Id);
+    var existingEvent = await _context.Events.FirstOrDefaultAsync(e => e.Id == eventItem.Id);
     if (existingEvent == null)
       return null;
 
@@ -100,9 +133,14 @@ public class EventRepository : IEventRepository
     return existingEvent;
   }
 
+  /// <summary>
+  /// Удалить мероприятие
+  /// </summary>
+  /// <param name="id">ИД мероприятия</param>
+  /// <returns></returns>
   public async Task<bool> DeleteAsync(Guid id)
   {
-    var eventItem = await _context.Events.FindAsync(id);
+    var eventItem = await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
     if (eventItem == null)
       return false;
 
@@ -111,14 +149,15 @@ public class EventRepository : IEventRepository
     return true;
   }
 
-  public async Task<bool> ExistsAsync(Guid id)
-  {
-    return await _context.Events.AnyAsync(e => e.Id == id);
-  }
-
+  /// <summary>
+  /// Забронировать место
+  /// </summary>
+  /// <param name="eventId">ИД мероприятия</param>
+  /// <param name="count">Количесвто мест</param>
+  /// <returns></returns>
   public async Task<bool> TryReserveSeatsAsync(Guid eventId, int count = 1)
   {
-    var eventItem = await _context.Events.FindAsync(eventId);
+    var eventItem = await _context.Events.FirstOrDefaultAsync(e => e.Id == eventId);
     if (eventItem == null)
       return false;
 
@@ -132,9 +171,15 @@ public class EventRepository : IEventRepository
     return false;
   }
 
+/// <summary>
+/// Освободить места
+/// </summary>
+/// <param name="eventId">ИД мероприятия</param>
+/// <param name="count">Количество мест</param>
+/// <returns></returns>
   public async Task<bool> ReleaseSeatsAsync(Guid eventId, int count = 1)
   {
-    var eventItem = await _context.Events.FindAsync(eventId);
+    var eventItem = await _context.Events.FirstOrDefaultAsync(e => e.Id == eventId);
     if (eventItem != null)
     {
       eventItem.ReleaseSeats(count);
@@ -143,11 +188,5 @@ public class EventRepository : IEventRepository
     }
     else
       return false;
-  }
-
-  public async Task<int> GetAvailableSeatsAsync(Guid eventId)
-  {
-    var eventItem = await _context.Events.FindAsync(eventId);
-    return eventItem?.AvailableSeats ?? 0;
   }
 }

@@ -30,39 +30,39 @@ public interface IEventRepository
   Task<PaginatedResult<Event>> GetPaginatedAsync(EventFilterDto filter);
 
   /// <summary>
-  /// 
+  /// Создать мероприятие
   /// </summary>
-  /// <param name="eventItem"></param>
+  /// <param name="eventItem">Мероприятие</param>
   /// <returns></returns>    
   Task<Event> CreateAsync(Event eventItem);
 
   /// <summary>
-  /// 
+  /// Обновить информацию о мероприятии
   /// </summary>
-  /// <param name="eventItem"></param>
+  /// <param name="eventItem">Мероприятие</param>
   /// <returns></returns>
   Task<Event?> UpdateAsync(Event eventItem);
 
   /// <summary>
-  /// 
+  /// Удалить мероприятие
   /// </summary>
-  /// <param name="id"></param>
+  /// <param name="id">ИД мероприятия</param>
   /// <returns></returns>
   Task<bool> DeleteAsync(Guid id);
 
   /// <summary>
-  /// 
+  /// Забронировать место
   /// </summary>
-  /// <param name="eventId"></param>
-  /// <param name="count"></param>
+  /// <param name="eventId">ИД мероприятия</param>
+  /// <param name="count">Количество мест</param>
   /// <returns></returns>
   Task<bool> TryReserveSeatsAsync(Guid eventId, int count = 1);
 
-  /// <summary>
-  /// 
-  /// </summary>
-  /// <param name="eventId"></param>
-  /// <param name="count"></param>
+/// <summary>
+/// Освободить места
+/// </summary>
+/// <param name="eventId">ИД мероприятия</param>
+/// <param name="count">Количество мест</param>
   /// <returns></returns>
   Task<bool> ReleaseSeatsAsync(Guid eventId, int count = 1);
 }

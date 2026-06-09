@@ -4,30 +4,40 @@ using EventManagement.Models;
 
 namespace EventManagement.Repositories;
 
+/// <summary>
+/// Репозиторий бронирований
+/// </summary>
 public class BookingRepository : IBookingRepository
 {
   private readonly AppDbContext _context;
   private readonly ILogger<BookingRepository> _logger;
 
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="context">Контекст БД</param>
+  /// <param name="logger">Логгер</param>
   public BookingRepository(AppDbContext context, ILogger<BookingRepository> logger)
   {
     _context = context;
     _logger = logger;
   }
 
+  /// <summary>
+  /// Получить бронь по ИД
+  /// </summary>
+  /// <param name="id">ИД брони</param>
+  /// <returns></returns>
   public async Task<Booking?> GetByIdAsync(Guid id)
   {
-    return await _context.Bookings
-        .FirstOrDefaultAsync(b => b.Id == id);
+    return await _context.Bookings.FirstOrDefaultAsync(b => b.Id == id);
   }
 
-  public async Task<IEnumerable<Booking>> GetAllAsync()
-  {
-    return await _context.Bookings
-        .OrderByDescending(b => b.CreatedAt)
-        .ToListAsync();
-  }
-
+  /// <summary>
+  /// Получить брони по ИД мероприятия
+  /// </summary>
+  /// <param name="eventId">ИД мероприятия</param>
+  /// <returns></returns>
   public async Task<IEnumerable<Booking>> GetByEventIdAsync(Guid eventId)
   {
     return await _context.Bookings
@@ -36,14 +46,11 @@ public class BookingRepository : IBookingRepository
         .ToListAsync();
   }
 
-  public async Task<IEnumerable<Booking>> GetPendingBookingsAsync()
-  {
-    return await _context.Bookings
-        .Where(b => b.Status == BookingStatus.Pending)
-        .OrderBy(b => b.CreatedAt)
-        .ToListAsync();
-  }
-
+  /// <summary>
+  /// Получить брони по стаусу
+  /// </summary>
+  /// <param name="status">Статус бронирования</param>
+  /// <returns></returns>
   public async Task<IEnumerable<Booking>> GetBookingByStatusAsync(BookingStatus status)
   {
     return await _context.Bookings
@@ -52,6 +59,11 @@ public class BookingRepository : IBookingRepository
             .ToListAsync();
   }
 
+  /// <summary>
+  /// Создать бронь
+  /// </summary>
+  /// <param name="booking">Бронь</param>
+  /// <returns></returns>
   public async Task<Booking> CreateAsync(Booking booking)
   {
     _context.Bookings.Add(booking);
@@ -59,9 +71,14 @@ public class BookingRepository : IBookingRepository
     return booking;
   }
 
+  /// <summary>
+  /// Обновить информацию о бронировании
+  /// </summary>
+  /// <param name="booking">Бронь</param>
+  /// <returns></returns>
   public async Task<Booking?> UpdateAsync(Booking booking)
   {
-    var existingBooking = await _context.Bookings.FindAsync(booking.Id);
+    var existingBooking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == booking.Id);
     if (existingBooking == null)
       return null;
 
@@ -72,19 +89,19 @@ public class BookingRepository : IBookingRepository
     return existingBooking;
   }
 
+  /// <summary>
+  /// Удалить бронь по ИД
+  /// </summary>
+  /// <param name="id">ИД брони</param>
+  /// <returns></returns>
   public async Task<bool> DeleteAsync(Guid id)
   {
-    var booking = await _context.Bookings.FindAsync(id);
+    var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == id);
     if (booking == null)
       return false;
 
     _context.Bookings.Remove(booking);
     await _context.SaveChangesAsync();
     return true;
-  }
-
-  public async Task<bool> ExistsAsync(Guid id)
-  {
-    return await _context.Bookings.AnyAsync(b => b.Id == id);
   }
 }
