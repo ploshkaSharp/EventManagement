@@ -53,8 +53,8 @@ var app = builder.Build();
 // Ensure database is created
 using (var scope = app.Services.CreateScope())
 {
-  var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-  db.Database.EnsureCreated();
+  var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();  
+  db.Database.Migrate();
 }
 
 // middleware для глобальной обработки ошибок. Ставить первым в pipeline для перехвата всех исключений
