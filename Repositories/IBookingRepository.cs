@@ -34,4 +34,18 @@ public interface IBookingRepository
   /// <param name="booking">Бронь</param>
   /// <returns></returns>
   Task<Booking?> UpdateAsync(Booking booking);
+
+  /// <summary>
+  /// Удалить бронь
+  /// </summary>
+  /// <param name="id">ИД брони</param>
+  /// <returns></returns>
+  Task<bool> DeleteAsync(Guid id);
+
+  /// <summary>
+  /// Получить список броней по ИД мероприятия
+  /// </summary>
+  /// <param name="eventId">ИД мероприятия</param>
+  /// <returns></returns>
+  Task<IEnumerable<Booking>> GetByEventIdAsync(Guid eventId);
 }
