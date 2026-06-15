@@ -32,6 +32,10 @@ EventManagement/
 │ ├── EventDTO.cs                    #DTO объекты (мероприятия)
 │ ├── EventFilterDTO.cs              #DTO для параметров фильтрации
 │ └── PaginateResultDTO.cs           #DTO для пагинированного результата
+├── IntegrationTests/
+│ ├── BaseTests.cs                   #Инициализация интеграционных тестов
+│ ├── BookingRepositoryTests.cs      #Интеграционные тесты бронирования
+│ └── EventRepositoryTests.cs        #Интеграционные тесты мероприятий
 ├── Exceptions/
 │ ├── BadRequestException.cs         #Исключение - Некорректный запрос
 │ ├── NotAvailableException.cs       #Исключение - Нет доступных мест
@@ -140,7 +144,8 @@ EventManagement/
 
 ### Предварительные требования
 - Наличие установленного [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) 
-- Наличие установленной БД PostgreSQL
+- Наличие установленной Docker (для запуска интеграционных тестов с использованием Testcontainers.PostgreSql и разворачивания PostgreSQL).
+- 
 
 ### Инструкция по публикации и запуску
 
@@ -171,7 +176,7 @@ EventManagement/
    dotnet run
    ```
 
-6. **Для запуска тестов переключитесь в папку проекта тестов и запустите тесты:**
+6. **Для запуска тестов переключитесь в папку проекта тестов/интеграционных тестов и запустите тесты:**
 
    ```bash
    cd Tests
@@ -184,6 +189,23 @@ EventManagement/
    http://localhost:5000/swagger
 
    Примечание. Порт swagger'а может отличаться от указанного здесь. Актальный порт указан в консоли запустившегося решения (см.п.5).
+
+8. **Для использования миграции:**
+   
+   предварительно установите инструмент EF Core
+   ```bash
+   dotnet tool install --global dotnet-ef
+   ```
+   
+   и сгенерируйте начальную миграцию
+   ```bash
+   dotnet ef migrations add InitialCreate --context AppDbContext --output-dir Migrations
+   ```
+   для применения миграции к БД выполните
+   ```bash
+   dotnet ef database update --context AppDbContext
+   ```
+
 
 ## Реализованные методы
 

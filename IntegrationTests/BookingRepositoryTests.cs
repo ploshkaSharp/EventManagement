@@ -6,8 +6,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EventManagement.IntegrationTests.Repositories;
 
+/// <summary>
+/// Интеграционные тесты бронирования
+/// </summary>
 public class BookingRepositoryTests : IntegrationTestBase
 {
+  /// <summary>
+  /// Создание
+  /// </summary>  
   [Fact]
   public async Task CreateAsync_ShouldAddBookingToDatabase()
   {
@@ -31,6 +37,9 @@ public class BookingRepositoryTests : IntegrationTestBase
     Assert.Equal(BookingStatus.Pending, result.Status);
   }
 
+  /// <summary>
+  /// получить по ИД
+  /// </summary>
   [Fact]
   public async Task GetByIdAsync_WithExistingId_ShouldReturnBooking()
   {
@@ -53,6 +62,9 @@ public class BookingRepositoryTests : IntegrationTestBase
     Assert.Equal(created.EventId, result.EventId);
   }
 
+  /// <summary>
+  /// Получить по ИД мероприятия
+  /// </summary>
   [Fact]
   public async Task GetByEventIdAsync_ShouldReturnBookingsForSpecificEvent()
   {
@@ -78,6 +90,9 @@ public class BookingRepositoryTests : IntegrationTestBase
     Assert.All(result, b => Assert.Equal(createdEvent.Id, b.EventId));
   }
 
+  /// <summary>
+  /// Получить по статусу (Pending)
+  /// </summary>  
   [Fact]
   public async Task GetPendingBookingsAsync_ShouldReturnOnlyPendingBookings()
   {
@@ -111,6 +126,10 @@ public class BookingRepositoryTests : IntegrationTestBase
     Assert.All(result, b => Assert.Equal(BookingStatus.Pending, b.Status));
   }
 
+  /// <summary>
+  /// Обновить 
+  /// </summary>
+  /// <returns></returns>
   [Fact]
   public async Task UpdateAsync_ShouldModifyBookingStatus()
   {
@@ -135,6 +154,10 @@ public class BookingRepositoryTests : IntegrationTestBase
     Assert.NotNull(result.ProcessedAt);
   }
 
+  /// <summary>
+  /// Удалить бронь
+  /// </summary>
+  /// <returns></returns>
   [Fact]
   public async Task DeleteAsync_ShouldRemoveBooking()
   {

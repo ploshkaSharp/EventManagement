@@ -9,12 +9,26 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EventManagement.IntegrationTests.Base;
 
+/// <summary>
+/// Интеграционные тесты
+/// </summary>
 public abstract class IntegrationTestBase : IAsyncLifetime
-{  
+{
+  /// <summary>
+  /// Контейнер для PostgreSql
+  /// </summary>
   protected readonly PostgreSqlContainer _postgresContainer;
+  /// <summary>
+  /// Провайдер
+  /// </summary>
   protected ServiceProvider _serviceProvider;
+  /// <summary>
+  /// Строка подключения к sql
+  /// </summary>
   protected string _connectionString;
-
+  /// <summary>
+  /// Создать контейнер с PostgreSql
+  /// </summary>
   protected IntegrationTestBase()
   {
     _postgresContainer = new PostgreSqlBuilder("postgres:16-alpine")
@@ -25,6 +39,9 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         .Build();
   }
 
+  /// <summary>
+  /// Инициализация интегр. тестов
+  /// </summary>
   public virtual async Task InitializeAsync()
   {
     await _postgresContainer.StartAsync();
@@ -47,22 +64,19 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     await context.Database.MigrateAsync();
   }
 
+  /// <summary>
+  /// Освободить ресурсы
+  /// </summary>
   public virtual async Task DisposeAsync()
   {
     await _postgresContainer.DisposeAsync();
     await _serviceProvider.DisposeAsync();
-    /*
-    if (_serviceProvider is IAsyncDisposable asyncDisposable)
-    {
-      await asyncDisposable.DisposeAsync();
-    }
-    else
-    {
-      _serviceProvider?.Dispose();
-    }
-    */
   }
 
+  /// <summary>
+  /// Очистить БД
+  /// </summary>
+  /// <returns></returns>
   protected async Task ResetDatabaseAsync()
   {
     using var scope = _serviceProvider.CreateScope();

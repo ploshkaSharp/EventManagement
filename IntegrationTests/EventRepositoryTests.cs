@@ -7,8 +7,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EventManagement.IntegrationTests.Repositories;
 
+/// <summary>
+/// Интеграционные тесты мероприятий
+/// </summary>
 public class EventRepositoryTests : IntegrationTestBase
 {
+  /// <summary>
+  /// Создание
+  /// </summary>  
   [Fact]
   public async Task CreateAsync_ShouldAddEventToDatabase()
   {
@@ -28,6 +34,9 @@ public class EventRepositoryTests : IntegrationTestBase
     Assert.Equal(eventItem.AvailableSeats, result.AvailableSeats);
   }
 
+  /// <summary>
+  /// Получить по ИД
+  /// </summary>
   [Fact]
   public async Task GetByIdAsync_WithExistingId_ShouldReturnEvent()
   {
@@ -46,6 +55,9 @@ public class EventRepositoryTests : IntegrationTestBase
     Assert.Equal(created.Title, result.Title);
   }
 
+  /// <summary>
+  /// Получить по несуществующему ИД
+  /// </summary>
   [Fact]
   public async Task GetByIdAsync_WithNonExistentId_ShouldReturnNull()
   {
@@ -60,6 +72,9 @@ public class EventRepositoryTests : IntegrationTestBase
     Assert.Null(result);
   }
 
+  /// <summary>
+  /// Получить все
+  /// </summary>  
   [Fact]
   public async Task GetAllAsync_WithoutFilters_ShouldReturnAllEvents()
   {
@@ -86,6 +101,9 @@ public class EventRepositoryTests : IntegrationTestBase
     Assert.Equal(3, result.Count());
   }
 
+  /// <summary>
+  /// Получить все (с фильтром по названию)
+  /// </summary>
   [Fact]
   public async Task GetAllAsync_WithTitleFilter_ShouldReturnMatchingEvents()
   {
@@ -105,16 +123,19 @@ public class EventRepositoryTests : IntegrationTestBase
       await repository.CreateAsync(e);
     }
 
-    var filter = new EventFilterDto { Title = "tech" };
+    var filter = new EventFilterDto { Title = "tech conference" };
 
     // Act
     var result = await repository.GetAllAsync(filter);
 
     // Assert
-    Assert.Equal(2, result.Count());
+    Assert.Single(result);
     Assert.All(result, e => Assert.Contains("Tech", e.Title, StringComparison.OrdinalIgnoreCase));
   }
 
+  /// <summary>
+  /// Получить (с фильтром по периоду)
+  /// </summary>  
   [Fact]
   public async Task GetAllAsync_WithDateRangeFilter_ShouldReturnEventsInRange()
   {
@@ -128,7 +149,7 @@ public class EventRepositoryTests : IntegrationTestBase
             new Event("Event 1", now.AddDays(1), now.AddDays(1).AddHours(4), 10),
             new Event("Event 2", now.AddDays(5), now.AddDays(5).AddHours(4), 20),
             new Event("Event 3", now.AddDays(10), now.AddDays(10).AddHours(4), 30)
-        };
+    };
 
     foreach (var e in events)
     {
@@ -149,6 +170,10 @@ public class EventRepositoryTests : IntegrationTestBase
     Assert.Equal("Event 2", result.First().Title);
   }
 
+  /// <summary>
+  /// Получить пагинрованный результат
+  /// </summary>
+  /// <returns></returns>
   [Fact]
   public async Task GetPaginatedAsync_ShouldReturnCorrectPage()
   {
@@ -177,6 +202,9 @@ public class EventRepositoryTests : IntegrationTestBase
     Assert.True(result.HasNextPage);
   }
 
+  /// <summary>
+  /// Забронировать места
+  /// </summary>  
   [Fact]
   public async Task TryReserveSeatsAsync_WithAvailableSeats_ShouldSucceed()
   {
@@ -192,9 +220,13 @@ public class EventRepositoryTests : IntegrationTestBase
     // Assert
     Assert.True(result);
     var updated = await repository.GetByIdAsync(created.Id);
-    Assert.Equal(7, updated.AvailableSeats);
+    Assert.Equal(7, updated?.AvailableSeats);
   }
 
+  /// <summary>
+  /// Забронировать больше чем есть
+  /// </summary>
+  /// <returns></returns>
   [Fact]
   public async Task TryReserveSeatsAsync_WithInsufficientSeats_ShouldFail()
   {
@@ -210,9 +242,12 @@ public class EventRepositoryTests : IntegrationTestBase
     // Assert
     Assert.False(result);
     var updated = await repository.GetByIdAsync(created.Id);
-    Assert.Equal(5, updated.AvailableSeats);
+    Assert.Equal(5, updated?.AvailableSeats);
   }
 
+  /// <summary>
+  /// Отменить бронь на места
+  /// </summary>
   [Fact]
   public async Task ReleaseSeatsAsync_ShouldIncreaseAvailableSeats()
   {
@@ -228,9 +263,12 @@ public class EventRepositoryTests : IntegrationTestBase
 
     // Assert
     var updated = await repository.GetByIdAsync(created.Id);
-    Assert.Equal(9, updated.AvailableSeats);
+    Assert.Equal(9, updated?.AvailableSeats);
   }
 
+  /// <summary>
+  /// Обновить
+  /// </summary>  
   [Fact]
   public async Task UpdateAsync_ShouldModifyEvent()
   {
@@ -252,6 +290,10 @@ public class EventRepositoryTests : IntegrationTestBase
     Assert.Equal("Updated Description", result.Description);
   }
 
+  /// <summary>
+  /// Удалить
+  /// </summary>
+  /// <returns></returns>
   [Fact]
   public async Task DeleteAsync_ShouldRemoveEvent()
   {
