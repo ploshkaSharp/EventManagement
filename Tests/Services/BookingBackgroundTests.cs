@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Runtime.CompilerServices;
 using EventManagement.Data;
+using EventManagement.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Tests.Services;
@@ -18,6 +19,8 @@ public class BookingBackgroundServiceTests
         _dbName = Guid.NewGuid().ToString();
         var services = new ServiceCollection();        
         services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase(_dbName));
+        services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();        
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IBookingService, BookingService>();
         services.AddLogging();
