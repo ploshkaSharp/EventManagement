@@ -47,7 +47,7 @@ public class EventRepository : IEventRepository
     {
       if (!string.IsNullOrWhiteSpace(filter.Title))
       {
-        query = query.Where(e => e.Title.ToLower() == filter.Title.ToLower());
+        query = query.Where(e => e.Title.ToLower().Contains(filter.Title));
       }
 
       if (filter.From.HasValue)
