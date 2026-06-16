@@ -56,8 +56,8 @@ public class EventService : IEventService
     _logger.LogInformation("Attempting to create event with title '{Title}'", eventCreatedDTO.Title);
 
     var existEvents = await _eventRepository.GetAllAsync(new EventFilterDto { Title = eventCreatedDTO.Title });
-
-    if (existEvents.Count() > 0)
+    
+    if (existEvents.Any())
     {
       throw new ValidationException($"Event with title '{eventCreatedDTO.Title}' already exists");
     }
