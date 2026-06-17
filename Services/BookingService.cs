@@ -2,8 +2,7 @@ using EventManagement.Models;
 using EventManagement.DTOs;
 using EventManagement.Exceptions;
 using EventManagement.Mappers;
-using EventManagement.Data;
-using Microsoft.EntityFrameworkCore;
+using EventManagement.Repositories;
 
 namespace EventManagement.Services;
 
@@ -12,18 +11,21 @@ namespace EventManagement.Services;
 /// </summary>
 public class BookingService : IBookingService
 {
-  private readonly AppDbContext _context;
+  private readonly IBookingRepository _bookingRepository;
+  private readonly IEventRepository _eventRepository;
   private readonly ILogger<BookingService> _logger;
   private static readonly SemaphoreSlim _bookingLock = new(1, 1); // Блокировка для критической секции
 
   /// <summary>
   /// 
   /// </summary>
-  /// <param name="context"></param>
+  /// <param name="bookingRepository"></param>
+  /// <param name="eventRepository"></param>
   /// <param name="logger"></param>
-  public BookingService(AppDbContext context, ILogger<BookingService> logger)
-  {
-    _context = context;
+  public BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository, ILogger<BookingService> logger)
+  {    
+    _bookingRepository = bookingRepository;
+    _eventRepository = eventRepository;
     _logger = logger;
   }
 
@@ -40,8 +42,8 @@ public class BookingService : IBookingService
     await _bookingLock.WaitAsync();
     try
     {
-      // Проверить существование мероприятия
-      var eventItem = await _context.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+      // Проверить существование мероприятия      
+      var eventItem = await _eventRepository.GetByIdAsync(eventId);
 
       if (eventItem == null)
       {
@@ -63,10 +65,9 @@ public class BookingService : IBookingService
       var booking = new Booking(eventId){};
 
       // Добавить бронь      
-      await _context.Bookings.AddAsync(booking);    
-      await _context.SaveChangesAsync();
+      var createdBooking = await _bookingRepository.CreateAsync(booking);
 
-      return BookingMapper.ToDto(booking);
+      return BookingMapper.ToDto(createdBooking);
     }
     finally
     {
@@ -84,8 +85,8 @@ public class BookingService : IBookingService
   public async Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId)
   {
     _logger.LogDebug("Retrieving booking {BookingId}", bookingId);
-
-    var booking = await _context.Bookings.FirstOrDefaultAsync(e => e.Id == bookingId);    
+    
+    var booking = await _bookingRepository.GetByIdAsync(bookingId);
 
     if (booking == null)
     {
@@ -103,11 +104,8 @@ public class BookingService : IBookingService
   public async Task<IEnumerable<BookingDTO>> GetBookingByStatusAsync(BookingStatus status)
   {
     _logger.LogDebug("Get booking by status {Status}", status);
-
-    var pendingBookings = await _context.Bookings
-            .Where(b => b.Status == status)
-            .OrderBy(b => b.CreatedAt)
-            .ToListAsync();            
+    
+    var pendingBookings = await _bookingRepository.GetBookingByStatusAsync(status);   
 
     return pendingBookings.Select(BookingMapper.ToDto);
   }
@@ -121,8 +119,9 @@ public class BookingService : IBookingService
   public async Task<bool> UpdateBookingStatusAsync(Guid bookingId, BookingStatus status)
   {
     _logger.LogDebug("Attempting to update booking {BookingId} status to {Status}", bookingId, status);
+    
+    var booking = await _bookingRepository.GetByIdAsync(bookingId);
 
-    var booking = await _context.Bookings.FirstOrDefaultAsync(e => e.Id == bookingId);
     if (booking == null)
     {
       _logger.LogWarning($"Not found booking with id='{bookingId.ToString()}'");
@@ -138,8 +137,8 @@ public class BookingService : IBookingService
 
     booking.Status = status;
     booking.ProcessedAt = DateTime.UtcNow;
-    await _context.SaveChangesAsync();
-
-    return true;
+    
+    var updatedBooking = await _bookingRepository.UpdateAsync(booking);
+    return updatedBooking != null;    
   }
 }

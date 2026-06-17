@@ -6,6 +6,7 @@ using EventManagement.Data;
 using EventManagement.Services;
 using EventManagement.DTOs;
 using EventManagement.Exceptions;
+using EventManagement.Repositories;
 
 namespace EventManagement.Tests.Services;
 
@@ -23,6 +24,8 @@ public class EventServiceTests : IDisposable
         var services = new ServiceCollection();
         
         services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase(_dbName));
+        services.AddScoped<IEventRepository, EventRepository>();
+        //services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IEventService, EventService>();
         services.AddLogging();
         

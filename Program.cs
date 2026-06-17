@@ -3,6 +3,7 @@ using Microsoft.OpenApi;
 using EventManagement.Services;
 using EventManagement.Middleware;
 using EventManagement.Data;
+using EventManagement.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
   options.EnableDetailedErrors(builder.Environment.IsDevelopment());
 });
 
+// Register Repositories
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 // Register Services (DbContext is scoped)
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
@@ -46,11 +50,10 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Ensure database is created
 using (var scope = app.Services.CreateScope())
 {
-  var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-  db.Database.EnsureCreated();
+  var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();  
+  db.Database.Migrate();
 }
 
 // middleware для глобальной обработки ошибок. Ставить первым в pipeline для перехвата всех исключений
