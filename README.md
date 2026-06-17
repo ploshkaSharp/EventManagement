@@ -7,6 +7,37 @@ REST API для управления мероприятиями и их брон
 
 Swagger для упрощения тестирования и документирования.
 
+Используется Entity Framework Core Migrations для управления схемой БД. Все изменения структуры базы данных выполняются через миграции.
+
+## Структура базы данных:
+
+- Таблица "Events":
+  * Id (uuid, PK) - уникальный идентификатор мероприятия
+  * Title (varchar(200), NOT NULL) - название мероприятия
+  * Description (varchar(1000)) - описание мероприятия
+  * StartAt (timestamp with time zone, NOT NULL) - дата и время начала
+  * EndAt (timestamp with time zone, NOT NULL) - дата и время окончания
+  * TotalSeats (integer, NOT NULL) - общее количество мест
+  * AvailableSeats (integer, NOT NULL) - количество свободных мест
+
+- Таблица "Bookings":
+  * Id (uuid, PK) - уникальный идентификатор бронирования
+  * EventId (uuid, FK -> Events.Id) - идентификатор мероприятия
+  * Status (varchar(20), NOT NULL) - статус бронирования (Pending/Confirmed/Rejected)
+  * CreatedAt (timestamp with time zone, NOT NULL) - дата создания
+  * ProcessedAt (timestamp with time zone) - дата обработки
+
+- Внешние ключи:
+  * FK_Bookings_Events_EventId - связывает Bookings.EventId с Events.Id
+  * ON DELETE RESTRICT - запрещает удаление мероприятия с активными бронями
+
+- Индексы:
+  * IX_Events_StartAt - для ускорения фильтрации по дате
+  * IX_Events_Title - для ускорения поиска по названию
+  * IX_Bookings_EventId - для ускорения поиска броней по мероприятию
+  * IX_Bookings_Status - для ускорения фильтрации по статусу
+  * IX_Bookings_CreatedAt - для ускорения сортировки по дате создания
+
 
 ## Cтек разработки
 
@@ -32,10 +63,6 @@ EventManagement/
 │ ├── EventDTO.cs                    #DTO объекты (мероприятия)
 │ ├── EventFilterDTO.cs              #DTO для параметров фильтрации
 │ └── PaginateResultDTO.cs           #DTO для пагинированного результата
-├── IntegrationTests/
-│ ├── BaseTests.cs                   #Инициализация интеграционных тестов
-│ ├── BookingRepositoryTests.cs      #Интеграционные тесты бронирования
-│ └── EventRepositoryTests.cs        #Интеграционные тесты мероприятий
 ├── Exceptions/
 │ ├── BadRequestException.cs         #Исключение - Некорректный запрос
 │ ├── NotAvailableException.cs       #Исключение - Нет доступных мест
@@ -59,9 +86,15 @@ EventManagement/
 │ ├── IBookingService.cs             #Интерфейс сервиса управления бронированием
 │ └── IEventService.cs               #Интерфейс сервиса управления мероприятиями
 ├── Tests/
-│ ├── Data/
-│ │   └── DataGenerator.cs           #Генератор тестовых данных
-│ ├── Services/
+│ └── Migration/
+│     └── DBSchemeTests.cs           #Тесты схемы БД после миграции
+│ └── Integration/
+│     ├── InitTests.cs               #Инициализация интеграционных тестов
+│     ├── BookingRepositoryTests.cs  #Интеграционные тесты бронирования
+│     └── EventRepositoryTests.cs    #Интеграционные тесты мероприятий
+│ ├── UnitData/
+│ │   └── DataGenerator.cs           #Генератор тестовых данных юнит тестов
+│ ├── Unit/
 │ │   ├── BookingServiceSeatsTest.cs #Тестовые сценарии логики мест для бронирования
 │ │   ├── BookingServiceTest.cs      #Тестовые сценарии для бронирования
 │ │   └── EventServiceTest.cs        #Тестовые сценарии (успешные, неуспешные, пограничные)
@@ -159,7 +192,6 @@ EventManagement/
    ```bash
    "DefaultConnection": "Host=localhost;Port=5432;Database=eventapi;Username=postgres;Password=111111"
    ```
-   При первом запуске приложения база данных с таблицами создастся автоматически если она не существует.
 
 3. **Переключитесь в папку с клонированным репозиторием:**
    ```bash
@@ -170,17 +202,48 @@ EventManagement/
    ```bash
    dotnet build
    ```
+   При первом запуске приложения миграции применяются автоматически (Program.cs):
+
+   ```bash
+   using (var scope = app.Services.CreateScope())
+   {
+     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+     db.Database.Migrate();
+   }
+   ```   
 
 5. **Запустите решение:**
    ```bash
    dotnet run
    ```
+6. **Для запуска тестов переключитесь в папку проекта тестов и запустите их:**
 
-6. **Для запуска тестов переключитесь в папку проекта тестов/интеграционных тестов и запустите тесты:**
+   Для запуска всех тестов:
 
    ```bash
    cd Tests
    dotnet test
+   ```   
+
+   Для запуска только тестов миграции:
+   
+   ```bash
+   cd Tests
+   dotnet test --filter "FullyQualifiedName~DatabaseSchemaTests"
+   ```   
+
+   Для запуска только интеграционных тестов мероприятий:
+   
+   ```bash
+   cd Tests
+   dotnet test --filter "FullyQualifiedName~EventRepositoryTests"
+   ```
+      
+   Для запуска только интеграционных тестов бронирования:
+   
+   ```bash
+   cd Tests
+   dotnet test --filter "FullyQualifiedName~BookingRepositoryTests"
    ```   
 
 7. **Для тестирования решения в swagger:**
@@ -190,21 +253,27 @@ EventManagement/
 
    Примечание. Порт swagger'а может отличаться от указанного здесь. Актальный порт указан в консоли запустившегося решения (см.п.5).
 
-8. **Для использования миграции:**
+## Управление миграциями
    
-   предварительно установите инструмент EF Core
-   ```bash
-   dotnet tool install --global dotnet-ef
-   ```
-   
-   и сгенерируйте начальную миграцию
-   ```bash
-   dotnet ef migrations add InitialCreate --context AppDbContext --output-dir Migrations
-   ```
-   для применения миграции к БД выполните
-   ```bash
-   dotnet ef database update --context AppDbContext
-   ```
+### Создание новой миграции
+
+```bash
+dotnet ef migrations add <MigrationName> --context AppDbContext --output-dir Migrations
+```
+### Применение миграций к базе данных
+```bash
+dotnet ef database update --context AppDbContext
+```
+
+### Откат к предыдущей миграции
+```bash
+dotnet ef database update <PreviousMigrationName> --context AppDbContext
+```
+
+### Удаление последней миграции
+```bash
+dotnet ef migrations remove --context AppDbContext
+```
 
 
 ## Реализованные методы

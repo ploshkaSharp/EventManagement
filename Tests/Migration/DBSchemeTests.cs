@@ -40,7 +40,7 @@ public class DatabaseSchemaTests : IAsyncLifetime
     services.AddLogging();
 
     _serviceProvider = services.BuildServiceProvider();
-    
+
     using var scope = _serviceProvider.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await context.Database.MigrateAsync();
@@ -95,6 +95,8 @@ public class DatabaseSchemaTests : IAsyncLifetime
     // Arrange
     using var scope = _serviceProvider.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await context.Database.EnsureDeletedAsync();
+    await context.Database.MigrateAsync();    
     var connection = context.Database.GetDbConnection();
     await connection.OpenAsync();
 
@@ -128,6 +130,8 @@ public class DatabaseSchemaTests : IAsyncLifetime
     // Arrange
     using var scope = _serviceProvider.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await context.Database.EnsureDeletedAsync();
+    await context.Database.MigrateAsync();    
     var connection = context.Database.GetDbConnection();
     await connection.OpenAsync();
 
