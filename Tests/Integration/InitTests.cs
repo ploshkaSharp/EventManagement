@@ -7,6 +7,8 @@ using EventManagement.Repositories;
 using EventManagement.Services;
 using System.ComponentModel.DataAnnotations;
 
+using EventManagement.Models;
+
 namespace EventManagement.IntegrationTests.Base;
 
 /// <summary>
