@@ -1,4 +1,4 @@
-namespace EventManagement.Domain.Enums;
+namespace EventManagement.Domain.Entities;
 
 /// <summary>
 /// Статус бронирования
