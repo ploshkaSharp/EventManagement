@@ -46,45 +46,93 @@ Swagger для упрощения тестирования и документи
 - **Swashbuckle.AspNetCore** (Swagger)
 - **xUnit**
 
-## Структура проекта
+## Архитектура и структура проекта
+
+Проект построен на принципах Clean Architecture с разделением на четыре слоя:
+
+1. Domain (EventManagement.Domain)
+   - Доменные сущности (Event, Booking)
+   - Перечисления (BookingStatus)
+   - Доменные исключения
+   - Не зависит от внешних библиотек
+
+2. Application (EventManagement.Application)
+   - Use Cases (EventService, BookingService)
+   - DTO
+   - Интерфейсы портов (репозитории)
+   - Фоновые сервисы
+   - Зависит только от Domain
+
+3. Infrastructure (EventManagement.Infrastructure)
+   - Реализации репозиториев
+   - DbContext и конфигурации
+   - Миграции
+   - Зависит от Application и Domain
+
+4. Presentation (EventManagement.Presentation)
+   - Контроллеры
+   - Глобальная обработка ошибок
+   - Composition Root (Program.cs)
+   - Зависит от Application и Infrastructure
+
+Направление зависимостей:
+Presentation → Infrastructure
+Presentation → Application
+Infrastructure → Application
+Infrastructure → Domain
+Application → Domain
 
 ```bash
 EventManagement/
-├── Controllers/
-│ ├── BookingController.cs           #Эндпоинты API (бронирование)
-│ └── EventsController.cs            #Эндпоинты API (мероприятия)
-├── DataAccess/
-│ ├── Configurations/                #Настрока таблиц в БД
-│ │ ├── BookingConfiguration.cs      #Настройка таблицы Bookings
-│ │ └── EventConfiguration.cs        #Настройка таблицы Events
+├── **Application**/
+│ └── Background/
+│ │ └── BookingBackgroundService.cs  #Фоновый сервис для обработки бронирований
+│ └── DTO/
+│ │ ├── BookingDTO.cs                #DTO объекты (бронирование)
+│ │ ├── EventDTO.cs                  #DTO объекты (мероприятия)
+│ │ ├── EventFilterDTO.cs            #DTO для параметров фильтрации
+│ │ └── PaginateResultDTO.cs         #DTO для пагинированного результата
+│ └── Mapper/
+│ │ ├── BookingMapper.cs             #Маппинг DTO объектов (бронирование)
+│ │ └── EventMapper.cs               #Маппинг DTO объектов (мероприятия)
+│ └── Ports/
+│ │ ├── IBookingRepository.cs        #Интерфейс репозитория управления бронированием
+│ │ └── IEventRepository.cs          #Интерфейс репозитория управления мероприятиями
+│ └─ Services/
+│ │ ├── BookingService.cs            #Реализация бизнес-логики управления бронированиями
+│ │ ├── Constants.cs                 #Константы
+│ │ └── EventService.cs              #Реализация бизнес-логики управления мероприятиями
+│ └── DependencyInjection.cs         #extension-метод для DI
+│
+├── **Domain**/
+│ └─ Models/
+│ │ ├── Booking.cs                   #Модель бронирования мероприятия
+│ │ ├── BookingStatus.cs             #Перечисление статусов бронирования 
+│ │ └── Event.cs                     #Доменная модель (сущность)
+│ └─ Exceptions/
+│   ├── BadRequestException.cs       #Исключение - Некорректный запрос
+│   ├── NotAvailableException.cs     #Исключение - Нет доступных мест
+│   ├── NotFoundException.cs         #Исключение - Ресурс не найден
+│   └── ValidationException.cs       #Исключение - Ошибка валидации
+│
+├── **Infastructure**/
+│ ├─ DataAccess/
+│ │  └── Configurations/             #Настрока таблиц в БД
+│ │   ├── BookingConfiguration.cs    #Настройка таблицы Bookings
+│ │   └── EventConfiguration.cs      #Настройка таблицы Events
 │ └── AppDbContext.cs                #Контекст БД
-├── DTO/
-│ ├── BookingDTO.cs                  #DTO объекты (бронирование)
-│ ├── EventDTO.cs                    #DTO объекты (мероприятия)
-│ ├── EventFilterDTO.cs              #DTO для параметров фильтрации
-│ └── PaginateResultDTO.cs           #DTO для пагинированного результата
-├── Exceptions/
-│ ├── BadRequestException.cs         #Исключение - Некорректный запрос
-│ ├── NotAvailableException.cs       #Исключение - Нет доступных мест
-│ ├── NotFoundException.cs           #Исключение - Ресурс не найден
-│ └── ValidationException.cs         #Исключение - Ошибка валидации
-├── Mappers/
-│ ├── BookingMapper.cs               #Маппинг DTO объектов (бронирование)
-│ └── EventMapper.cs                 #Маппинг DTO объектов (мероприятия)
-├── Middleware/
-│ └── GlobalExceptionHandlingMiddleware.cs  #Глобальная обработка исключений (middleware)
-├── Models/
-│ ├── Booking.cs                     #Модель бронирования мероприятия
-│ ├── BookingStatus.cs               #Перечисление статусов бронирования 
-│ ├── ErrorResponse.cs               #Модель ответа об ошибке в формате Problem Details (RFC 7807)
-│ └── Event.cs                       #Доменная модель (сущность)
-├── Services/
-│ ├── BookingBackgroundService.cs    #Фоновый сервис для обработки бронирований
-│ ├── BookingService.cs              #Реализация бизнес-логики управления бронированиями
-│ ├── Constants.cs                   #Константы
-│ ├── EventService.cs                #Реализация бизнес-логики управления мероприятиями
-│ ├── IBookingService.cs             #Интерфейс сервиса управления бронированием
-│ └── IEventService.cs               #Интерфейс сервиса управления мероприятиями
+│ └─ Repositories/
+│   ├── BookingRepository.cs         #Репозиторий бронирований
+│   └── EventRepository.cs           #Репозиторий мероприятий
+│
+├── **Presentation**/
+│ └─ Controllers/
+│ │ ├── BookingController.cs         #Эндпоинты API (бронирование)
+│ │ └── EventsController.cs          #Эндпоинты API (мероприятия)
+│ └─ Middleware/
+│   └── GlobalExceptionHandlingMiddleware.cs  #Глобальная обработка исключений (middleware)
+│ └─ ErrorResponse.cs               #Модель ответа об ошибке в формате Problem Details (RFC 7807)
+│
 ├── Tests/
 │ └── Migration/
 │     └── DBSchemeTests.cs           #Тесты схемы БД после миграции
