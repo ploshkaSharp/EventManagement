@@ -1,3 +1,5 @@
+using EventManagement.Domain.Enums;
+
 namespace EventManagement.Domain.Entities;
 
 /// <summary>
