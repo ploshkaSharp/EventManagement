@@ -1,9 +1,9 @@
 using System.Reflection;
 using Microsoft.OpenApi;
-using EventManagement.Services;
-using EventManagement.Middleware;
-using EventManagement.Data;
-using EventManagement.Repositories;
+using EventManagement.Application;
+using EventManagement.Infrastructure;
+using EventManagement.Infrastructure.Data;
+using EventManagement.Presentation.Middleware;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,22 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Configure Database
-builder.Services.AddDbContext<AppDbContext>(options =>
-{
-  options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-  options.EnableSensitiveDataLogging(builder.Environment.IsDevelopment());
-  options.EnableDetailedErrors(builder.Environment.IsDevelopment());
-});
-
-// Register Repositories
-builder.Services.AddScoped<IEventRepository, EventRepository>();
-builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-// Register Services (DbContext is scoped)
-builder.Services.AddScoped<IEventService, EventService>();
-builder.Services.AddScoped<IBookingService, BookingService>();
-// Register Background Service (singleton)
-builder.Services.AddHostedService<BookingBackgroundService>();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // Настройка Swagger с поддержкой XML-комментариев
 builder.Services.AddSwaggerGen(c =>
