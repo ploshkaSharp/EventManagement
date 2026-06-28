@@ -1,6 +1,6 @@
-using EventManagement.DTOs;
-using EventManagement.Services;
-using EventManagement.Data;
+using EventManagement.Application.DTOs;
+using EventManagement.Application.Services;
+using EventManagement.Infrastructure.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.EntityFrameworkCore;

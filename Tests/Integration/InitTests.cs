@@ -2,12 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
-using EventManagement.Data;
-using EventManagement.Repositories;
-using EventManagement.Services;
+using EventManagement.Infrastructure.Data;
+using EventManagement.Infrastructure.Repositories;
+using EventManagement.Application.Ports;
+using EventManagement.Application.Services;
 using System.ComponentModel.DataAnnotations;
-
-using EventManagement.Models;
 
 namespace EventManagement.IntegrationTests.Base;
 

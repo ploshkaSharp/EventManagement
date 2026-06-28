@@ -28,6 +28,24 @@ public class Event
   }
 
   /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="title">Название мероприятия</param>
+  /// <param name="startAt">Дата и время начала мероприятия</param>
+  /// <param name="endAt">Дата и время окончания мероприятия</param>
+  /// <param name="totalSeats">Количесвто мест на мероприятии</param>
+  public Event(string title, DateTime startAt, DateTime endAt, int totalSeats)
+  {
+    Id = Guid.NewGuid();
+    Title = title;
+    StartAt = startAt;
+    EndAt = endAt;
+    TotalSeats = totalSeats;
+    AvailableSeats = totalSeats;
+    Bookings = new List<Booking>();
+  }   
+
+  /// <summary>
   /// Уникальный идентификатор мероприятия
   /// </summary>
   /// <example>3fa85f64-5717-4562-b3fc-2c963f66afa6</example>  

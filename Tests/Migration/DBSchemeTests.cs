@@ -2,7 +2,7 @@ using Xunit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
-using EventManagement.Data;
+using EventManagement.Infrastructure.Data;
 
 namespace EventManagement.IntegrationTests;
 

@@ -1,11 +1,12 @@
 using Xunit;
-using EventManagement.Services;
-using EventManagement.Models;
+using EventManagement.Application.Services;
+using EventManagement.Domain.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Runtime.CompilerServices;
-using EventManagement.Data;
-using EventManagement.Repositories;
+using EventManagement.Infrastructure.Data;
+using EventManagement.Application.Ports;
+using EventManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventManagement.Tests.Services;
