@@ -3,7 +3,7 @@ namespace EventManagement.Domain.Exceptions;
 /// <summary>
 /// Исключение - Нет доступных мест 
 /// </summary>
-public class NoAvailableSeatsException : DomainException//Exception
+public class NoAvailableSeatsException : DomainException
 {
   /// <summary>
   /// Список ошибок
