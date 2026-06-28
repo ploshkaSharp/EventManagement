@@ -1,4 +1,4 @@
-using EventManagement.Exceptions;
+using EventManagement.Domain.Exceptions;
 
 namespace EventManagement.Application.DTOs;
 
