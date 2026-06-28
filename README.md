@@ -76,11 +76,13 @@ Swagger для упрощения тестирования и документи
    - Зависит от Application и Infrastructure
 
 Направление зависимостей:
+```bash
 Presentation → Infrastructure
 Presentation → Application
 Infrastructure → Application
 Infrastructure → Domain
 Application → Domain
+```
 
 ```bash
 EventManagement/
