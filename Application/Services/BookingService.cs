@@ -4,6 +4,7 @@ using EventManagement.Domain.Enums;
 using EventManagement.Domain.Entities;
 using EventManagement.Domain.Exceptions;
 using EventManagement.Application.Mappers;
+using Microsoft.Extensions.Logging;
 
 namespace EventManagement.Application.Services;
 

@@ -18,7 +18,7 @@ public class Event
   /// <param name="title">Название мероприятия</param>
   /// <param name="startAt">Дата и время начала мероприятия</param>
   /// <param name="endAt">Дата и время окончания мероприятия</param>
-  internal Event(string title, DateTime startAt, DateTime endAt)
+  public Event(string title, DateTime startAt, DateTime endAt)
   {
     Id = Guid.NewGuid();
     Title = title;
@@ -88,7 +88,7 @@ public class Event
   /// </summary>
   /// <param name="count">Количество мест для бронирования</param>
   /// <returns>True если места успешно забронированы, иначе False</returns>
-  internal bool TryReserveSeats(int count = 1)
+  public bool TryReserveSeats(int count = 1)
   {
     if (AvailableSeats >= count)
     {
@@ -102,7 +102,7 @@ public class Event
   /// Освободить места
   /// </summary>
   /// <param name="count">Количество мест для освобождения</param>
-  internal void ReleaseSeats(int count = 1)
+  public void ReleaseSeats(int count = 1)
   {
     AvailableSeats += count;
     if (AvailableSeats > TotalSeats)

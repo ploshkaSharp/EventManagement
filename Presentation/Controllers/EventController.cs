@@ -222,20 +222,7 @@ public class EventsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]    
     public async Task<ActionResult<BookingDTO>> BookEvent(Guid id)
-    {
-        // Проверить существование мероприятия
-        var eventItem = await _eventService.GetByIdAsync(id);
-
-        if (eventItem == null)
-        {
-          return NotFound();
-        }
-
-        if (eventItem.StartAt < DateTime.UtcNow)
-        {
-          return BadRequest("Can not book an event that has already started");
-        }      
-
+    {                
         // Создать бронь
         var booking = await _bookingService.CreateBookingAsync(id);
 

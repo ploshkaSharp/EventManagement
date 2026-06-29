@@ -10,6 +10,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\EventManagement.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.8" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />    
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.1.7" />     
   </ItemGroup>  
 
 </Project>

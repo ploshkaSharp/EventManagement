@@ -3,7 +3,7 @@ namespace EventManagement.Domain.Exceptions;
 /// <summary>
 /// Исключение - Ресурс не найден
 /// </summary>
-public class NotFoundException : DomainException//Exception
+public class NotFoundException : DomainException
 {
   /// <summary>
   /// Ресурс не найден

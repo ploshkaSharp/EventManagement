@@ -2,7 +2,6 @@ using System.Collections;
 using System.Net;
 using System.Text.Json;
 using EventManagement.Domain.Exceptions;
-using EventManagement.Domain.Entities;
 
 namespace EventManagement.Presentation.Middleware;
 

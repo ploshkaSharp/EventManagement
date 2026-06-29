@@ -3,6 +3,7 @@ using EventManagement.Infrastructure.Data;
 using EventManagement.Application.DTOs;
 using EventManagement.Application.Ports;
 using EventManagement.Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace EventManagement.Infrastructure.Repositories;
 
