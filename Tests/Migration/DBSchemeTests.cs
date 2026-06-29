@@ -96,7 +96,7 @@ public class DatabaseSchemaTests : IAsyncLifetime
     using var scope = _serviceProvider.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await context.Database.EnsureDeletedAsync();
-    await context.Database.MigrateAsync();    
+    await context.Database.MigrateAsync();
     var connection = context.Database.GetDbConnection();
     await connection.OpenAsync();
 
@@ -131,7 +131,7 @@ public class DatabaseSchemaTests : IAsyncLifetime
     using var scope = _serviceProvider.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await context.Database.EnsureDeletedAsync();
-    await context.Database.MigrateAsync();    
+    await context.Database.MigrateAsync();
     var connection = context.Database.GetDbConnection();
     await connection.OpenAsync();
 
@@ -159,6 +159,21 @@ public class DatabaseSchemaTests : IAsyncLifetime
     {
       await connection.CloseAsync();
     }
+  }
+
+  /// <summary>
+  /// Вернуть строку со именами всех таблиц
+  /// </summary>
+  private async Task<string> AllTablesAsync(System.Data.Common.DbConnection connection)
+  {
+    await using var command = connection.CreateCommand();
+    command.CommandText = @"            
+                SELECT STRING_AGG(table_name, ', ') AS tables
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                AND table_type = 'BASE TABLE'
+            ";
+    return (string)await command.ExecuteScalarAsync();
   }
 
   /// <summary>

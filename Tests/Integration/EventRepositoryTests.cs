@@ -2,7 +2,6 @@ using Xunit;
 using EventManagement.Application.Ports;
 using EventManagement.Application.DTOs;
 using EventManagement.Domain.Entities;
-using EventManagement.Infrastructure.Repositories;
 using EventManagement.IntegrationTests.Base;
 using Microsoft.Extensions.DependencyInjection;
 
