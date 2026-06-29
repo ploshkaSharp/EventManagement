@@ -1,4 +1,3 @@
-//namespace EventManagement.Domain.Entities;
 namespace EventManagement.Domain.Enums;
 
 /// <summary>

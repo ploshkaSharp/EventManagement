@@ -7,7 +7,7 @@ namespace EventManagement.Domain.Entities;
 /// </summary>
 public class Booking
 {
-  // Приватный конструктор для EF Core
+  // Конструктор
   private Booking()
   {
     Event = null!;
@@ -57,7 +57,7 @@ public class Booking
   public DateTime? ProcessedAt { get; set; }
 
   /// <summary>
-  /// Навигационное свойство 
+  /// Мероприятие
   /// </summary>
   public Event Event { get; private set; }
 

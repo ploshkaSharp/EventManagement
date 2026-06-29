@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using Swashbuckle.AspNetCore.Annotations;
 namespace EventManagement.Application.DTOs;
 
 /// <summary>
@@ -45,7 +43,6 @@ public class EventDTO
 /// <summary>
 /// DTO для создания нового мероприятия
 /// </summary>
-[SwaggerSchema(Required = new[] { "title", "startAt", "endAt", "totalSeats" })]
 public class CreateEventDTO 
 {
   /// <summary>
@@ -77,7 +74,6 @@ public class CreateEventDTO
 /// <summary>
 /// DTO для создания обновления существующего мероприятия
 /// </summary>
-[SwaggerSchema(Required = new[] { "title", "startAt", "endAt" })]
 public class UpdateEventDTO
 {
   /// <summary>

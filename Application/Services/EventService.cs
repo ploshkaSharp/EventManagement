@@ -3,7 +3,6 @@ using EventManagement.Application.Mappers;
 using EventManagement.Application.Ports;
 using EventManagement.Domain.Entities;
 using EventManagement.Domain.Exceptions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace EventManagement.Application.Services;

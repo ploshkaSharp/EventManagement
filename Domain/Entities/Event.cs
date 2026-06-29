@@ -5,7 +5,7 @@ namespace EventManagement.Domain.Entities;
 /// </summary>
 public class Event
 {
-  // Приватный конструктор для EF Core
+  // Конструктор
   private Event()
   {
     Title = null!;
@@ -79,7 +79,7 @@ public class Event
   /// </summary>
   public int AvailableSeats { get; set; }
   /// <summary>
-  /// Навигационное свойство 
+  /// Брони
   /// </summary>
   public ICollection<Booking> Bookings { get; private set; }
 
