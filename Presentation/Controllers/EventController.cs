@@ -79,11 +79,6 @@ public class EventsController : ControllerBase
     {
         var eventItem = await _eventService.GetByIdAsync(id);
 
-        if (eventItem == null)
-        {
-            return NotFound();
-        }
-
         return Ok(eventItem);
     }
 
@@ -151,11 +146,6 @@ public class EventsController : ControllerBase
         {
             var updatedEvent = await _eventService.UpdateAsync(id, eventItem);
 
-            if (updatedEvent == null)
-            {
-                return NotFound();
-            }
-
             return Ok(updatedEvent);
         }
         catch (ArgumentException ex)
@@ -183,11 +173,6 @@ public class EventsController : ControllerBase
     public async Task<IActionResult> Delete(Guid id)
     {
         var deleted = await _eventService.DeleteAsync(id);
-
-        if (!deleted)
-        {
-            return NotFound();
-        }
 
         return NoContent();
     }
