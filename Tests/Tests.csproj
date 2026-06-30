@@ -21,8 +21,9 @@
     <PackageReference Include="Testcontainers.PostgreSql" Version="4.12.0" /> 
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\EventManagement.csproj" />
-  </ItemGroup>
+  <ItemGroup>    
+    <ProjectReference Include="..\Application\EventManagement.Application.csproj" />
+    <ProjectReference Include="..\Infrastructure\EventManagement.Infrastructure.csproj" />
+  </ItemGroup>  
 
 </Project>
