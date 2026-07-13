@@ -17,10 +17,12 @@ public class Booking
   /// 
   /// </summary>
   /// <param name="eventId"></param>
-  public Booking(Guid eventId)
+  /// <param name="userId"></param>
+  public Booking(Guid eventId, Guid userId)
   {
     Id = Guid.NewGuid();
     EventId = eventId;
+    UserId = userId;
     Status = BookingStatus.Pending;
     CreatedAt = DateTime.UtcNow;
     Event = null!;
@@ -37,6 +39,12 @@ public class Booking
   /// </summary>
   /// <example>3fa85f64-5717-4562-b3fc-2c963f66afa6</example>
   public Guid EventId { get; set; }
+
+  /// <summary>
+  /// Идентификатор пользователя
+  /// </summary>
+  /// <example>3fa85f64-5717-4562-b3fc-2c963f66afa6</example>
+  public Guid UserId { get; set; }  
 
   /// <summary>
   /// Текущий статус брони

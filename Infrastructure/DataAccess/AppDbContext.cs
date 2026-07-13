@@ -25,6 +25,11 @@ public sealed class AppDbContext : DbContext
   public DbSet<Booking> Bookings => Set<Booking>();
 
   /// <summary>
+  /// Таблица Users в БД
+  /// </summary>
+  public DbSet<User> Users => Set<User>();
+
+  /// <summary>
   /// Переопредление пользовательской настройкой модели БД
   /// </summary>
   /// <param name="modelBuilder">Объект построения модели</param>
