@@ -62,6 +62,11 @@ public class Booking
   public Event Event { get; private set; }
 
   /// <summary>
+  /// Пользователь
+  /// </summary>
+  public User? User { get; private set; }
+
+  /// <summary>
   /// Подтвердить бронирование
   /// </summary>
   /// <exception cref="InvalidOperationException"></exception>
