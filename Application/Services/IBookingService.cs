@@ -13,14 +13,14 @@ public interface IBookingService
   /// </summary>
   /// <param name="eventId">Идентификатор события</param>
   /// <returns>Информация о созданной брони</returns>
-  Task<BookingDTO> CreateBookingAsync(Guid eventId);
+  Task<BookingDTO> CreateBookingAsync(Guid eventId, Guid userId);
 
   /// <summary>
   /// Получить бронь по идентификатору
   /// </summary>
   /// <param name="bookingId">Идентификатор брони</param>
   /// <returns>Информация о брони</returns>
-  Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId);
+  Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId, Guid userId, bool isAdmin);
 
   /// <summary>
   /// Получить список бронирований по статусу

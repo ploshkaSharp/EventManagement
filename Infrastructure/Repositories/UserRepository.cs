@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using EventManagement.Application.Ports;
 using EventManagement.Domain.Entities;
+using EventManagement.Domain.Enums;
 using EventManagement.Infrastructure.Data;
 
 namespace EventManagement.Infrastructure.Repositories;
@@ -49,4 +50,11 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<int> CountActiveBookingsAsync(Guid userId)
+    {
+        return await _context.Bookings
+            .CountAsync(b => b.UserId == userId && 
+                (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed));
+    }    
 }

@@ -15,6 +15,8 @@ public class BookingService : IBookingService
 {
   private readonly IBookingRepository _bookingRepository;
   private readonly IEventRepository _eventRepository;
+  private readonly IUserRepository _userRepository;
+  private readonly int _maxActiveBookings = 10;
   private readonly ILogger<BookingService> _logger;
   private static readonly SemaphoreSlim _bookingLock = new(1, 1); // Блокировка для критической секции
 
@@ -23,11 +25,13 @@ public class BookingService : IBookingService
   /// </summary>
   /// <param name="bookingRepository"></param>
   /// <param name="eventRepository"></param>
+  /// <param name="userRepository"></param>
   /// <param name="logger"></param>
-  public BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository, ILogger<BookingService> logger)
+  public BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository, IUserRepository userRepository, ILogger<BookingService> logger)
   {    
     _bookingRepository = bookingRepository;
     _eventRepository = eventRepository;
+    _userRepository = userRepository;
     _logger = logger;
   }
 
@@ -35,10 +39,11 @@ public class BookingService : IBookingService
   /// Создать бронь
   /// </summary>
   /// <param name="eventId">ИД мероприятия</param>
+  /// <param name="userId">ИД пользователя</param>
   /// <returns></returns>
   /// <exception cref="NotFoundException"></exception>
   /// <exception cref="BadRequestException"></exception>
-  public async Task<BookingDTO> CreateBookingAsync(Guid eventId)
+  public async Task<BookingDTO> CreateBookingAsync(Guid eventId, Guid userId)
   { 
     _logger.LogInformation("Attempting to create booking for event {EventId}", eventId);
     await _bookingLock.WaitAsync();
@@ -57,6 +62,12 @@ public class BookingService : IBookingService
         throw new BadRequestException("Can not book an event that has already started");
       }
 
+      var activeBookings = await _userRepository.CountActiveBookingsAsync(userId);
+      if (activeBookings >= _maxActiveBookings)
+      {
+        throw new BookingLimitExceededException(_maxActiveBookings);
+      }        
+
       // Забронировать место
       if (!eventItem.TryReserveSeats(1))
       {
@@ -64,7 +75,7 @@ public class BookingService : IBookingService
         throw new NoAvailableSeatsException("No available seats for this event");
       }
 
-      var booking = new Booking(eventId){};
+      var booking = new Booking(eventId, userId){};
 
       // Добавить бронь      
       var createdBooking = await _bookingRepository.CreateAsync(booking);
@@ -84,7 +95,7 @@ public class BookingService : IBookingService
   /// <param name="bookingId">Идентификатор брони</param>
   /// <returns>Информация о брони</returns>
   /// <exception cref="NotFoundException"></exception>
-  public async Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId)
+  public async Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId, Guid userId, bool isAdmin)
   {
     _logger.LogDebug("Retrieving booking {BookingId}", bookingId);
     
@@ -95,6 +106,11 @@ public class BookingService : IBookingService
       throw new NotFoundException(nameof(Booking), bookingId);
     }
 
+    if (!isAdmin && booking.UserId != userId)
+    {
+      throw new UnAuthorizedOperationException("view booking", "User can only view their own bookings");
+    }
+            
     return BookingMapper.ToDto(booking);
   }
 
@@ -143,4 +159,33 @@ public class BookingService : IBookingService
     var updatedBooking = await _bookingRepository.UpdateAsync(booking);
     return updatedBooking != null;    
   }
+
+    public async Task<bool> CancelBookingAsync(Guid bookingId, Guid userId, bool isAdmin)
+    {
+        var booking = await _bookingRepository.GetByIdAsync(bookingId);
+        if (booking == null)
+            throw new NotFoundException(nameof(Booking), bookingId);
+        
+        if (!isAdmin && booking.UserId != userId)
+            throw new UnAuthorizedOperationException("cancel booking", "User can only cancel their own bookings");
+        
+        if (booking.Status != BookingStatus.Pending && booking.Status != BookingStatus.Confirmed)
+            throw new ValidationException($"Cannot cancel booking with status {booking.Status}");
+        
+        booking.Status = BookingStatus.Cancelled;
+        var updated = await _bookingRepository.UpdateAsync(booking);
+                
+        if (booking.Status == BookingStatus.Confirmed)
+        {
+            await _eventRepository.ReleaseSeatsAsync(booking.EventId, 1);
+        }
+        
+        return updated != null;
+    }  
+
+    public async Task<IEnumerable<BookingDTO>> GetBookingsByUserIdAsync(Guid userId)
+    {
+        var bookings = await _bookingRepository.GetByUserIdAsync(userId);
+        return bookings.Select(BookingMapper.ToDto);
+    }    
 }

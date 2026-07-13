@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using EventManagement.Application.Ports;
 using EventManagement.Infrastructure.Data;
 using EventManagement.Infrastructure.Repositories;
+using EventManagement.Infrastructure.Security;
 
 namespace EventManagement.Infrastructure;
 
@@ -24,6 +25,12 @@ public static class DependencyInjection
 
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        
+        services.Configure<JwtSettings>(
+            configuration.GetSection("JwtSettings"));
         
         return services;
     }

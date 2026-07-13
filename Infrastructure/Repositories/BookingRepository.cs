@@ -107,4 +107,7 @@ public class BookingRepository : IBookingRepository
     await _context.SaveChangesAsync();
     return true;
   }
+
+  public async Task<IEnumerable<Booking>> GetByUserIdAsync(Guid userId)
+    => await _context.Bookings.Where(b => b.UserId == userId).OrderByDescending(b => b.CreatedAt).ToListAsync();  
 }

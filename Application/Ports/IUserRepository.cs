@@ -10,4 +10,5 @@ public interface IUserRepository
   Task<User> CreateAsync(User user);
   Task<User?> UpdateAsync(User user);
   Task<bool> DeleteAsync(Guid id);
+  Task<int> CountActiveBookingsAsync(Guid userId);
 }
