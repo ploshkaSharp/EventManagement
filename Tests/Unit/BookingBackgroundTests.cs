@@ -36,15 +36,16 @@ public class BookingBackgroundServiceTests
         using var scope = _serviceProvider.CreateScope();
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();        
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+        var userId = Guid.NewGuid();
 
         // Создать событие
         var createEventDto = TestDataGenerator.GetValidCreateEventDto();
         var createdEvent = await eventService.CreateAsync(createEventDto);
 
         // Создать несколько броней
-        var booking1 = await bookingService.CreateBookingAsync(createdEvent.Id);
-        var booking2 = await bookingService.CreateBookingAsync(createdEvent.Id);
-        var booking3 = await bookingService.CreateBookingAsync(createdEvent.Id);
+        var booking1 = await bookingService.CreateBookingAsync(createdEvent.Id, userId);
+        var booking2 = await bookingService.CreateBookingAsync(createdEvent.Id, userId);
+        var booking3 = await bookingService.CreateBookingAsync(createdEvent.Id, userId);
 
         // Искусственно подтвердить бронь до обработки фоновым сервисом
         await bookingService.UpdateBookingStatusAsync(booking1.Id, BookingStatus.Confirmed);
@@ -55,9 +56,9 @@ public class BookingBackgroundServiceTests
         await Task.Delay(TimeSpan.FromSeconds(1));
         
         // Assert - все брони должны быть обработаны
-        var processedBooking1 = await bookingService.GetBookingByIdAsync(booking1.Id);
-        var processedBooking2 = await bookingService.GetBookingByIdAsync(booking2.Id);
-        var processedBooking3 = await bookingService.GetBookingByIdAsync(booking3.Id);
+        var processedBooking1 = await bookingService.GetBookingByIdAsync(booking1.Id, userId, false);
+        var processedBooking2 = await bookingService.GetBookingByIdAsync(booking2.Id, userId, false);
+        var processedBooking3 = await bookingService.GetBookingByIdAsync(booking3.Id, userId, false);
 
         Assert.NotNull(processedBooking1);
         Assert.NotNull(processedBooking2);
@@ -79,23 +80,24 @@ public class BookingBackgroundServiceTests
         using var scope = _serviceProvider.CreateScope();
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();        
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+        var userId = Guid.NewGuid();
 
         // Создать событие
         var createEventDto = TestDataGenerator.GetValidCreateEventDto();
         var createdEvent = await eventService.CreateAsync(createEventDto);
 
         // Создать бронь
-        var booking = await bookingService.CreateBookingAsync(createdEvent.Id);
+        var booking = await bookingService.CreateBookingAsync(createdEvent.Id, userId);
 
         // Искусственно подтвердить бронь до обработки фоновым сервисом
         await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Confirmed);
-        var processedAtBefore = (await bookingService.GetBookingByIdAsync(booking.Id))?.ProcessedAt;
+        var processedAtBefore = (await bookingService.GetBookingByIdAsync(booking.Id, userId, false))?.ProcessedAt;
 
         // Act - ожидать обработки фоновым сервисом
         await Task.Delay(TimeSpan.FromSeconds(1));
 
         // Assert - бронь не должна быть обработана повторно
-        var bookingAfter = await bookingService.GetBookingByIdAsync(booking.Id);
+        var bookingAfter = await bookingService.GetBookingByIdAsync(booking.Id, userId, false);
         Assert.NotNull(bookingAfter);
         Assert.Equal(BookingStatus.Confirmed, bookingAfter.Status);
         Assert.Equal(processedAtBefore, bookingAfter.ProcessedAt);

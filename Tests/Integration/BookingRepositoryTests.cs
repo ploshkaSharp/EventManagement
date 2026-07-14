@@ -23,11 +23,12 @@ public class BookingRepositoryTests : IntegrationTestBase
     using var scope = _serviceProvider.CreateScope();
     var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
     var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+    var userId = Guid.NewGuid();
 
     var eventItem = new Event("Test Event", DateTime.UtcNow.AddDays(30), DateTime.UtcNow.AddDays(30).AddHours(4), 10);
     var createdEvent = await eventRepository.CreateAsync(eventItem);
 
-    var booking = new Booking(createdEvent.Id);
+    var booking = new Booking(createdEvent.Id, userId);
 
     // Act
     var result = await bookingRepository.CreateAsync(booking);
@@ -49,10 +50,11 @@ public class BookingRepositoryTests : IntegrationTestBase
     using var scope = _serviceProvider.CreateScope();
     var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
     var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+    var userId = Guid.NewGuid();
 
     var eventItem = new Event("Test Event", DateTime.UtcNow.AddDays(30), DateTime.UtcNow.AddDays(30).AddHours(4), 10);
     var createdEvent = await eventRepository.CreateAsync(eventItem);
-    var booking = new Booking(createdEvent.Id);
+    var booking = new Booking(createdEvent.Id, userId);
     var created = await bookingRepository.CreateAsync(booking);
 
     // Act
@@ -74,13 +76,14 @@ public class BookingRepositoryTests : IntegrationTestBase
     using var scope = _serviceProvider.CreateScope();
     var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
     var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+    var userId = Guid.NewGuid();
 
     var eventItem = new Event("Test Event", DateTime.UtcNow.AddDays(30), DateTime.UtcNow.AddDays(30).AddHours(4), 10);
     var createdEvent = await eventRepository.CreateAsync(eventItem);
 
     for (int i = 0; i < 5; i++)
     {
-      var booking = new Booking(createdEvent.Id);
+      var booking = new Booking(createdEvent.Id, userId);
       await bookingRepository.CreateAsync(booking);
     }
 
@@ -102,13 +105,14 @@ public class BookingRepositoryTests : IntegrationTestBase
     using var scope = _serviceProvider.CreateScope();
     var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
     var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+    var userId = Guid.NewGuid();
 
     var eventItem = new Event("Test Event", DateTime.UtcNow.AddDays(30), DateTime.UtcNow.AddDays(30).AddHours(4), 10);
     var createdEvent = await eventRepository.CreateAsync(eventItem);
 
-    var booking1 = new Booking(createdEvent.Id);
-    var booking2 = new Booking(createdEvent.Id);
-    var booking3 = new Booking(createdEvent.Id);
+    var booking1 = new Booking(createdEvent.Id, userId);
+    var booking2 = new Booking(createdEvent.Id, userId);
+    var booking3 = new Booking(createdEvent.Id, userId);
 
     var created1 = await bookingRepository.CreateAsync(booking1);
     var created2 = await bookingRepository.CreateAsync(booking2);
@@ -139,10 +143,11 @@ public class BookingRepositoryTests : IntegrationTestBase
     using var scope = _serviceProvider.CreateScope();
     var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
     var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+    var userId = Guid.NewGuid();
 
     var eventItem = new Event("Test Event", DateTime.UtcNow.AddDays(30), DateTime.UtcNow.AddDays(30).AddHours(4), 10);
     var createdEvent = await eventRepository.CreateAsync(eventItem);
-    var booking = new Booking(createdEvent.Id);
+    var booking = new Booking(createdEvent.Id, userId);
     var created = await bookingRepository.CreateAsync(booking);
 
     created.Confirm();
@@ -167,10 +172,11 @@ public class BookingRepositoryTests : IntegrationTestBase
     using var scope = _serviceProvider.CreateScope();
     var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
     var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+    var userId = Guid.NewGuid();
 
     var eventItem = new Event("Test Event", DateTime.UtcNow.AddDays(30), DateTime.UtcNow.AddDays(30).AddHours(4), 10);
     var createdEvent = await eventRepository.CreateAsync(eventItem);
-    var booking = new Booking(createdEvent.Id);
+    var booking = new Booking(createdEvent.Id, userId);
     var created = await bookingRepository.CreateAsync(booking);
 
     // Act
