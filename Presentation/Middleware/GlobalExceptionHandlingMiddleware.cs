@@ -111,6 +111,45 @@ public class GlobalExceptionHandlingMiddleware
             badRequestEx.Message);
         break;
 
+      case EventAlreadyStartedException eventAlreadyStartedEx:
+        response.StatusCode = (int)HttpStatusCode.BadRequest;
+        errorResponse = CreateErrorResponse(context,
+                                            HttpStatusCode.BadRequest,
+                                            "Event Already Started",
+                                            eventAlreadyStartedEx.Message);
+        _logger.LogWarning(exception,
+            "Event Already Started. Method: {Method}, Path: {Path}, Message: {Message}",
+            context.Request.Method,
+            context.Request.Path,
+            eventAlreadyStartedEx.Message);
+        break; 
+
+      case BookingLimitExceededException limitExceededEx:
+        response.StatusCode = (int)HttpStatusCode.Conflict;
+        errorResponse = CreateErrorResponse(context,
+                                            HttpStatusCode.Conflict,
+                                            "Booking Limit Exceeded",
+                                            $"Maximum {limitExceededEx.Limit} active bookings allowed");
+        _logger.LogWarning(exception,
+            "Booking Limit Exceeded. Method: {Method}, Path: {Path}, Message: {Message}",
+            context.Request.Method,
+            context.Request.Path,
+            $"Maximum {limitExceededEx.Limit} active bookings allowed");
+        break; 
+
+      case UnAuthorizedOperationException unAuthOperationEx:
+        response.StatusCode = (int)HttpStatusCode.Conflict;
+        errorResponse = CreateErrorResponse(context,
+                                            HttpStatusCode.Forbidden,
+                                            "Forbidden",
+                                            unAuthOperationEx.Message);
+        _logger.LogWarning(exception,
+            "Forbidden. Method: {Method}, Path: {Path}, Message: {Message}",
+            context.Request.Method,
+            context.Request.Path,
+            unAuthOperationEx.Message);
+        break;                      
+
       case ArgumentException argEx:
         response.StatusCode = (int)HttpStatusCode.BadRequest;
         errorResponse = CreateErrorResponse(context,

@@ -181,11 +181,5 @@ public class BookingService : IBookingService
         }
         
         return updated != null;
-    }  
-
-    public async Task<IEnumerable<BookingDTO>> GetBookingsByUserIdAsync(Guid userId)
-    {
-        var bookings = await _bookingRepository.GetByUserIdAsync(userId);
-        return bookings.Select(BookingMapper.ToDto);
     }    
 }

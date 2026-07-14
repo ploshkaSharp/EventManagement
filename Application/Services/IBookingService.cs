@@ -36,4 +36,13 @@ public interface IBookingService
   /// <param name="status">Новый статус</param>
   /// <returns>true если удалось обновить, fasle если не удалось</returns>
   Task<bool> UpdateBookingStatusAsync(Guid bookingId, BookingStatus status);   
+  
+  /// <summary>
+  /// Отменить бронирование
+  /// </summary>
+  /// <param name="bookingId"></param>
+  /// <param name="userId"></param>
+  /// <param name="isAdmin"></param>
+  /// <returns></returns>
+  Task<bool> CancelBookingAsync(Guid bookingId, Guid userId, bool isAdmin);
 }
