@@ -308,11 +308,11 @@ EventManagement/
 ### Создание новой миграции
 
 ```bash
-dotnet ef migrations add <MigrationName> --context AppDbContext --output-dir Infrastructure\Migrations
+dotnet ef migrations add <MigrationName> --context AppDbContext --output-dir EventManagement\Infrastructure\Migrations
 ```
 ### Применение миграций к базе данных
 ```bash
-dotnet ef database update --context AppDbContext
+dotnet ef database update --context AppDbContext  --project EventManagement\Infrastructure --startup-project EventManagement\Presentation  
 ```
 
 ### Откат к предыдущей миграции
