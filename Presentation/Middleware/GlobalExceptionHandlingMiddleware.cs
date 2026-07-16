@@ -138,7 +138,7 @@ public class GlobalExceptionHandlingMiddleware
         break; 
 
       case UnAuthorizedOperationException unAuthOperationEx:
-        response.StatusCode = (int)HttpStatusCode.Conflict;
+        response.StatusCode = (int)HttpStatusCode.Forbidden;
         errorResponse = CreateErrorResponse(context,
                                             HttpStatusCode.Forbidden,
                                             "Forbidden",

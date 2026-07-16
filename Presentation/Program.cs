@@ -29,11 +29,29 @@ builder.Services.AddSwaggerGen(c =>
     Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token",
     Name = "Authorization",
     In = ParameterLocation.Header,
-    Type = SecuritySchemeType.ApiKey,
-    Scheme = "Bearer"
+    Type = SecuritySchemeType.Http,
+    Scheme = "Bearer",
+    BearerFormat = "JWT"
   };  
 
   c.AddSecurityDefinition("Bearer", securityScheme);
+
+  /*
+  c.AddSecurityRequirement(new OpenApiSecurityRequirement
+  {
+    {
+      new OpenApiSecurityScheme
+      {
+        Reference = new OpenApiReference
+        {
+          Type = ReferenceType.SecurityScheme,
+          Id = "Bearer"
+        }
+      },
+      Array.Empty<string>()
+    }
+  }); 
+  */ 
 
   // Включение XML-комментариев для документации
   var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
