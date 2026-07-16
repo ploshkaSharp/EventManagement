@@ -75,13 +75,25 @@ public class DatabaseSchemaTests : IAsyncLifetime
       var bookingsExists = await TableExistsAsync(connection, "Bookings");
       Assert.True(bookingsExists, "Таблица Bookings не найдена");
 
+      // Проверка существования таблицы Users
+      var usersExists = await TableExistsAsync(connection, "Users");
+      Assert.True(usersExists, "Таблица Users не найдена");      
+
       // Проверка наличия колонки EventId в таблице Bookings
       var columnExists = await ColumnExistsAsync(connection, "Bookings", "EventId");
       Assert.True(columnExists, "Колонка EventId не найдена в таблице Bookings");
 
+      // Проверка наличия колонки UserId в таблице Bookings
+      var userIdColumnExists = await ColumnExistsAsync(connection, "Bookings", "UserId");
+      Assert.True(userIdColumnExists, "Колонка UserId не найдена в таблице Bookings");      
+
       // Проверка наличия внешнего ключа между Bookings.EventId и Events.Id
       var foreignKeyExists = await ForeignKeyExistsAsync(connection, "Bookings", "Events", "EventId");
       Assert.True(foreignKeyExists, "Внешний ключ между Bookings.EventId и Events.Id не найден");
+
+      // Проверка наличия внешнего ключа между Bookings.UserId и Users.Id
+      var userForeignKeyExists = await ForeignKeyExistsAsync(connection, "Bookings", "Users", "UserId");
+      Assert.True(userForeignKeyExists, "Внешний ключ между Bookings.UserId и Users.Id не найден");      
     }
     finally
     {
@@ -117,6 +129,14 @@ public class DatabaseSchemaTests : IAsyncLifetime
       {
         Assert.Contains(column, bookingColumns);
       }
+
+      // Проверка колонок таблицы Users
+      var userColumns = await GetTableColumnsAsync(connection, "Users");
+      var requiredUserColumns = new[] { "Id", "Login", "PasswordHash", "Role" };
+      foreach (var column in requiredUserColumns)
+      {
+        Assert.Contains(column, userColumns);
+      }      
     }
     finally
     {
@@ -154,6 +174,13 @@ public class DatabaseSchemaTests : IAsyncLifetime
       Assert.Equal("character varying", bookingColumnTypes["Status"]);
       Assert.Equal("timestamp with time zone", bookingColumnTypes["CreatedAt"]);
       Assert.Equal("timestamp with time zone", bookingColumnTypes["ProcessedAt"]);
+
+      // Проверка типов колонок таблицы Users
+      var userColumnTypes = await GetColumnTypesAsync(connection, "Users");
+      Assert.Equal("uuid", userColumnTypes["Id"]);
+      Assert.Equal("character varying", userColumnTypes["Login"]);
+      Assert.Equal("character varying", userColumnTypes["PasswordHash"]);
+      Assert.Equal("text", userColumnTypes["Role"]);
     }
     finally
     {
