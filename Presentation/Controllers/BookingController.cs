@@ -64,7 +64,14 @@ public class BookingsController : ControllerBase
     return Ok(booking);
   }
 
+  /// <summary>
+  /// Отмена брони
+  /// </summary>
+  /// <param name="id">ИД бронирования</param>  
   [HttpDelete("{id}")]
+  [ProducesResponseType(StatusCodes.Status204NoContent)]
+  [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]  
   public async Task<IActionResult> Cancel(Guid id)
   {
     var userId = GetUserId();
