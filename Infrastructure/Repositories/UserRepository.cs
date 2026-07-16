@@ -9,7 +9,6 @@ namespace EventManagement.Infrastructure.Repositories;
 public class UserRepository : IUserRepository
 {
     private readonly AppDbContext _context;
-    private readonly int _maxActiveBookings = 10;
     
     public UserRepository(AppDbContext context)
     {

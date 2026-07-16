@@ -9,7 +9,6 @@ using EventManagement.Application.DTOs;
 using EventManagement.Domain.Exceptions;
 using EventManagement.Domain.Enums;
 using EventManagement.Infrastructure.Repositories;
-using EventManagement.Domain.Entities;
 
 namespace EventManagement.Tests.Services;
 

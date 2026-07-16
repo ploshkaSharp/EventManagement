@@ -59,7 +59,7 @@ public class BookingService : IBookingService
 
       if (eventItem.StartAt < DateTime.UtcNow)
       {
-        throw new BadRequestException("Can not book an event that has already started");
+        throw new EventAlreadyStartedException("Can not book an event that has already started");
       }
 
       var activeBookings = await _userRepository.CountActiveBookingsAsync(userId);

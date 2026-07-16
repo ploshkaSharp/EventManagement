@@ -1,7 +1,6 @@
 using Xunit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using EventManagement.Infrastructure.Data;
 using EventManagement.Application.Ports;
 using EventManagement.Application.Services;
@@ -25,8 +24,7 @@ public class EventServiceTests : IDisposable
         var services = new ServiceCollection();
         
         services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase(_dbName));
-        services.AddScoped<IEventRepository, EventRepository>();
-        //services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IEventRepository, EventRepository>();        
         services.AddScoped<IEventService, EventService>();
         services.AddLogging();
         
