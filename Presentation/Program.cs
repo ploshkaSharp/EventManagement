@@ -36,23 +36,6 @@ builder.Services.AddSwaggerGen(c =>
 
   c.AddSecurityDefinition("Bearer", securityScheme);
 
-  /*
-  c.AddSecurityRequirement(new OpenApiSecurityRequirement
-  {
-    {
-      new OpenApiSecurityScheme
-      {
-        Reference = new OpenApiReference
-        {
-          Type = ReferenceType.SecurityScheme,
-          Id = "Bearer"
-        }
-      },
-      Array.Empty<string>()
-    }
-  }); 
-  */ 
-
   // Включение XML-комментариев для документации
   var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
   var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -86,7 +69,6 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
