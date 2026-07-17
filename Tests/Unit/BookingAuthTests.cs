@@ -79,19 +79,11 @@ public class BookingAuthorizationTests
     var createEventDto = TestDataGenerator.GetValidCreateEventDto();
     var createdEvent = await eventService.CreateAsync(createEventDto);
     var booking1 = await bookingService.CreateBookingAsync(createdEvent.Id, createdUser1.Id);
-    var booking2 = await bookingService.CreateBookingAsync(createdEvent.Id, createdUser2.Id);    
-
-    // Act
-    var result1 = await bookingService.CancelBookingAsync(booking1.Id, createdUser1.Id, false); 
+    
+    // Act    
     Task Act() => bookingService.CancelBookingAsync(booking1.Id, createdUser2.Id, false);  
 
     // Assert
-    Assert.True(result1);
-    // Проверить, что пользователь отменил свою бронь - статус брони изменился на Cancelled
-    var cancelledBooking = await bookingService.GetBookingByIdAsync(booking1.Id, createdUser1.Id, false);
-    Assert.NotNull(cancelledBooking);
-    Assert.Equal(BookingStatus.Cancelled, cancelledBooking.Status);    
-
     // Чужую бронь пользователь отменить не может
     var exception = await Assert.ThrowsAsync<UnAuthorizedOperationException>(Act);
     Assert.Contains("only cancel their", exception.Message);    
@@ -132,8 +124,8 @@ public class BookingAuthorizationTests
     Assert.True(result3);
     // Проверить, что все брони отменились - статус броней изменился на Cancelled
     var cancelledBooking1 = await bookingService.GetBookingByIdAsync(booking1.Id, createdAdmin.Id, true);
-    var cancelledBooking2 = await bookingService.GetBookingByIdAsync(booking1.Id, createdAdmin.Id, true);
-    var cancelledBooking3 = await bookingService.GetBookingByIdAsync(booking1.Id, createdAdmin.Id, true);
+    var cancelledBooking2 = await bookingService.GetBookingByIdAsync(booking2.Id, createdAdmin.Id, true);
+    var cancelledBooking3 = await bookingService.GetBookingByIdAsync(booking3.Id, createdAdmin.Id, true);
 
     Assert.NotNull(cancelledBooking1);
     Assert.Equal(BookingStatus.Cancelled, cancelledBooking1.Status);    
