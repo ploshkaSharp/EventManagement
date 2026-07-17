@@ -37,21 +37,16 @@ builder.Services.AddSwaggerGen(c =>
   // Описать схему безопасности
   c.AddSecurityDefinition("Bearer", securityScheme);
 
-  /*
-  // TODO Разобраться почему не работает
   // Добавить заголовок авторизации к каждой конечной точке
-  c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+  c.AddSecurityRequirement(document =>
   {
+    OpenApiSecuritySchemeReference? schemeRef = new("Bearer");
+    OpenApiSecurityRequirement? requirement = new()
     {
-      new OpenApiSecurityScheme 
-      { 
-        Reference = new OpenApiReference
-        { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-      }, 
-      new List<string>()
-    }
+        [schemeRef] = []
+    };
+    return requirement;
   });
-  */
 
   // Включение XML-комментариев для документации
   var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
