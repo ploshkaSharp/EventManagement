@@ -32,9 +32,26 @@ builder.Services.AddSwaggerGen(c =>
     Type = SecuritySchemeType.Http,
     Scheme = "Bearer",
     BearerFormat = "JWT"
-  };  
+  };
 
+  // Описать схему безопасности
   c.AddSecurityDefinition("Bearer", securityScheme);
+
+  /*
+  // TODO Разобраться почему не работает
+  // Добавить заголовок авторизации к каждой конечной точке
+  c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+  {
+    {
+      new OpenApiSecurityScheme 
+      { 
+        Reference = new OpenApiReference
+        { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+      }, 
+      new List<string>()
+    }
+  });
+  */
 
   // Включение XML-комментариев для документации
   var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -51,21 +68,21 @@ var secretKey = System.Text.Encoding.UTF8.GetBytes(jwtSettings["Secret"] ?? thro
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+  options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+  options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(secretKey)
-    };
+  options.TokenValidationParameters = new TokenValidationParameters
+  {
+    ValidateIssuer = true,
+    ValidateAudience = true,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    ValidIssuer = jwtSettings["Issuer"],
+    ValidAudience = jwtSettings["Audience"],
+    IssuerSigningKey = new SymmetricSecurityKey(secretKey)
+  };
 });
 
 builder.Services.AddAuthorization();
