@@ -7,7 +7,7 @@ using EventManagement.Domain.Enums;
 using EventManagement.Domain.Exceptions;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace EventManagement.UnitTests.Services;
+namespace EventManagement.Tests.Services;
 
 public class BookingServiceTests
 {

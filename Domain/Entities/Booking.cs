@@ -26,7 +26,7 @@ public class Booking
     Status = BookingStatus.Pending;
     CreatedAt = DateTime.UtcNow;
     Event = null!;
-  }  
+  }
 
   /// <summary>
   /// Уникальный идентификатор брони
@@ -44,7 +44,7 @@ public class Booking
   /// Идентификатор пользователя
   /// </summary>
   /// <example>3fa85f64-5717-4562-b3fc-2c963f66afa6</example>
-  public Guid UserId { get; set; }  
+  public Guid UserId { get; set; }
 
   /// <summary>
   /// Текущий статус брони
@@ -97,6 +97,19 @@ public class Booking
       throw new InvalidOperationException($"Cannot reject booking with status {Status}");
 
     Status = BookingStatus.Rejected;
+    ProcessedAt = DateTime.UtcNow;
+  }
+
+  /// <summary>
+  /// Отмена брони
+  /// </summary>
+  /// <exception cref="InvalidOperationException"></exception>
+  public void Cancel()
+  {
+    if (Status == BookingStatus.Cancelled)
+      throw new InvalidOperationException($"Booking already cancelled");
+
+    Status = BookingStatus.Cancelled;
     ProcessedAt = DateTime.UtcNow;
   }
 }

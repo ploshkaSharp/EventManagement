@@ -3,6 +3,7 @@ using EventManagement.Application.DTOs;
 using EventManagement.Application.Services;
 using System.Security.Claims;
 using EventManagement.Domain.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EventManagement.Presentation.Controllers;
 
@@ -47,6 +48,7 @@ public class BookingsController : ControllerBase
   /// <returns>Информация о бронировании</returns>
   /// <response code="200">Бронирование найдено</response>
   /// <response code="404">Бронирование не найдено</response>
+  [Authorize]
   [HttpGet("{id}")]
   [ProducesResponseType(typeof(BookingDTO), StatusCodes.Status200OK)]
   [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -67,7 +69,8 @@ public class BookingsController : ControllerBase
   /// <summary>
   /// Отмена брони
   /// </summary>
-  /// <param name="id">ИД бронирования</param>  
+  /// <param name="id">ИД бронирования</param> 
+  [Authorize] 
   [HttpDelete("{id}")]
   [ProducesResponseType(StatusCodes.Status204NoContent)]
   [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]

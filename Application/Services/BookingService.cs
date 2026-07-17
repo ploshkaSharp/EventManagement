@@ -180,15 +180,16 @@ public class BookingService : IBookingService
       throw new UnAuthorizedOperationException("cancel booking", "User can only cancel their own bookings");
 
     if (booking.Status != BookingStatus.Pending && booking.Status != BookingStatus.Confirmed)
-      throw new ValidationException($"Cannot cancel booking with status {booking.Status}");
-
-    booking.Status = BookingStatus.Cancelled;
-    var updated = await _bookingRepository.UpdateAsync(booking);
+      throw new ValidationException($"Cannot cancel booking with status {booking.Status}");  
 
     if (booking.Status == BookingStatus.Confirmed)
     {
       await _eventRepository.ReleaseSeatsAsync(booking.EventId, 1);
     }
+
+    booking.Cancel();
+    
+    var updated = await _bookingRepository.UpdateAsync(booking);    
 
     return updated != null;
   }
