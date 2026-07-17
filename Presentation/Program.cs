@@ -38,15 +38,7 @@ builder.Services.AddSwaggerGen(c =>
   c.AddSecurityDefinition("Bearer", securityScheme);
 
   // Добавить заголовок авторизации к каждой конечной точке
-  c.AddSecurityRequirement(document =>
-  {
-    OpenApiSecuritySchemeReference? schemeRef = new("Bearer");
-    OpenApiSecurityRequirement? requirement = new()
-    {
-        [schemeRef] = []
-    };
-    return requirement;
-  });
+  c.AddSecurityRequirement(document => new() { [new OpenApiSecuritySchemeReference("Bearer", document)] = [] });
 
   // Включение XML-комментариев для документации
   var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
