@@ -6,7 +6,6 @@ using EventManagement.Infrastructure.Data;
 using EventManagement.Infrastructure.Repositories;
 using EventManagement.Application.Ports;
 using EventManagement.Application.Services;
-using System.ComponentModel.DataAnnotations;
 
 namespace EventManagement.IntegrationTests.Base;
 
@@ -54,6 +53,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
     services.AddScoped<IEventRepository, EventRepository>();
     services.AddScoped<IBookingRepository, BookingRepository>();
+    services.AddScoped<IUserRepository, UserRepository>();
     services.AddScoped<IEventService, EventService>();
     services.AddScoped<IBookingService, BookingService>();
     services.AddLogging();

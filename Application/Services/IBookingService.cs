@@ -13,14 +13,14 @@ public interface IBookingService
   /// </summary>
   /// <param name="eventId">Идентификатор события</param>
   /// <returns>Информация о созданной брони</returns>
-  Task<BookingDTO> CreateBookingAsync(Guid eventId);
+  Task<BookingDTO> CreateBookingAsync(Guid eventId, Guid userId);
 
   /// <summary>
   /// Получить бронь по идентификатору
   /// </summary>
   /// <param name="bookingId">Идентификатор брони</param>
   /// <returns>Информация о брони</returns>
-  Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId);
+  Task<BookingDTO?> GetBookingByIdAsync(Guid bookingId, Guid userId, bool isAdmin);
 
   /// <summary>
   /// Получить список бронирований по статусу
@@ -36,4 +36,13 @@ public interface IBookingService
   /// <param name="status">Новый статус</param>
   /// <returns>true если удалось обновить, fasle если не удалось</returns>
   Task<bool> UpdateBookingStatusAsync(Guid bookingId, BookingStatus status);   
+  
+  /// <summary>
+  /// Отменить бронирование
+  /// </summary>
+  /// <param name="bookingId"></param>
+  /// <param name="userId"></param>
+  /// <param name="isAdmin"></param>
+  /// <returns></returns>
+  Task<bool> CancelBookingAsync(Guid bookingId, Guid userId, bool isAdmin);
 }

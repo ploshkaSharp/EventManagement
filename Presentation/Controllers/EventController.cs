@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using EventManagement.Domain.Entities;
 using EventManagement.Application.DTOs;
 using EventManagement.Application.Services;
+using EventManagement.Domain.Exceptions;
+using System.Security.Claims;
 
 namespace EventManagement.Presentation.Controllers;
 
@@ -23,6 +26,8 @@ public class EventsController : ControllerBase
         _eventService = eventService;
         _bookingService = bookingService;
     }
+
+    private Guid GetUserId() => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnAuthorizedOperationException("GetUserId"));
 
     #region === Мероприятия ===
     /// <summary>
@@ -102,6 +107,7 @@ public class EventsController : ControllerBase
     /// <response code="201">Мероприятие успешно создано</response>
     /// <response code="400">Неверные данные запроса (ошибка валидации)</response>    
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(CreateEventDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<EventDTO>> Create([FromBody] CreateEventDTO eventItem)
@@ -137,6 +143,7 @@ public class EventsController : ControllerBase
     /// <response code="400">Неверные данные запроса (ошибка валидации)</response>
     /// <response code="404">Мероприятие с указанным идентификатором не найдено</response>    
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]    
     [ProducesResponseType(typeof(UpdateEventDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -168,6 +175,7 @@ public class EventsController : ControllerBase
     /// <response code="204">Мероприятие успешно удалено</response>
     /// <response code="404">Мероприятие с указанным идентификатором не найдено</response>
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]    
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id)
@@ -202,14 +210,16 @@ public class EventsController : ControllerBase
     /// <response code="400">Невозможно создать бронирование (мероприятие уже началось)</response>
     /// <response code="409">Нет свободных мест на мероприятии</response>
     [HttpPost("{id}/book")]
+    [Authorize]
     [ProducesResponseType(typeof(BookingDTO), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]    
     public async Task<ActionResult<BookingDTO>> BookEvent(Guid id)
-    {                
+    { 
+        var userId = GetUserId();               
         // Создать бронь
-        var booking = await _bookingService.CreateBookingAsync(id);
+        var booking = await _bookingService.CreateBookingAsync(id, userId);
 
         // Вернуть 202 Accepted с Location header
         return AcceptedAtAction(

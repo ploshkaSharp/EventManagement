@@ -5,15 +5,14 @@ using EventManagement.Infrastructure;
 using EventManagement.Infrastructure.Data;
 using EventManagement.Presentation.Middleware;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
 
 // Настройка Swagger с поддержкой XML-комментариев
 builder.Services.AddSwaggerGen(c =>
@@ -25,6 +24,22 @@ builder.Services.AddSwaggerGen(c =>
     Description = "API для управления мероприятиями и их бронированием"
   });
 
+  var securityScheme = new OpenApiSecurityScheme
+  {
+    Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token",
+    Name = "Authorization",
+    In = ParameterLocation.Header,
+    Type = SecuritySchemeType.Http,
+    Scheme = "Bearer",
+    BearerFormat = "JWT"
+  };
+
+  // Описать схему безопасности
+  c.AddSecurityDefinition("Bearer", securityScheme);
+
+  // Добавить заголовок авторизации к каждой конечной точке
+  c.AddSecurityRequirement(document => new() { [new OpenApiSecuritySchemeReference("Bearer", document)] = [] });
+
   // Включение XML-комментариев для документации
   var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
   var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -34,11 +49,38 @@ builder.Services.AddSwaggerGen(c =>
   c.EnableAnnotations();
 });
 
+// JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = System.Text.Encoding.UTF8.GetBytes(jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not configured"));
+
+builder.Services.AddAuthentication(options =>
+{
+  options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+  options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+  options.TokenValidationParameters = new TokenValidationParameters
+  {
+    ValidateIssuer = true,
+    ValidateAudience = true,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    ValidIssuer = jwtSettings["Issuer"],
+    ValidAudience = jwtSettings["Audience"],
+    IssuerSigningKey = new SymmetricSecurityKey(secretKey)
+  };
+});
+
+builder.Services.AddAuthorization();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-  var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();  
+  var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
   db.Database.Migrate();
 }
 
@@ -49,6 +91,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

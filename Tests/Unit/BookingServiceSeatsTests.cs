@@ -24,7 +24,8 @@ public class BookingServiceSeatsTests : IDisposable
         
         services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase(_dbName));
         services.AddScoped<IEventRepository, EventRepository>();
-        services.AddScoped<IBookingRepository, BookingRepository>();        
+        services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IBookingService, BookingService>();
         services.AddLogging();
@@ -41,6 +42,8 @@ public class BookingServiceSeatsTests : IDisposable
         using var scope = _serviceProvider.CreateScope();
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+        var userId = Guid.NewGuid();
+        
 
         var createEventDto = new CreateEventDTO
         {
@@ -53,7 +56,7 @@ public class BookingServiceSeatsTests : IDisposable
         var createdEvent = await eventService.CreateAsync(createEventDto);
 
         // Act
-        var booking = await bookingService.CreateBookingAsync(createdEvent.Id);
+        var booking = await bookingService.CreateBookingAsync(createdEvent.Id, userId);
 
         // Assert
         var updatedEvent = await eventService.GetByIdAsync(createdEvent.Id);
@@ -69,6 +72,7 @@ public class BookingServiceSeatsTests : IDisposable
         using var scope = _serviceProvider.CreateScope();
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+        var userId = Guid.NewGuid();
 
         var createEventDto = new CreateEventDTO
         {
@@ -84,7 +88,7 @@ public class BookingServiceSeatsTests : IDisposable
         // Act
         for (int i = 0; i < 5; i++)
         {
-            var booking = await bookingService.CreateBookingAsync(createdEvent.Id);
+            var booking = await bookingService.CreateBookingAsync(createdEvent.Id, userId);
             bookings.Add(booking);
         }
 
@@ -105,6 +109,7 @@ public class BookingServiceSeatsTests : IDisposable
         using var scope = _serviceProvider.CreateScope();
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+        var userId = Guid.NewGuid();
 
         var createEventDto = new CreateEventDTO
         {
@@ -115,11 +120,11 @@ public class BookingServiceSeatsTests : IDisposable
         };
 
         var createdEvent = await eventService.CreateAsync(createEventDto);
-        await bookingService.CreateBookingAsync(createdEvent.Id);
+        await bookingService.CreateBookingAsync(createdEvent.Id, userId);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<NoAvailableSeatsException>(() =>
-            bookingService.CreateBookingAsync(createdEvent.Id));
+            bookingService.CreateBookingAsync(createdEvent.Id, userId));
 
         Assert.Contains("No available seats", exception.Message);
     }
@@ -134,10 +139,11 @@ public class BookingServiceSeatsTests : IDisposable
         // Arrange
         using var scope = _serviceProvider.CreateScope();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+        var userId = Guid.NewGuid();
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
-            bookingService.CreateBookingAsync(Guid.NewGuid()));
+            bookingService.CreateBookingAsync(Guid.NewGuid(), userId));
 
         Assert.Contains("not found", exception.Message);
     }
@@ -175,6 +181,7 @@ public class BookingServiceSeatsTests : IDisposable
         using var scope = _serviceProvider.CreateScope();
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+        var userId = Guid.NewGuid();
 
         var createEventDto = new CreateEventDTO
         {
@@ -185,14 +192,14 @@ public class BookingServiceSeatsTests : IDisposable
         };
 
         var createdEvent = await eventService.CreateAsync(createEventDto);
-        var booking = await bookingService.CreateBookingAsync(createdEvent.Id);
+        var booking = await bookingService.CreateBookingAsync(createdEvent.Id, userId);
 
         // Act
         var success = await bookingService.UpdateBookingStatusAsync(booking.Id, BookingStatus.Confirmed);
 
         // Assert
         Assert.True(success);
-        var updatedBooking = await bookingService.GetBookingByIdAsync(booking.Id);
+        var updatedBooking = await bookingService.GetBookingByIdAsync(booking.Id, userId, false);
         Assert.NotNull(updatedBooking);
         Assert.Equal(BookingStatus.Confirmed, updatedBooking.Status);
         Assert.NotNull(updatedBooking.ProcessedAt);
@@ -205,6 +212,7 @@ public class BookingServiceSeatsTests : IDisposable
         using var scope = _serviceProvider.CreateScope();
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+        var userId = Guid.NewGuid();
 
         var createEventDto = new CreateEventDTO
         {
@@ -215,7 +223,7 @@ public class BookingServiceSeatsTests : IDisposable
         };
 
         var createdEvent = await eventService.CreateAsync(createEventDto);
-        var booking = await bookingService.CreateBookingAsync(createdEvent.Id);
+        var booking = await bookingService.CreateBookingAsync(createdEvent.Id, userId);
 
         var beforeReject = await eventService.GetByIdAsync(createdEvent.Id);        
         Assert.NotNull(beforeReject);
@@ -232,13 +240,13 @@ public class BookingServiceSeatsTests : IDisposable
         Assert.NotNull(afterReject);
         Assert.Equal(5, afterReject.AvailableSeats);
         
-        var updatedBooking = await bookingService.GetBookingByIdAsync(booking.Id);
+        var updatedBooking = await bookingService.GetBookingByIdAsync(booking.Id, userId, false);
         Assert.NotNull(updatedBooking);
         Assert.Equal(BookingStatus.Rejected, updatedBooking.Status);
         Assert.NotNull(updatedBooking.ProcessedAt);
 
         // Можно создать новую бронь
-        var newBooking = await bookingService.CreateBookingAsync(createdEvent.Id);
+        var newBooking = await bookingService.CreateBookingAsync(createdEvent.Id, userId);
         Assert.NotNull(newBooking);
     }
 
@@ -251,6 +259,7 @@ public class BookingServiceSeatsTests : IDisposable
         // Arrange
         using var scope = _serviceProvider.CreateScope();
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+        var userId = Guid.NewGuid();
 
         var createEventDto = new CreateEventDTO
         {
@@ -271,7 +280,7 @@ public class BookingServiceSeatsTests : IDisposable
             {                
                 using var innerScope = _serviceProvider.CreateScope();
                 var innerBookingService = innerScope.ServiceProvider.GetRequiredService<IBookingService>();
-                return await innerBookingService.CreateBookingAsync(eventId);                    
+                return await innerBookingService.CreateBookingAsync(eventId, userId);                    
             }));
         }
 
@@ -310,6 +319,7 @@ public class BookingServiceSeatsTests : IDisposable
         // Arrange
         using var scope = _serviceProvider.CreateScope();
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+        var userId = Guid.NewGuid();
 
         var createEventDto = new CreateEventDTO
         {
@@ -330,7 +340,7 @@ public class BookingServiceSeatsTests : IDisposable
             {
                 using var innerScope = _serviceProvider.CreateScope();
                 var innerBookingService = innerScope.ServiceProvider.GetRequiredService<IBookingService>();
-                return await innerBookingService.CreateBookingAsync(eventId);
+                return await innerBookingService.CreateBookingAsync(eventId, userId);
             }));
         }
 

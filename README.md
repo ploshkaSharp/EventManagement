@@ -223,6 +223,75 @@ EventManagement/
 Фоновый сервис с периодом 5 секунд собирает вновь созданные брони. Для каждой новой брони имитируется обработка бронирования (задержка 2 сек). После чего брони устанавливается статус равный Подтверждено (`Confirmed`), устанавливается время последней обработки брони (`ProcessedAt`) равное текущему.
 
 
+## АУТЕНТИФИКАЦИЯ И АВТОРИЗАЦИЯ
+
+### Ролевая модель
+-------------------
+Система поддерживает две роли:
+- User - обычный пользователь
+- Admin - администратор
+
+### Разграничение прав
+----------------------
+| Действие                          | User      | Admin     |
+|-----------------------------------|-----------|-----------|
+| Регистрация                       | ✅        | ✅        |
+| Вход в систему                    | ✅        | ✅        |
+| Просмотр мероприятий              | ✅        | ✅        |
+| Создание мероприятия              | ❌        | ✅        |
+| Редактирование мероприятия        | ❌        | ✅        |
+| Удаление мероприятия              | ❌        | ✅        |
+| Создание брони                    | ✅        | ✅        |
+| Отмена своей брони                | ✅        | ✅        |
+| Отмена чужой брони                | ❌        | ✅        |
+| Просмотр своих броней             | ✅        | ✅        |
+| Просмотр всех броней              | ❌        | ✅        |
+
+### Получение JWT-токена через Swagger
+---------------------------------------
+1. Откройте Swagger UI (/swagger)
+2. Нажмите на кнопку "Authorize" в правом верхнем углу
+3. В поле "Value" введите: Bearer <ваш_токен>
+4. Нажмите "Authorize"
+
+### Получение токена через API
+------------------------------
+```bash
+POST /auth/register
+{
+  "login": "user",
+  "password": "password123",
+  "role": "User"  // или "Admin"
+}
+```
+
+```bash
+POST /auth/login
+{
+  "login": "user",
+  "password": "password123"
+}
+```
+
+Ответ: { "token": "eyJhbGciOiJIUzI1NiIs..." }
+
+### Настройка JWT в конфигурации
+---------------------------------
+В файле appsettings.json:
+```bash
+{
+  "JwtSettings": {
+    "Secret": "YOUR_SUPER_SECRET_KEY_MINIMUM_32_CHARS",
+    "Issuer": "EventManagementAPI",
+    "Audience": "EventManagementClient",
+    "ExpiryMinutes": 60
+  }
+}
+```
+
+Важно: В продакшне используйте безопасный секретный ключ, храните его в защищённом месте (например, в Azure Key Vault или переменных окружения). Никогда не храните реальные секретные ключи в репозитории.
+
+
 ## Установка и запуск проекта
 
 ### Предварительные требования
@@ -308,11 +377,11 @@ EventManagement/
 ### Создание новой миграции
 
 ```bash
-dotnet ef migrations add <MigrationName> --context AppDbContext --output-dir Infrastructure\Migrations
+dotnet ef migrations add <MigrationName> --context AppDbContext --output-dir EventManagement\Infrastructure\Migrations
 ```
 ### Применение миграций к базе данных
 ```bash
-dotnet ef database update --context AppDbContext
+dotnet ef database update --context AppDbContext  --project EventManagement\Infrastructure --startup-project EventManagement\Presentation  
 ```
 
 ### Откат к предыдущей миграции

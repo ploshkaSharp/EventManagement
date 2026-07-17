@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using EventManagement.Application.DTOs;
 using EventManagement.Application.Services;
+using System.Security.Claims;
+using EventManagement.Domain.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EventManagement.Presentation.Controllers;
 
@@ -22,6 +25,9 @@ public class BookingsController : ControllerBase
     _bookingService = bookingService;
   }
 
+  private Guid GetUserId() => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnAuthorizedOperationException("GetUserId"));
+  private bool IsAdmin() => User.IsInRole("Admin");
+
   /// <summary>
   /// Получить бронирование по идентификатору
   /// </summary>
@@ -42,12 +48,15 @@ public class BookingsController : ControllerBase
   /// <returns>Информация о бронировании</returns>
   /// <response code="200">Бронирование найдено</response>
   /// <response code="404">Бронирование не найдено</response>
+  [Authorize]
   [HttpGet("{id}")]
   [ProducesResponseType(typeof(BookingDTO), StatusCodes.Status200OK)]
   [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
   public async Task<ActionResult<BookingDTO>> GetBooking(Guid id)
   {
-    var booking = await _bookingService.GetBookingByIdAsync(id);
+    var userId = GetUserId();
+    var isAdmin = IsAdmin();
+    var booking = await _bookingService.GetBookingByIdAsync(id, userId, isAdmin);
 
     if (booking == null)
     {
@@ -55,5 +64,22 @@ public class BookingsController : ControllerBase
     }
 
     return Ok(booking);
+  }
+
+  /// <summary>
+  /// Отмена брони
+  /// </summary>
+  /// <param name="id">ИД бронирования</param> 
+  [Authorize] 
+  [HttpDelete("{id}")]
+  [ProducesResponseType(StatusCodes.Status204NoContent)]
+  [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+  [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]  
+  public async Task<IActionResult> Cancel(Guid id)
+  {
+    var userId = GetUserId();
+    var isAdmin = IsAdmin();
+    await _bookingService.CancelBookingAsync(id, userId, isAdmin);
+    return NoContent();
   }
 }

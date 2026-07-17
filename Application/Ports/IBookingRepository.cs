@@ -1,3 +1,4 @@
+using EventManagement.Application.DTOs;
 using EventManagement.Domain.Entities;
 using EventManagement.Domain.Enums;
 
@@ -49,4 +50,11 @@ public interface IBookingRepository
   /// <param name="eventId">ИД мероприятия</param>
   /// <returns></returns>
   Task<IEnumerable<Booking>> GetByEventIdAsync(Guid eventId);
+
+  /// <summary>
+  /// Получить список броней по ИД пользователя
+  /// </summary>
+  /// <param name="userId">ИД пользователя</param>
+  /// <returns></returns>
+  Task<IEnumerable<Booking>> GetByUserIdAsync(Guid userId);
 }
