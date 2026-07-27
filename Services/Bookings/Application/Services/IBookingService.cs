@@ -1,7 +1,7 @@
-using EventManagement.Application.DTOs;
-using EventManagement.Domain.Enums;
+using EventManagement.Bookings.Application.DTOs;
+using EventManagement.Bookings.Domain.Enums;
 
-namespace EventManagement.Application.Services;
+namespace EventManagement.Bookings.Application.Services;
 
 /// <summary>
 /// Интерфейс сервиса управления бронированиями

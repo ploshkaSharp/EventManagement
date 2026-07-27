@@ -1,9 +1,11 @@
-namespace EventManagement.Users.Domain.Exceptions;
+using System.Collections.Generic;
+
+namespace EventManagement.Events.Domain.Exceptions;
 
 /// <summary>
-/// Исключение - Нет доступных мест 
+/// Исключение - Ошибка валидации
 /// </summary>
-public class NoAvailableSeatsException : DomainException
+public class ValidationException : DomainException
 {
   /// <summary>
   /// Список ошибок
@@ -12,7 +14,7 @@ public class NoAvailableSeatsException : DomainException
   /// <summary>
   /// Ошибка валидации
   /// </summary>
-  public NoAvailableSeatsException() : base("No available seats for this event")
+  public ValidationException() : base("Validation error occurred")
   {
     Errors = new Dictionary<string, string[]>();
   }
@@ -20,7 +22,7 @@ public class NoAvailableSeatsException : DomainException
   /// Ошибка валидации
   /// </summary>
   /// <param name="message">Текст ошибки</param>
-  public NoAvailableSeatsException(string message) : base(message)
+  public ValidationException(string message) : base(message)
   {
     Errors = new Dictionary<string, string[]>();
   }
@@ -28,8 +30,8 @@ public class NoAvailableSeatsException : DomainException
   /// Ошибка валидации
   /// </summary>
   /// <param name="errors">Список ошибок</param>
-  public NoAvailableSeatsException(IDictionary<string, string[]> errors) 
-        : base("No available seats for this event")
+  public ValidationException(IDictionary<string, string[]> errors) 
+        : base("Validation error occurred")
   {
     Errors = errors;
   }
@@ -38,7 +40,7 @@ public class NoAvailableSeatsException : DomainException
   /// </summary>
   /// <param name="message">Текст ошибки</param>
   /// <param name="errors">Список ошибок</param>
-  public NoAvailableSeatsException(string message, IDictionary<string, string[]> errors) 
+  public ValidationException(string message, IDictionary<string, string[]> errors) 
         : base(message)
   {
     Errors = errors;

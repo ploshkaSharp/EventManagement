@@ -3,6 +3,8 @@ using Confluent.Kafka;
 using EventManagement.Shared.Contracts;
 using EventManagement.Shared.Topics;
 using EventManagement.Bookings.Application.Ports;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace EventManagement.Bookings.Infrastructure.Messaging;
 

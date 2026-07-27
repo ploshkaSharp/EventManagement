@@ -1,6 +1,6 @@
-using EventManagement.Domain.Enums;
+using EventManagement.Bookings.Domain.Enums;
 
-namespace EventManagement.Domain.Entities;
+namespace EventManagement.Bookings.Domain.Entities;
 
 /// <summary>
 /// Модель бронирования мероприятия
@@ -10,7 +10,7 @@ public class Booking
   // Конструктор
   private Booking()
   {
-    Event = null!;
+
   }
 
   /// <summary>
@@ -25,7 +25,6 @@ public class Booking
     UserId = userId;
     Status = BookingStatus.Pending;
     CreatedAt = DateTime.UtcNow;
-    Event = null!;
   }
 
   /// <summary>
@@ -63,16 +62,6 @@ public class Booking
   /// </summary>
   /// <example>2026-05-15T11:00:00Z</example>
   public DateTime? ProcessedAt { get; set; }
-
-  /// <summary>
-  /// Мероприятие
-  /// </summary>
-  public Event Event { get; private set; }
-
-  /// <summary>
-  /// Пользователь
-  /// </summary>
-  public User? User { get; private set; }
 
   /// <summary>
   /// Подтвердить бронирование

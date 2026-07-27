@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using EventManagement.Infrastructure.Data;
-using EventManagement.Domain.Entities;
-using EventManagement.Domain.Enums;
-using EventManagement.Application.Ports;
+using EventManagement.Bookings.Infrastructure.Data;
+using EventManagement.Bookings.Domain.Entities;
+using EventManagement.Bookings.Domain.Enums;
+using EventManagement.Bookings.Application.Ports;
 using Microsoft.Extensions.Logging;
 
-namespace EventManagement.Infrastructure.Repositories;
+namespace EventManagement.Bookings.Infrastructure.Repositories;
 
 /// <summary>
 /// Репозиторий бронирований

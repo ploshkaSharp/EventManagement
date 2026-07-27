@@ -1,9 +1,9 @@
 using System.Reflection;
 using Microsoft.OpenApi;
 using EventManagement.Application;
-using EventManagement.Infrastructure;
-using EventManagement.Infrastructure.Data;
-using EventManagement.Presentation.Middleware;
+using EventManagement.Bookings.Infrastructure;
+using EventManagement.Bookings.Infrastructure.Data;
+using EventManagement.Bookings.Presentation.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;

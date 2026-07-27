@@ -1,6 +1,6 @@
-using EventManagement.Domain.Enums;
-using EventManagement.Application.Ports;
-using EventManagement.Application.Services;
+using EventManagement.Bookings.Domain.Enums;
+using EventManagement.Bookings.Application.Ports;
+using EventManagement.Bookings.Application.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;

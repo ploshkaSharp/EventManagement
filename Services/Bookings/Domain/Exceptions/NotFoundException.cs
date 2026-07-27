@@ -1,4 +1,4 @@
-namespace EventManagement.Users.Domain.Exceptions;
+namespace EventManagement.Bookings.Domain.Exceptions;
 
 /// <summary>
 /// Исключение - Ресурс не найден

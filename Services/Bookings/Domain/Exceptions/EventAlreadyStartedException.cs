@@ -1,4 +1,4 @@
-namespace EventManagement.Users.Domain.Exceptions;
+namespace EventManagement.Bookings.Domain.Exceptions;
 
 public class EventAlreadyStartedException : DomainException
 {

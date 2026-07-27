@@ -1,6 +1,6 @@
-using EventManagement.Users.Domain.Enums;
+using EventManagement.Bookings.Domain.Enums;
 
-namespace EventManagement.Users.Application.DTOs;
+namespace EventManagement.Bookings.Application.DTOs;
 
 public record RegisterDTO(string Login, string Password, Role Role = Role.User);
 public record LoginDTO(string Login, string Password);

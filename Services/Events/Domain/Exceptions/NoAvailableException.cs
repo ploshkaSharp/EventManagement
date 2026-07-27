@@ -1,4 +1,4 @@
-namespace EventManagement.Users.Domain.Exceptions;
+namespace EventManagement.Domain.Exceptions;
 
 /// <summary>
 /// Исключение - Нет доступных мест 

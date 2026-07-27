@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Services;
+using EventManagement.Bookings.Application.DTOs;
+using EventManagement.Bookings.Application.Services;
 using System.Security.Claims;
-using EventManagement.Domain.Exceptions;
+using EventManagement.Bookings.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 
-namespace EventManagement.Presentation.Controllers;
+namespace EventManagement.Bookings.Presentation.Controllers;
 
 /// <summary>
 /// Контроллер для управления бронированиями

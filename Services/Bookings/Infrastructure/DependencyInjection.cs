@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using EventManagement.Application.Ports;
-using EventManagement.Infrastructure.Data;
-using EventManagement.Infrastructure.Repositories;
-using EventManagement.Infrastructure.Security;
+using EventManagement.Bookings.Application.Ports;
+using EventManagement.Bookings.Infrastructure.Data;
+using EventManagement.Bookings.Infrastructure.Repositories;
+using EventManagement.Bookings.Infrastructure.Security;
 
-namespace EventManagement.Infrastructure;
+namespace EventManagement.Bookings.Infrastructure;
 
 /// <summary>
 /// Extension-метод вызова в DI
@@ -22,8 +22,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
-
-        services.AddScoped<IEventRepository, EventRepository>();
+        
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();

@@ -1,12 +1,12 @@
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Ports;
-using EventManagement.Domain.Enums;
-using EventManagement.Domain.Entities;
-using EventManagement.Domain.Exceptions;
-using EventManagement.Application.Mappers;
+using EventManagement.Bookings.Application.DTOs;
+using EventManagement.Bookings.Application.Ports;
+using EventManagement.Bookings.Domain.Enums;
+using EventManagement.Bookings.Domain.Entities;
+using EventManagement.Bookings.Domain.Exceptions;
+using EventManagement.Bookings.Application.Mappers;
 using Microsoft.Extensions.Logging;
 
-namespace EventManagement.Application.Services;
+namespace EventManagement.Bookings.Application.Services;
 
 /// <summary>
 /// Сервис для управления бронированиями
@@ -14,8 +14,8 @@ namespace EventManagement.Application.Services;
 public class BookingService : IBookingService
 {
   private readonly IBookingRepository _bookingRepository;
-  private readonly IEventRepository _eventRepository;
-  private readonly IUserRepository _userRepository;
+  private readonly IUserService _userService;
+  private readonly IEventPublisher _eventPublisher;  
   private readonly int _maxActiveBookings = 10;
   private readonly ILogger<BookingService> _logger;
   private static readonly SemaphoreSlim _bookingLock = new(1, 1); // Блокировка для критической секции
@@ -27,11 +27,11 @@ public class BookingService : IBookingService
   /// <param name="eventRepository"></param>
   /// <param name="userRepository"></param>
   /// <param name="logger"></param>
-  public BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository, IUserRepository userRepository, ILogger<BookingService> logger)
+  public BookingService(IBookingRepository bookingRepository, IEventPublisher eventPublisher, IUserService userService, ILogger<BookingService> logger)
   {
     _bookingRepository = bookingRepository;
-    _eventRepository = eventRepository;
-    _userRepository = userRepository;
+    _eventPublisher = eventPublisher;
+    _userService = userService;
     _logger = logger;
   }
 
@@ -46,47 +46,36 @@ public class BookingService : IBookingService
   public async Task<BookingDTO> CreateBookingAsync(Guid eventId, Guid userId)
   {
     _logger.LogInformation("Attempting to create booking for event {EventId}", eventId);
-    await _bookingLock.WaitAsync();
-    try
-    {
-      // Проверить существование мероприятия      
-      var eventItem = await _eventRepository.GetByIdAsync(eventId);
-
-      if (eventItem == null)
-      {
-        throw new NotFoundException(nameof(Event), eventId);
-      }
-
-      if (eventItem.StartAt < DateTime.UtcNow)
-      {
-        throw new EventAlreadyStartedException("Can not book an event that has already started");
-      }
-
-      var activeBookings = await _userRepository.CountActiveBookingsAsync(userId);
-      if (activeBookings >= _maxActiveBookings)
-      {
-        throw new BookingLimitExceededException(_maxActiveBookings);
-      }
-
-      // Забронировать место
-      if (!eventItem.TryReserveSeats(1))
-      {
-        _logger.LogWarning($"No available seats for event {eventId}");
-        throw new NoAvailableSeatsException("No available seats for this event");
-      }
-
-      var booking = new Booking(eventId, userId) { };
-
-      // Добавить бронь      
-      var createdBooking = await _bookingRepository.CreateAsync(booking);
-
-      return BookingMapper.ToDto(createdBooking);
-    }
-    finally
-    {
-      _bookingLock.Release();
-
-    }
+        await _bookingLock.WaitAsync();
+        try
+        {
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null)
+                throw new NotFoundException(nameof(user), userId);
+            
+            var activeBookings = await _bookingRepository.CountActiveBookingsAsync(userId);
+            if (activeBookings >= _maxActiveBookings)
+                throw new BookingLimitExceededException(_maxActiveBookings);
+            
+            var booking = new Booking(eventId, userId);
+            var created = await _bookingRepository.CreateAsync(booking);
+            
+            // Публикуем событие подтверждения брони
+            await _eventPublisher.PublishBookingConfirmedAsync(
+                new BookingConfirmedEvent(
+                    created.Id,
+                    eventId,
+                    userId,
+                    1,
+                    DateTime.UtcNow
+                ));
+            
+            return BookingMapper.ToDto(created);
+        }
+        finally
+        {
+            _bookingLock.Release();
+        }
   }
 
   /// <summary>
@@ -181,11 +170,6 @@ public class BookingService : IBookingService
 
     if (booking.Status != BookingStatus.Pending && booking.Status != BookingStatus.Confirmed)
       throw new ValidationException($"Cannot cancel booking with status {booking.Status}");  
-
-    if (booking.Status == BookingStatus.Confirmed)
-    {
-      await _eventRepository.ReleaseSeatsAsync(booking.EventId, 1);
-    }
 
     booking.Cancel();
     

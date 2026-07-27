@@ -1,4 +1,4 @@
-namespace EventManagement.Users.Domain.Exceptions;
+namespace EventManagement.Events.Domain.Exceptions;
 /// <summary>
 /// Исключения слоя Domain
 /// </summary>

@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using EventManagement.Domain.Entities;
+using EventManagement.Bookings.Domain.Entities;
 
-namespace EventManagement.Infrastructure.Configurations;
+namespace EventManagement.Bookings.Infrastructure.Configurations;
 
 /// <summary>
 /// Настройка таблицы Bookings
@@ -42,20 +42,6 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.HasIndex(b => b.EventId);
         builder.HasIndex(b => b.UserId);
         builder.HasIndex(b => b.Status);
-        builder.HasIndex(b => b.CreatedAt);
-        
-        // Связь с Event (1:M)
-        builder.HasOne(b => b.Event)
-            .WithMany(e => e.Bookings)
-            .HasForeignKey(b => b.EventId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(b => b.User)
-            .WithMany(u => u.Bookings)
-            .HasForeignKey(b => b.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-        
-        builder.Ignore(b => b.Event);
-        builder.Ignore(b => b.User);            
+        builder.HasIndex(b => b.CreatedAt);           
     }
 }

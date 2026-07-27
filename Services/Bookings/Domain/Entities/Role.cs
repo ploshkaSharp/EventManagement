@@ -1,4 +1,4 @@
-namespace EventManagement.Users.Domain.Enums;
+namespace EventManagement.Bookings.Domain.Enums;
 
 public enum Role
 {
