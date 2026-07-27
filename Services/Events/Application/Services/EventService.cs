@@ -1,11 +1,11 @@
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Mappers;
-using EventManagement.Application.Ports;
-using EventManagement.Domain.Entities;
-using EventManagement.Domain.Exceptions;
+using EventManagement.Events.Application.DTOs;
+using EventManagement.Events.Application.Mappers;
+using EventManagement.Events.Application.Ports;
+using EventManagement.Events.Domain.Entities;
+using EventManagement.Events.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
-namespace EventManagement.Application.Services;
+namespace EventManagement.Events.Application.Services;
 
 /// <summary>
 /// Мероприятие

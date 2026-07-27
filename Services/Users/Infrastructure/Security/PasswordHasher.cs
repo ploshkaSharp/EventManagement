@@ -1,8 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
-using EventManagement.Application.Ports;
+using EventManagement.Users.Application.Ports;
 
-namespace EventManagement.Infrastructure.Security;
+namespace EventManagement.Users.Infrastructure.Security;
 
 public class PasswordHasher : IPasswordHasher
 {

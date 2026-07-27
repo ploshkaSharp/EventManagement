@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Services;
+using EventManagement.Users.Application.DTOs;
+using EventManagement.Users.Application.Services;
 
-namespace EventManagement.Presentation.Controllers;
+namespace EventManagement.Users.Presentation.Controllers;
 
 [ApiController]
 [Route("[controller]")]

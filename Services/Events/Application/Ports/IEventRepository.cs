@@ -1,7 +1,7 @@
-using EventManagement.Domain.Entities;
-using EventManagement.Application.DTOs;
+using EventManagement.Events.Domain.Entities;
+using EventManagement.Events.Application.DTOs;
 
-namespace EventManagement.Application.Ports;
+namespace EventManagement.Events.Application.Ports;
 
 /// <summary>
 /// Мероприятия (интерфейс репозитория)

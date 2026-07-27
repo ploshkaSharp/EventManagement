@@ -1,6 +1,6 @@
-using EventManagement.Application.DTOs;
+using EventManagement.Events.Application.DTOs;
 
-namespace EventManagement.Application.Services;
+namespace EventManagement.Events.Application.Services;
 
 /// <summary>
 /// Мероприятия (интерфейс)

@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Net;
 using System.Text.Json;
-using EventManagement.Domain.Exceptions;
+using EventManagement.Users.Domain.Exceptions;
 
-namespace EventManagement.Presentation.Middleware;
+namespace EventManagement.Users.Presentation.Middleware;
 
 /// <summary>
 /// Глобальная обработка исключений (middleware)

@@ -1,6 +1,6 @@
-using EventManagement.Domain.Enums;
+using EventManagement.Users.Domain.Enums;
 
-namespace EventManagement.Domain.Entities;
+namespace EventManagement.Users.Domain.Entities;
 
 public class User
 {
@@ -14,16 +14,13 @@ public class User
         Id = Guid.NewGuid();
         Login = login ?? throw new ArgumentNullException(nameof(login));
         PasswordHash = passwordHash ?? throw new ArgumentNullException(nameof(passwordHash));
-        Role = role;
-        Bookings = new List<Booking>();
+        Role = role;     
     }
     
     public Guid Id { get; private set; }
     public string Login { get; private set; }
     public string PasswordHash { get; private set; }
     public Role Role { get; private set; }
-    public ICollection<Booking> Bookings { get; private set; }
-    
     public bool IsAdmin() => Role == Role.Admin;
     
     public void UpdatePassword(string newPasswordHash)

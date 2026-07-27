@@ -1,4 +1,4 @@
-namespace EventManagement.Domain.Entities;
+namespace EventManagement.Events.Domain.Entities;
 
 /// <summary>
 /// Мероприятие
@@ -9,7 +9,6 @@ public class Event
   private Event()
   {
     Title = null!;
-    Bookings = new List<Booking>();
   }
   
   /// <summary>
@@ -24,7 +23,6 @@ public class Event
     Title = title;
     StartAt = startAt;
     EndAt = endAt;
-    Bookings = new List<Booking>();
   }
 
   /// <summary>
@@ -42,7 +40,6 @@ public class Event
     EndAt = endAt;
     TotalSeats = totalSeats;
     AvailableSeats = totalSeats;
-    Bookings = new List<Booking>();
   }   
 
   /// <summary>
@@ -78,10 +75,6 @@ public class Event
   /// Текущее количество свободных мест
   /// </summary>
   public int AvailableSeats { get; set; }
-  /// <summary>
-  /// Брони
-  /// </summary>
-  public ICollection<Booking> Bookings { get; private set; }
 
   /// <summary>
   /// Попытка забронировать места

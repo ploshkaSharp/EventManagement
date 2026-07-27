@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using EventManagement.Domain.Entities;
+using EventManagement.Users.Domain.Entities;
 
-namespace EventManagement.Infrastructure.Data;
+namespace EventManagement.Users.Infrastructure.Data;
 
 /// <summary>
 /// 
@@ -13,16 +13,6 @@ public sealed class AppDbContext : DbContext
   /// </summary>
   /// <param name="options"></param>
   public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
-  /// <summary>
-  /// Таблица Events в БД
-  /// </summary>
-  public DbSet<Event> Events => Set<Event>();
-
-  /// <summary>
-  /// Таблица Bookings в БД
-  /// </summary>
-  public DbSet<Booking> Bookings => Set<Booking>();
 
   /// <summary>
   /// Таблица Users в БД

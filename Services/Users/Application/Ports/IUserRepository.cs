@@ -1,6 +1,6 @@
-using EventManagement.Domain.Entities;
+using EventManagement.Users.Domain.Entities;
 
-namespace EventManagement.Application.Ports;
+namespace EventManagement.Users.Application.Ports;
 
 public interface IUserRepository
 {
@@ -10,5 +10,4 @@ public interface IUserRepository
   Task<User> CreateAsync(User user);
   Task<User?> UpdateAsync(User user);
   Task<bool> DeleteAsync(Guid id);
-  Task<int> CountActiveBookingsAsync(Guid userId);
 }

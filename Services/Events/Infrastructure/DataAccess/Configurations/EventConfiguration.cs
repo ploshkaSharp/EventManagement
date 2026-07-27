@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using EventManagement.Domain.Entities;
+using EventManagement.Events.Domain.Entities;
 
-namespace EventManagement.Infrastructure.Configurations;
+namespace EventManagement.Events.Infrastructure.Configurations;
 
 /// <summary>
 /// Настройка таблицы Events
@@ -43,11 +43,5 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
         
         builder.HasIndex(e => e.StartAt);
         builder.HasIndex(e => e.Title);
-        
-        // Связь с Booking (1:M)
-        builder.HasMany(e => e.Bookings)
-            .WithOne(b => b.Event)
-            .HasForeignKey(b => b.EventId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

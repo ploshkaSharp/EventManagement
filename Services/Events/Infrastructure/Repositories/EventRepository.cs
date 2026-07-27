@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using EventManagement.Infrastructure.Data;
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Ports;
-using EventManagement.Domain.Entities;
+using EventManagement.Events.Infrastructure.Data;
+using EventManagement.Events.Application.DTOs;
+using EventManagement.Events.Application.Ports;
+using EventManagement.Events.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace EventManagement.Infrastructure.Repositories;

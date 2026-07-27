@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace EventManagement.Domain.Exceptions;
+namespace EventManagement.Users.Domain.Exceptions;
 
 /// <summary>
 /// Исключение - Ошибка валидации

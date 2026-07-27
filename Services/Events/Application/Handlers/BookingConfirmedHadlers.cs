@@ -1,5 +1,6 @@
 using EventManagement.Shared.Contracts;
 using EventManagement.Events.Application.Ports;
+using Microsoft.Extensions.Logging;
 
 namespace EventManagement.Events.Application.Handlers;
 

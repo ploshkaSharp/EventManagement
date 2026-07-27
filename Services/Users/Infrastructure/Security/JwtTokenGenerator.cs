@@ -3,9 +3,9 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using EventManagement.Application.Ports;
+using EventManagement.Users.Application.Ports;
 
-namespace EventManagement.Infrastructure.Security;
+namespace EventManagement.Users.Infrastructure.Security;
 
 public class JwtTokenGenerator : IJwtTokenGenerator
 {

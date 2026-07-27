@@ -1,7 +1,7 @@
-using EventManagement.Domain.Entities;
-using EventManagement.Application.DTOs;
+using EventManagement.Events.Domain.Entities;
+using EventManagement.Events.Application.DTOs;
 
-namespace EventManagement.Application.Mappers;
+namespace EventManagement.Events.Application.Mappers;
 
 /// <summary>
 /// Маппер для соспоставления

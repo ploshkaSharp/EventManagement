@@ -1,4 +1,4 @@
-namespace EventManagement.Application.DTOs;
+namespace EventManagement.Events.Application.DTOs;
 
 /// <summary>
 /// DTO мероприятия

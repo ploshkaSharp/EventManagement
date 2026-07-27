@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using EventManagement.Domain.Entities;
+using EventManagement.Events.Domain.Entities;
 
-namespace EventManagement.Infrastructure.Data;
+namespace EventManagement.Events.Infrastructure.Data;
 
 /// <summary>
 /// 
@@ -18,16 +18,6 @@ public sealed class AppDbContext : DbContext
   /// Таблица Events в БД
   /// </summary>
   public DbSet<Event> Events => Set<Event>();
-
-  /// <summary>
-  /// Таблица Bookings в БД
-  /// </summary>
-  public DbSet<Booking> Bookings => Set<Booking>();
-
-  /// <summary>
-  /// Таблица Users в БД
-  /// </summary>
-  public DbSet<User> Users => Set<User>();
 
   /// <summary>
   /// Переопредление пользовательской настройкой модели БД

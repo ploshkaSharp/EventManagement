@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using EventManagement.Application.Ports;
-using EventManagement.Domain.Entities;
-using EventManagement.Domain.Enums;
-using EventManagement.Infrastructure.Data;
+using EventManagement.Users.Application.Ports;
+using EventManagement.Users.Domain.Entities;
+using EventManagement.Users.Domain.Enums;
+using EventManagement.Users.Infrastructure.Data;
 
-namespace EventManagement.Infrastructure.Repositories;
+namespace EventManagement.Users.Infrastructure.Repositories;
 
 public class UserRepository : IUserRepository
 {
@@ -48,12 +48,5 @@ public class UserRepository : IUserRepository
         _context.Users.Remove(user);
         await _context.SaveChangesAsync();
         return true;
-    }
-
-    public async Task<int> CountActiveBookingsAsync(Guid userId)
-    {
-        return await _context.Bookings
-            .CountAsync(b => b.UserId == userId && 
-                (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed));
-    }    
+    }   
 }
