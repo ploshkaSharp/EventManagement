@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Net;
 using System.Text.Json;
-using EventManagement.Domain.Exceptions;
+using EventManagement.Events.Domain.Exceptions;
 
 namespace EventManagement.Presentation.Middleware;
 
@@ -122,20 +122,7 @@ public class GlobalExceptionHandlingMiddleware
             context.Request.Method,
             context.Request.Path,
             eventAlreadyStartedEx.Message);
-        break; 
-
-      case BookingLimitExceededException limitExceededEx:
-        response.StatusCode = (int)HttpStatusCode.Conflict;
-        errorResponse = CreateErrorResponse(context,
-                                            HttpStatusCode.Conflict,
-                                            "Booking Limit Exceeded",
-                                            $"Maximum {limitExceededEx.Limit} active bookings allowed");
-        _logger.LogWarning(exception,
-            "Booking Limit Exceeded. Method: {Method}, Path: {Path}, Message: {Message}",
-            context.Request.Method,
-            context.Request.Path,
-            $"Maximum {limitExceededEx.Limit} active bookings allowed");
-        break; 
+        break;  
 
       case UnAuthorizedOperationException unAuthOperationEx:
         response.StatusCode = (int)HttpStatusCode.Forbidden;

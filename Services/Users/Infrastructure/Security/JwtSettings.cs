@@ -1,4 +1,4 @@
-namespace EventManagement.Infrastructure.Security;
+namespace EventManagement.Users.Infrastructure.Security;
 
 public class JwtSettings
 {

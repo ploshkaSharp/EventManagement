@@ -1,4 +1,4 @@
-namespace EventManagement.Application.Ports;
+namespace EventManagement.Users.Application.Ports;
 
 public interface IJwtTokenGenerator
 {

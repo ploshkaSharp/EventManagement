@@ -1,9 +1,9 @@
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Ports;
-using EventManagement.Domain.Entities;
-using EventManagement.Domain.Exceptions;
+using EventManagement.Users.Application.DTOs;
+using EventManagement.Users.Application.Ports;
+using EventManagement.Users.Domain.Entities;
+using EventManagement.Users.Domain.Exceptions;
 
-namespace EventManagement.Application.Services;
+namespace EventManagement.Users.Application.Services;
 
 public class AuthService : IAuthService
 {

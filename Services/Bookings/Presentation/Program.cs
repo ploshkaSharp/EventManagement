@@ -1,6 +1,6 @@
 using System.Reflection;
 using Microsoft.OpenApi;
-using EventManagement.Application;
+using EventManagement.Bookings.Application;
 using EventManagement.Bookings.Infrastructure;
 using EventManagement.Bookings.Infrastructure.Data;
 using EventManagement.Bookings.Presentation.Middleware;

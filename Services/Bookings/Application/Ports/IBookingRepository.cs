@@ -1,8 +1,8 @@
-using EventManagement.Application.DTOs;
-using EventManagement.Domain.Entities;
-using EventManagement.Domain.Enums;
+using EventManagement.Bookings.Application.DTOs;
+using EventManagement.Bookings.Domain.Entities;
+using EventManagement.Bookings.Domain.Enums;
 
-namespace EventManagement.Application.Ports;
+namespace EventManagement.Bookings.Application.Ports;
 
 /// <summary>
 /// Брони (интерфейс репозитория)
@@ -57,4 +57,5 @@ public interface IBookingRepository
   /// <param name="userId">ИД пользователя</param>
   /// <returns></returns>
   Task<IEnumerable<Booking>> GetByUserIdAsync(Guid userId);
+  Task<int> CountActiveBookingsAsync(Guid userId);
 }

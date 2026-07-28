@@ -1,4 +1,4 @@
-namespace EventManagement.Domain.Exceptions;
+namespace EventManagement.Events.Domain.Exceptions;
 
 public class UnAuthorizedOperationException : DomainException
 {

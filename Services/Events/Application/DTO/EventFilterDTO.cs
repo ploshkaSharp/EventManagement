@@ -1,6 +1,6 @@
-using EventManagement.Domain.Exceptions;
+using EventManagement.Events.Domain.Exceptions;
 
-namespace EventManagement.Application.DTOs;
+namespace EventManagement.Events.Application.DTOs;
 
 /// <summary>
 /// DTO для параметров фильтрации мероприятий

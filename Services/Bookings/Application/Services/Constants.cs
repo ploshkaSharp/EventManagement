@@ -1,4 +1,4 @@
-namespace EventManagement.Application.Services;
+namespace EventManagement.Bookings.Application.Services;
 
 /// <summary>
 /// Константы

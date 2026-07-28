@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using EventManagement.Domain.Entities;
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Services;
-using EventManagement.Domain.Exceptions;
+using EventManagement.Events.Domain.Entities;
+using EventManagement.Events.Application.DTOs;
+using EventManagement.Events.Application.Services;
+using EventManagement.Events.Domain.Exceptions;
 using System.Security.Claims;
 
 namespace EventManagement.Presentation.Controllers;
@@ -17,14 +17,12 @@ namespace EventManagement.Presentation.Controllers;
 public class EventsController : ControllerBase
 {
     private readonly IEventService _eventService;
-    private readonly IBookingService _bookingService;
     /// <summary>
     /// Контроллер для управления мероприятиями
     /// </summary>        
-    public EventsController(IEventService eventService, IBookingService bookingService)
+    public EventsController(IEventService eventService)
     {
         _eventService = eventService;
-        _bookingService = bookingService;
     }
 
     private Guid GetUserId() => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnAuthorizedOperationException("GetUserId"));
@@ -209,6 +207,7 @@ public class EventsController : ControllerBase
     /// <response code="404">Мероприятие не найдено</response>
     /// <response code="400">Невозможно создать бронирование (мероприятие уже началось)</response>
     /// <response code="409">Нет свободных мест на мероприятии</response>
+    /*
     [HttpPost("{id}/book")]
     [Authorize]
     [ProducesResponseType(typeof(BookingDTO), StatusCodes.Status202Accepted)]
@@ -228,5 +227,6 @@ public class EventsController : ControllerBase
             new { id = booking.Id },
             booking);
     }
+    */
     #endregion
 }

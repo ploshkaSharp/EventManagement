@@ -5,7 +5,7 @@ using EventManagement.Events.Application.Ports;
 using EventManagement.Events.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
-namespace EventManagement.Infrastructure.Repositories;
+namespace EventManagement.Events.Infrastructure.Repositories;
 
 /// <summary>
 /// Репозиторий мероприятий

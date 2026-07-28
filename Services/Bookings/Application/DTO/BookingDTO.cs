@@ -1,6 +1,6 @@
-using EventManagement.Domain.Enums;
+using EventManagement.Bookings.Domain.Enums;
 
-namespace EventManagement.Application.DTOs;
+namespace EventManagement.Bookings.Application.DTOs;
 
 /// <summary>
 /// DTO для информации о бронировании

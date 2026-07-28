@@ -1,6 +1,6 @@
-using EventManagement.Application.DTOs;
+using EventManagement.Users.Application.DTOs;
 
-namespace EventManagement.Application.Services;
+namespace EventManagement.Users.Application.Services;
 
 public interface IAuthService
 {

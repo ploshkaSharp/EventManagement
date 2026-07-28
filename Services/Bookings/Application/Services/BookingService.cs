@@ -4,6 +4,7 @@ using EventManagement.Bookings.Domain.Enums;
 using EventManagement.Bookings.Domain.Entities;
 using EventManagement.Bookings.Domain.Exceptions;
 using EventManagement.Bookings.Application.Mappers;
+using EventManagement.Shared.Contracts;
 using Microsoft.Extensions.Logging;
 
 namespace EventManagement.Bookings.Application.Services;
@@ -62,7 +63,7 @@ public class BookingService : IBookingService
             
             // Публикуем событие подтверждения брони
             await _eventPublisher.PublishBookingConfirmedAsync(
-                new BookingConfirmedEvent(
+                new BookingConfirmedEvent(                
                     created.Id,
                     eventId,
                     userId,

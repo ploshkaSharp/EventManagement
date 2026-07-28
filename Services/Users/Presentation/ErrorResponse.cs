@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace EventManagement.Presentation;
+namespace EventManagement.Users.Presentation;
 
 /// <summary>
 /// Модель ответа об ошибке в формате Problem Details (RFC 7807)

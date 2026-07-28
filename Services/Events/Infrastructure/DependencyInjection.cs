@@ -1,37 +1,33 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using EventManagement.Application.Ports;
-using EventManagement.Infrastructure.Data;
-using EventManagement.Infrastructure.Repositories;
-using EventManagement.Infrastructure.Security;
+using EventManagement.Events.Application.Ports;
+using EventManagement.Events.Infrastructure.Data;
+using EventManagement.Events.Infrastructure.Repositories;
+using EventManagement.Events.Infrastructure.Messaging;
+using EventManagement.Events.Infrastructure.Kafka;
 
-namespace EventManagement.Infrastructure;
+
+namespace EventManagement.Events.Infrastructure;
 
 /// <summary>
 /// Extension-метод вызова в DI
 /// </summary>
 public static class DependencyInjection
 {
-    /// <summary>
-    /// Регитсрация DbContext
-    /// </summary>
-    /// <param name="services"></param>
-    /// <param name="configuration"></param>
-    /// <returns></returns>
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        services.AddDbContext<AppDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(
+                configuration.GetConnectionString("DefaultConnection"),
+                b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
-        services.AddScoped<IEventRepository, EventRepository>();
-        services.AddScoped<IBookingRepository, BookingRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IPasswordHasher, PasswordHasher>();
-        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-        
-        services.Configure<JwtSettings>(
-            configuration.GetSection("JwtSettings"));
-        
+        services.AddScoped<IEventRepository, EventRepository>();     
+        services.AddHostedService<BookingConfirmedConsumerService>();
+        services.AddHostedService<TopicInitializer>();
+
         return services;
     }
 }

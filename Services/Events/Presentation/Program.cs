@@ -1,8 +1,8 @@
 using System.Reflection;
 using Microsoft.OpenApi;
-using EventManagement.Application;
-using EventManagement.Infrastructure;
-using EventManagement.Infrastructure.Data;
+using EventManagement.Events.Application;
+using EventManagement.Events.Infrastructure;
+using EventManagement.Events.Infrastructure.Data;
 using EventManagement.Presentation.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

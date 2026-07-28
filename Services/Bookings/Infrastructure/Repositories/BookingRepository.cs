@@ -108,6 +108,30 @@ public class BookingRepository : IBookingRepository
     return true;
   }
 
+  /// <summary>
+  /// Подсчет количества активных броней пользователя
+  /// Активными считаются брони со статусами Pending или Confirmed
+  /// </summary>
+  /// <param name="userId">Идентификатор пользователя</param>
+  /// <returns>Количество активных броней</returns>
+  public async Task<int> CountActiveBookingsAsync(Guid userId)
+  {
+    try
+    {
+      var count = await _context.Bookings
+          .Where(b => b.UserId == userId && (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed))
+          .CountAsync();
+
+      _logger.LogDebug("User {UserId} has {Count} active bookings", userId, count);
+      return count;
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Error counting active bookings for user {UserId}", userId);
+      throw;
+    }
+  }
+
   public async Task<IEnumerable<Booking>> GetByUserIdAsync(Guid userId)
-    => await _context.Bookings.Where(b => b.UserId == userId).OrderByDescending(b => b.CreatedAt).ToListAsync();  
+    => await _context.Bookings.Where(b => b.UserId == userId).OrderByDescending(b => b.CreatedAt).ToListAsync();
 }

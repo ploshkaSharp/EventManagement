@@ -1,7 +1,7 @@
-using EventManagement.Domain.Entities;
-using EventManagement.Application.DTOs;
+using EventManagement.Bookings.Domain.Entities;
+using EventManagement.Bookings.Application.DTOs;
 
-namespace EventManagement.Application.Mappers;
+namespace EventManagement.Bookings.Application.Mappers;
 
 /// <summary>
 /// Маппер для соспоставления
