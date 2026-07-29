@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - event-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+    networks:
+      - event-network
+
+  users_db:
+    image: postgres:16-alpine
+    container_name: users_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: users_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - users_data:/var/lib/postgresql/data
+    networks:
+      - event-network
+
+  events_db:
+    image: postgres:16-alpine
+    container_name: events_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: events_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - events_data:/var/lib/postgresql/data
+    networks:
+      - event-network
+
+  bookings_db:
+    image: postgres:16-alpine
+    container_name: bookings_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bookings_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - bookings_data:/var/lib/postgresql/data
+    networks:
+      - event-network
+
+  users_service:
+    build:
+      context: .
+      dockerfile: Services/Users/Presentation/Dockerfile
+    container_name: users_service
+    depends_on:
+      - users_db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=users_db;Port=5432;Database=users_db;Username=postgres;Password=postgres
+      - JwtSettings__Secret=SECRET_KEY_MINIMUM_32_CHARACTERS
+      - JwtSettings__Issuer=EventManagement
+      - JwtSettings__Audience=EventManagementClients
+    ports:
+      - "5001:8080"
+    networks:
+      - event-network
+
+  events_service:
+    build:
+      context: .
+      dockerfile: Services/Events/Presentation/Dockerfile
+    container_name: events_service
+    depends_on:
+      - events_db
+      - kafka
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=events_db;Port=5432;Database=events_db;Username=postgres;Password=postgres
+      - Kafka__BootstrapServers=kafka:9092
+      - Kafka__ConsumerGroup=events-service-group
+      - JwtSettings__Secret=SECRET_KEY_MINIMUM_32_CHARACTERS
+      - JwtSettings__Issuer=EventManagement
+      - JwtSettings__Audience=EventManagementClients
+    ports:
+      - "5002:8080"
+    networks:
+      - event-network
+
+  bookings_service:
+    build:
+      context: .
+      dockerfile: Services/Bookings/Presentation/Dockerfile
+    container_name: bookings_service
+    depends_on:
+      - bookings_db
+      - kafka
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=bookings_db;Port=5432;Database=bookings_db;Username=postgres;Password=postgres
+      - Kafka__BootstrapServers=kafka:9092
+      - JwtSettings__Secret=SECRET_KEY_MINIMUM_32_CHARACTERS
+      - JwtSettings__Issuer=EventManagement
+      - JwtSettings__Audience=EventManagementClients
+      - Services__Users__Url=http://users_service:8080
+    ports:
+      - "5003:8080"
+    networks:
+      - event-network
+
+networks:
+  event-network:
+    driver: bridge
+
+volumes:
+  users_data:
+  events_data:
+  bookings_data:
