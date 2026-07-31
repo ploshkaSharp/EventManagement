@@ -1,5 +1,6 @@
 FROM ubuntu:26.04  AS build
 RUN apt-get update && apt-get install -y dotnet-sdk-10.0
+#FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy csproj files
@@ -20,8 +21,11 @@ RUN dotnet restore Services/Users/Presentation/EventManagment.Users.Presentation
 WORKDIR /src/Services/Users/Presentation
 RUN dotnet publish -c Release -o /app/publish
 
+# FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+#FROM ubuntu:26.04  AS runtime
+#RUN apt-get update && apt-get install -y dotnet-runtime-10.0
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 EXPOSE 8080
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "EventManagement.Users.Presentation.dll"]
+ENTRYPOINT ["dotnet", "EventManagment.Users.Presentation.dll"]

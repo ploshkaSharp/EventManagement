@@ -25,7 +25,9 @@ WORKDIR /src/Services/Bookings/Presentation
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
 # Runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+# FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM ubuntu:26.04  AS runtime
+RUN apt-get update && apt-get install -y dotnet-runtime-10.0
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
@@ -36,4 +38,4 @@ COPY --from=build /app/publish .
 # Set environment variable for port
 ENV ASPNETCORE_URLS="http://+:8080"
 
-ENTRYPOINT ["dotnet", "EventManagement.Bookings.Presentation.dll"]
+ENTRYPOINT ["dotnet", "EventManagment.Bookings.Presentation.dll"]
