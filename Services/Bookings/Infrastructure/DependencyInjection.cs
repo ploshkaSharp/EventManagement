@@ -25,7 +25,7 @@ public static class DependencyInjection
         services.AddSingleton<IEventPublisher, KafkaEventPublisher>();
 
         // HTTP Client for User Service
-        /*
+        
         services.AddHttpClient<IUserService, UserServiceClient>(client =>
         {
             var usersServiceUrl = configuration["Services:Users:Url"] 
@@ -33,7 +33,7 @@ public static class DependencyInjection
             client.BaseAddress = new Uri(usersServiceUrl);
             client.Timeout = TimeSpan.FromSeconds(30);
         });
-        */
+        
 
         services.AddScoped<IBookingService, BookingService>();
 
