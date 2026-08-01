@@ -378,10 +378,11 @@ POST /auth/login
 
 ```bash
 dotnet ef migrations add <MigrationName> --context AppDbContext --output-dir EventManagement\Infrastructure\Migrations
+dotnet ef migrations add Users --context AppDbContext --startup-project D:\Teach\EventManagement\Services\Users\Presentation --project D:\Teach\EventManagement\Services\Users\Infrastructure --output-dir D:\Teach\EventManagement\Services\Users\Infrastructure\Migrations  
 ```
 ### Применение миграций к базе данных
 ```bash
-dotnet ef database update --context AppDbContext  --project EventManagement\Infrastructure --startup-project EventManagement\Presentation  
+dotnet ef database update --context AppDbContext  --project EventManagement\Infrastructure --startup-project EventManagement\Presentation
 ```
 
 ### Откат к предыдущей миграции

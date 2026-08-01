@@ -5,6 +5,7 @@ using EventManagement.Users.Infrastructure;
 using EventManagement.Users.Infrastructure.Data;
 using EventManagement.Users.Presentation.Middleware;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
