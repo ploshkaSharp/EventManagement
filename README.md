@@ -1,42 +1,38 @@
 # Event Management
-REST API для управления мероприятиями и их бронированием с CRUD-операциями (создание, просмотр, обновление, удаление).
-
-Валидация входных данных (обязательность заполнения, дата окончания должна быть позже даты начала).
-
-Интерфейсы для изоляции бизнес-логики (`IEventService`, `IBookingService`).
+Система управления мероприятиями, построенная на микросервисной архитектуре с асинхронным обменом через Apache Kafka.
 
 Swagger для упрощения тестирования и документирования.
 
 Используется Entity Framework Core Migrations для управления схемой БД. Все изменения структуры базы данных выполняются через миграции.
 
-## Структура базы данных:
+## Архитектура
 
-- Таблица "Events":
-  * Id (uuid, PK) - уникальный идентификатор мероприятия
-  * Title (varchar(200), NOT NULL) - название мероприятия
-  * Description (varchar(1000)) - описание мероприятия
-  * StartAt (timestamp with time zone, NOT NULL) - дата и время начала
-  * EndAt (timestamp with time zone, NOT NULL) - дата и время окончания
-  * TotalSeats (integer, NOT NULL) - общее количество мест
-  * AvailableSeats (integer, NOT NULL) - количество свободных мест
+### Сервисы
 
-- Таблица "Bookings":
-  * Id (uuid, PK) - уникальный идентификатор бронирования
-  * EventId (uuid, FK -> Events.Id) - идентификатор мероприятия
-  * Status (varchar(20), NOT NULL) - статус бронирования (Pending/Confirmed/Rejected)
-  * CreatedAt (timestamp with time zone, NOT NULL) - дата создания
-  * ProcessedAt (timestamp with time zone) - дата обработки
+1. **Users/Auth** (порт 5001)
+   - Регистрация и аутентификация пользователей
+   - Выдача JWT-токенов
+   - Управление ролями (User/Admin)
+   - База данных: users_db (PostgreSQL)
 
-- Внешние ключи:
-  * FK_Bookings_Events_EventId - связывает Bookings.EventId с Events.Id
-  * ON DELETE RESTRICT - запрещает удаление мероприятия с активными бронями
+2. **Events** (порт 5002)
+   - CRUD операции с мероприятиями
+   - Учёт доступных мест
+   - Подписка на события бронирования через Kafka
+   - База данных: events_db (PostgreSQL)
 
-- Индексы:
-  * IX_Events_StartAt - для ускорения фильтрации по дате
-  * IX_Events_Title - для ускорения поиска по названию
-  * IX_Bookings_EventId - для ускорения поиска броней по мероприятию
-  * IX_Bookings_Status - для ускорения фильтрации по статусу
-  * IX_Bookings_CreatedAt - для ускорения сортировки по дате создания
+3. **Bookings** (порт 5003)
+   - Создание и отмена броней
+   - Публикация событий подтверждения брони
+   - Проверка лимитов активных броней
+   - База данных: bookings_db (PostgreSQL)
+
+### Обмен сообщениями
+
+- **Топик**: `booking-confirmed`
+- **Издатель**: Сервис Bookings (при подтверждении брони)
+- **Подписчик**: Сервис Events (уменьшает доступные места)
+- **Ключ сообщения**: EventId (обеспечивает порядок обработки)
 
 
 ## Cтек разработки
@@ -48,28 +44,28 @@ Swagger для упрощения тестирования и документи
 
 ## Архитектура и структура проекта
 
-Проект построен на принципах Clean Architecture с разделением на четыре слоя:
+Проект построен на принципах Clean Architecture с разделением на четыре слоя в каждом сервисе:
 
-1. Domain (EventManagement.Domain)
-   - Доменные сущности (Event, Booking)
-   - Перечисления (BookingStatus)
+1. Domain 
+   - Доменные сущности (Event, Booking, User)
+   - Перечисления 
    - Доменные исключения
    - Не зависит от внешних библиотек
 
-2. Application (EventManagement.Application)
-   - Use Cases (EventService, BookingService)
+2. Application 
+   - Use Cases 
    - DTO
    - Интерфейсы портов (репозитории)
    - Фоновые сервисы
    - Зависит только от Domain
 
-3. Infrastructure (EventManagement.Infrastructure)
+3. Infrastructure 
    - Реализации репозиториев
    - DbContext и конфигурации
    - Миграции
    - Зависит от Application и Domain
 
-4. Presentation (EventManagement.Presentation)
+4. Presentation 
    - Контроллеры
    - Глобальная обработка ошибок
    - Composition Root (Program.cs)
@@ -82,76 +78,6 @@ Presentation → Application
 Infrastructure → Application
 Infrastructure → Domain
 Application → Domain
-```
-
-```bash
-EventManagement/
-├── **Application**/
-│ └── Background/
-│ │ └── BookingBackgroundService.cs  #Фоновый сервис для обработки бронирований
-│ └── DTO/
-│ │ ├── BookingDTO.cs                #DTO объекты (бронирование)
-│ │ ├── EventDTO.cs                  #DTO объекты (мероприятия)
-│ │ ├── EventFilterDTO.cs            #DTO для параметров фильтрации
-│ │ └── PaginateResultDTO.cs         #DTO для пагинированного результата
-│ └── Mapper/
-│ │ ├── BookingMapper.cs             #Маппинг DTO объектов (бронирование)
-│ │ └── EventMapper.cs               #Маппинг DTO объектов (мероприятия)
-│ └── Ports/
-│ │ ├── IBookingRepository.cs        #Интерфейс репозитория управления бронированием
-│ │ └── IEventRepository.cs          #Интерфейс репозитория управления мероприятиями
-│ └─ Services/
-│ │ ├── BookingService.cs            #Реализация бизнес-логики управления бронированиями
-│ │ ├── Constants.cs                 #Константы
-│ │ └── EventService.cs              #Реализация бизнес-логики управления мероприятиями
-│ └── DependencyInjection.cs         #extension-метод для DI
-│
-├── **Domain**/
-│ └─ Models/
-│ │ ├── Booking.cs                   #Модель бронирования мероприятия
-│ │ ├── BookingStatus.cs             #Перечисление статусов бронирования 
-│ │ └── Event.cs                     #Доменная модель (сущность)
-│ └─ Exceptions/
-│   ├── BadRequestException.cs       #Исключение - Некорректный запрос
-│   ├── NotAvailableException.cs     #Исключение - Нет доступных мест
-│   ├── NotFoundException.cs         #Исключение - Ресурс не найден
-│   └── ValidationException.cs       #Исключение - Ошибка валидации
-│
-├── **Infastructure**/
-│ ├─ DataAccess/
-│ │  └── Configurations/             #Настрока таблиц в БД
-│ │   ├── BookingConfiguration.cs    #Настройка таблицы Bookings
-│ │   └── EventConfiguration.cs      #Настройка таблицы Events
-│ └── AppDbContext.cs                #Контекст БД
-│ └─ Repositories/
-│   ├── BookingRepository.cs         #Репозиторий бронирований
-│   └── EventRepository.cs           #Репозиторий мероприятий
-│
-├── **Presentation**/
-│ └─ Controllers/
-│ │ ├── BookingController.cs         #Эндпоинты API (бронирование)
-│ │ └── EventsController.cs          #Эндпоинты API (мероприятия)
-│ └─ Middleware/
-│   └── GlobalExceptionHandlingMiddleware.cs  #Глобальная обработка исключений (middleware)
-│ └─ ErrorResponse.cs               #Модель ответа об ошибке в формате Problem Details (RFC 7807)
-│
-├── Tests/
-│ └── Migration/
-│     └── DBSchemeTests.cs           #Тесты схемы БД после миграции
-│ └── Integration/
-│     ├── InitTests.cs               #Инициализация интеграционных тестов
-│     ├── BookingRepositoryTests.cs  #Интеграционные тесты бронирования
-│     └── EventRepositoryTests.cs    #Интеграционные тесты мероприятий
-│ ├── UnitData/
-│ │   └── DataGenerator.cs           #Генератор тестовых данных юнит тестов
-│ ├── Unit/
-│ │   ├── BookingServiceSeatsTest.cs #Тестовые сценарии логики мест для бронирования
-│ │   ├── BookingServiceTest.cs      #Тестовые сценарии для бронирования
-│ │   └── EventServiceTest.cs        #Тестовые сценарии (успешные, неуспешные, пограничные)
-│ └── Tests.csproj                   #Проект с тестами
-├── Program.cs                       #Точка входа в приложение с конфигурацией DI
-├── appsettings.json                 #Настройки приложения
-└── appsettings.Development.json     #Настройки приложения (окружение разработчика)
 ```
 
 ## Мероприятия
@@ -217,11 +143,6 @@ EventManagement/
   /// Дата и время обработки брони (необязательное)
   ProcessedAt
 ```
-### Логика фоновой обработки бронирования
-После успешного создания брони для мероприятия, брони присваивается уникальный ИД. Статус бронирования устанвливается равным Ожидание (`Pending`). Устанавлвается текущее время создания брони.
-
-Фоновый сервис с периодом 5 секунд собирает вновь созданные брони. Для каждой новой брони имитируется обработка бронирования (задержка 2 сек). После чего брони устанавливается статус равный Подтверждено (`Confirmed`), устанавливается время последней обработки брони (`ProcessedAt`) равное текущему.
-
 
 ## АУТЕНТИФИКАЦИЯ И АВТОРИЗАЦИЯ
 
@@ -296,8 +217,7 @@ POST /auth/login
 
 ### Предварительные требования
 - Наличие установленного [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) 
-- Наличие установленной Docker (для запуска интеграционных тестов с использованием Testcontainers.PostgreSql и разворачивания PostgreSQL).
-- 
+- Наличие установленной Docker и Docker Compose.
 
 ### Инструкция по публикации и запуску
 
@@ -306,71 +226,27 @@ POST /auth/login
    git clone https://github.com/ploshkaSharp/EventManagement
    ```
 
-2. **Настройте строку подключения к БД:**
-   В файле `appsettings.json` в разделе ConnectionStrings замените параметры подключения указанные по умолчанию (хост, порт, имя БД, логин, пароль), если они не совпадают.
-   ```bash
-   "DefaultConnection": "Host=localhost;Port=5432;Database=eventapi;Username=postgres;Password=111111"
-   ```
+2. **Запуск всей системы**
+  ```bash
+  docker-compose up -d
+  ```
 
-3. **Переключитесь в папку с клонированным репозиторием:**
-   ```bash
-   cd EventManagement
-   ```
+3. **Остановка системы**
+  ```bash
+  docker-compose down
+  ```
 
-4. **Опубликуйте решение:**
-   ```bash
-   dotnet build
-   ```
-   При первом запуске приложения миграции применяются автоматически (Program.cs):
-
-   ```bash
-   using (var scope = app.Services.CreateScope())
-   {
-     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-     db.Database.Migrate();
-   }
-   ```   
-
-5. **Запустите решение:**
-   ```bash
-   dotnet run
-   ```
-6. **Для запуска тестов переключитесь в папку проекта тестов и запустите их:**
-
-   Для запуска всех тестов:
-
-   ```bash
-   cd Tests
-   dotnet test
-   ```   
-
-   Для запуска только тестов миграции:
-   
-   ```bash
-   cd Tests
-   dotnet test --filter "FullyQualifiedName~DatabaseSchemaTests"
-   ```   
-
-   Для запуска только интеграционных тестов мероприятий:
-   
-   ```bash
-   cd Tests
-   dotnet test --filter "FullyQualifiedName~EventRepositoryTests"
-   ```
-      
-   Для запуска только интеграционных тестов бронирования:
-   
-   ```bash
-   cd Tests
-   dotnet test --filter "FullyQualifiedName~BookingRepositoryTests"
-   ```   
-
-7. **Для тестирования решения в swagger:**
+4. **Остановка с удалением томов**
+  ```bash
+  docker-compose down -v
+  ```
+5. **Для тестирования решения в swagger:**
 
    в браузере напишите адрес:
-   http://localhost:5000/swagger
+   http://localhost:5001/swagger - для сервиса Users
+   http://localhost:5002/swagger - для сервиса Events
+   http://localhost:5003/swagger - для сервиса Bookings
 
-   Примечание. Порт swagger'а может отличаться от указанного здесь. Актальный порт указан в консоли запустившегося решения (см.п.5).
 
 ## Управление миграциями
    
@@ -394,25 +270,6 @@ dotnet ef database update <PreviousMigrationName> --context AppDbContext
 ```bash
 dotnet ef migrations remove --context AppDbContext
 ```
-
-
-## Реализованные методы
-
-```bash
-
- Метод  │ URL               │ Описание                         │ HTTP Ответы                                                  |
- -------|-------------------|----------------------------------|--------------------------------------------------------------|
- GET    │ /events           │ Получить список всех мероприятий │ 200 OK                                                       |
-        │                   │ с возможносью фильтрации по      │                                                              |
-        │                   │ названию, дате старта, дате      │                                                              |
-        │                   │ окончания и пагинации            │                                                              |
- GET    │ /events/{id}      │ Получить мероприятие по ID       │ 200 OK / 404 Not Found                                       |
- POST   │ /events           │ Создать мероприятие              │ 201 Created / 400 Bad Request                                |
- PUT    │ /events/{id}      │ Обновить мероприятие             │ 200 Ok / 404 Not Found / 400 Bad Request                     |
- DELETE │ /events/{id}      │ Удалить мероприятие              │ 204 No Content / 404 Not Found                               |
- GET    │ /bookings/{id}    │ Получить бронирование по ID      │ 200 OK / 404 Not Found                                       |
- POST   │ /events/{id}/book │ Создать бронь на мероприятие     │ 202 Accepted / 404 Not Found / 400 Bad Request / 409 Conflict|
- ```
 
 ### Примеры запросов
    **Создание мероприятия:**
