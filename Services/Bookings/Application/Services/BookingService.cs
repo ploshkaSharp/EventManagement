@@ -49,11 +49,7 @@ public class BookingService : IBookingService
     _logger.LogInformation("Attempting to create booking for event {EventId}", eventId);
         await _bookingLock.WaitAsync();
         try
-        {
-            var user = await _userService.GetUserByIdAsync(userId);
-            if (user == null)
-                throw new NotFoundException(nameof(user), userId);
-            
+        {            
             var activeBookings = await _bookingRepository.CountActiveBookingsAsync(userId);
             if (activeBookings >= _maxActiveBookings)
                 throw new BookingLimitExceededException(_maxActiveBookings);

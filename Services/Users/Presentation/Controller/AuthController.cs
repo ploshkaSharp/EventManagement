@@ -32,5 +32,5 @@ public class AuthController : ControllerBase
         _logger.LogInformation("Login attempt for user {Login}", loginDto.Login);
         var token = await _authService.LoginAsync(loginDto);
         return Ok(new AuthResponseDTO(token));
-    }
+    }  
 }

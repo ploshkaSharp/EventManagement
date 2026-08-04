@@ -37,3 +37,11 @@ public class BookingDTO
   /// </summary>
   public DateTime? ProcessedAt { get; set; }
 }
+
+public class CreateBookingDTO
+{
+    /// <summary>
+    /// Идентификатор мероприятия, на которое создается бронь
+    /// </summary>
+    public Guid EventId { get; init; }
+}
