@@ -18,6 +18,10 @@ public sealed class AppDbContext : DbContext
   /// Таблица Events в БД
   /// </summary>
   public DbSet<Event> Events => Set<Event>();
+  /// <summary>
+  /// Таблица ProcessedBookings
+  /// </summary>
+  public DbSet<ProcessedBooking> ProcessedBookings => Set<ProcessedBooking>();
 
   /// <summary>
   /// Переопредление пользовательской настройкой модели БД
@@ -25,6 +29,6 @@ public sealed class AppDbContext : DbContext
   /// <param name="modelBuilder">Объект построения модели</param>
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
-    modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);    
   }
 }

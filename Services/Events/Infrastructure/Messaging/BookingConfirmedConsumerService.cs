@@ -3,10 +3,13 @@ using Confluent.Kafka;
 using EventManagement.Shared.Contracts;
 using EventManagement.Shared.Topics;
 using EventManagement.Events.Application.Handlers;
+using EventManagement.Events.Infrastructure.Data;
+using EventManagement.Events.Application.Ports;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace EventManagement.Events.Infrastructure.Messaging;
@@ -15,14 +18,17 @@ public class BookingConfirmedConsumerService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<BookingConfirmedConsumerService> _logger;
+    private readonly IProcessedBookingRepository _processedBookingRepository;
     private readonly IConsumer<string, string> _consumer;
 
     public BookingConfirmedConsumerService(
         IServiceScopeFactory scopeFactory,
         IConfiguration configuration,
+        IProcessedBookingRepository processedBookingRepository,
         ILogger<BookingConfirmedConsumerService> logger)
     {
         _scopeFactory = scopeFactory;
+        _processedBookingRepository = processedBookingRepository;
         _logger = logger;
         
         var bootstrapServers = configuration["Kafka:BootstrapServers"] 
@@ -35,7 +41,7 @@ public class BookingConfirmedConsumerService : BackgroundService
             BootstrapServers = bootstrapServers,
             GroupId = groupId,
             AutoOffsetReset = AutoOffsetReset.Earliest,
-            EnableAutoCommit = true,
+            EnableAutoCommit = false, // Отключить автокоммит - коммит только после успешной обработки
             AllowAutoCreateTopics = true
         };
 
@@ -66,20 +72,40 @@ public class BookingConfirmedConsumerService : BackgroundService
                     var @event = JsonSerializer.Deserialize<BookingConfirmedEvent>(
                         consumeResult.Message.Value);
 
-                    if (@event != null)
+                    if (@event == null)
                     {
-                        using var scope = _scopeFactory.CreateScope();
-                        var handler = scope.ServiceProvider.GetRequiredService<IBookingConfirmedHandler>();
-                        await handler.HandleAsync(@event);
+                        _logger.LogWarning("Failed to deserialize message: {Message}", consumeResult.Message.Value);
+                        // Пропустить невалидное сообщение с коммитом
+                        _consumer.Commit(consumeResult);
+                        continue;
+                    }
+
+                    // Обрабатать сообщение идемпотентно
+                    var processed = await ProcessMessageAsync(@event, stoppingToken);
+
+                    if (processed)
+                    {
+                        // Коммит оффсета только после успешной обработки
+                        _consumer.Commit(consumeResult);
+                        _logger.LogInformation("Successfully processed and committed booking {BookingId} at offset {Offset}",
+                                               @event.BookingId, consumeResult.Offset);
+                    }
+                    else
+                    {
+                        // Не коммитить - сообщение будет обработано повторно при следующем чтении
+                        _logger.LogWarning("Message for booking {BookingId} not processed, will retry", @event.BookingId);
+                        await Task.Delay(500, stoppingToken);
                     }
                 }
                 catch (ConsumeException ex)
                 {
                     _logger.LogError(ex, "Consume error");
+                    await Task.Delay(500, stoppingToken);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing message");
+                    await Task.Delay(500, stoppingToken);
                 }
             }
         }
@@ -91,6 +117,40 @@ public class BookingConfirmedConsumerService : BackgroundService
 
         _logger.LogInformation("BookingConfirmedConsumerService stopped");
     }
+
+    private async Task<bool> ProcessMessageAsync(BookingConfirmedEvent @event, CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var processedBookingRepository = _processedBookingRepository;
+            var handler = scope.ServiceProvider.GetRequiredService<IBookingConfirmedHandler>();
+            
+            // 1. Проверить, не было ли это бронирование уже обработано (идемпотентность)
+            var alreadyProcessed = await processedBookingRepository.ExistsAsync(@event.BookingId);
+
+            if (alreadyProcessed)
+            {
+                _logger.LogInformation("Booking {BookingId} already processed, skipping duplicate", @event.BookingId);
+                return true; // успешно, чтобы закоммитить и не обрабатывать повторно
+            }
+
+            // 2. Обрабатать бронирование (уменьшить места)
+            await handler.HandleAsync(@event);
+
+            // 3. Сохранить запись обработанной брони (идемпотентность)
+            // INSERT ... ON CONFLICT DO NOTHING для защиты от дублей
+            await processedBookingRepository.AddAsync(@event.BookingId, @event.EventId, @event.UserId, DateTime.UtcNow); 
+
+            _logger.LogInformation("Booking {BookingId} for event {EventId} processed successfully", @event.BookingId, @event.EventId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing booking {BookingId} for event {EventId}", @event.BookingId, @event.EventId);
+            return false;
+        }
+    }    
 
     public override void Dispose()
     {

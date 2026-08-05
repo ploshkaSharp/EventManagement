@@ -7,7 +7,6 @@ using EventManagement.Events.Infrastructure.Repositories;
 using EventManagement.Events.Infrastructure.Messaging;
 using EventManagement.Events.Infrastructure.Kafka;
 
-
 namespace EventManagement.Events.Infrastructure;
 
 /// <summary>
@@ -24,7 +23,8 @@ public static class DependencyInjection
                 configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
-        services.AddScoped<IEventRepository, EventRepository>();     
+        services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IProcessedBookingRepository, ProcessedBookingRepository>();
         services.AddHostedService<BookingConfirmedConsumerService>();
         services.AddHostedService<TopicInitializer>();
 
