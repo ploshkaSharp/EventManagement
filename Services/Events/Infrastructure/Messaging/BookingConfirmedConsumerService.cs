@@ -4,7 +4,6 @@ using EventManagement.Shared.Contracts;
 using EventManagement.Shared.Topics;
 using EventManagement.Events.Application.Handlers;
 using EventManagement.Events.Infrastructure.Data;
-using EventManagement.Events.Application.Ports;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,17 +17,14 @@ public class BookingConfirmedConsumerService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<BookingConfirmedConsumerService> _logger;
-    private readonly IProcessedBookingRepository _processedBookingRepository;
     private readonly IConsumer<string, string> _consumer;
 
     public BookingConfirmedConsumerService(
         IServiceScopeFactory scopeFactory,
         IConfiguration configuration,
-        IProcessedBookingRepository processedBookingRepository,
         ILogger<BookingConfirmedConsumerService> logger)
     {
         _scopeFactory = scopeFactory;
-        _processedBookingRepository = processedBookingRepository;
         _logger = logger;
         
         var bootstrapServers = configuration["Kafka:BootstrapServers"] 
@@ -123,11 +119,11 @@ public class BookingConfirmedConsumerService : BackgroundService
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            var processedBookingRepository = _processedBookingRepository;
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var handler = scope.ServiceProvider.GetRequiredService<IBookingConfirmedHandler>();
             
             // 1. Проверить, не было ли это бронирование уже обработано (идемпотентность)
-            var alreadyProcessed = await processedBookingRepository.ExistsAsync(@event.BookingId);
+            var alreadyProcessed = await dbContext.ProcessedBookings.AnyAsync(pb => pb.BookingId == @event.BookingId, cancellationToken);
 
             if (alreadyProcessed)
             {
@@ -140,7 +136,17 @@ public class BookingConfirmedConsumerService : BackgroundService
 
             // 3. Сохранить запись обработанной брони (идемпотентность)
             // INSERT ... ON CONFLICT DO NOTHING для защиты от дублей
-            await processedBookingRepository.AddAsync(@event.BookingId, @event.EventId, @event.UserId, DateTime.UtcNow); 
+            await dbContext.Database.ExecuteSqlRawAsync(
+                @"
+                    INSERT INTO ""ProcessedBookings"" (""BookingId"", ""ProcessedAt"", ""EventId"", ""UserId"")
+                    VALUES ({0}, {1}, {2}, {3})
+                    ON CONFLICT (""BookingId"") DO NOTHING
+                ",
+                @event.BookingId,
+                DateTime.UtcNow,
+                @event.EventId,
+                @event.UserId,
+                cancellationToken);
 
             _logger.LogInformation("Booking {BookingId} for event {EventId} processed successfully", @event.BookingId, @event.EventId);
             return true;
