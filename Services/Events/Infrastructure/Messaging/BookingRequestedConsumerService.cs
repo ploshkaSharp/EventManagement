@@ -66,8 +66,7 @@ public class BookingRequestedConsumerService : BackgroundService
                         continue;
                     }
 
-                    var @event = JsonSerializer.Deserialize<BookingRequestedEvent>(
-                        consumeResult.Message.Value);
+                    var @event = JsonSerializer.Deserialize<BookingRequestedEvent>(consumeResult.Message.Value, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                     if (@event == null)
                     {

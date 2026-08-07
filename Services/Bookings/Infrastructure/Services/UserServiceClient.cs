@@ -29,7 +29,7 @@ public class UserServiceClient : IUserService
             }
             
             var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<UserResponseDto>(content);
+            return JsonSerializer.Deserialize<UserResponseDto>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
         catch (Exception ex)
         {
