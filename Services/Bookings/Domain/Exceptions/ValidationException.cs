@@ -7,42 +7,42 @@ namespace EventManagement.Bookings.Domain.Exceptions;
 /// </summary>
 public class ValidationException : DomainException
 {
-  /// <summary>
-  /// Список ошибок
-  /// </summary>
-  public IDictionary<string, string[]> Errors { get; }
-  /// <summary>
-  /// Ошибка валидации
-  /// </summary>
-  public ValidationException() : base("Validation error occurred")
-  {
-    Errors = new Dictionary<string, string[]>();
-  }
-  /// <summary>
-  /// Ошибка валидации
-  /// </summary>
-  /// <param name="message">Текст ошибки</param>
-  public ValidationException(string message) : base(message)
-  {
-    Errors = new Dictionary<string, string[]>();
-  }
-  /// <summary>
-  /// Ошибка валидации
-  /// </summary>
-  /// <param name="errors">Список ошибок</param>
-  public ValidationException(IDictionary<string, string[]> errors) 
-        : base("Validation error occurred")
-  {
-    Errors = errors;
-  }
-  /// <summary>
-  /// Ошибка валидации
-  /// </summary>
-  /// <param name="message">Текст ошибки</param>
-  /// <param name="errors">Список ошибок</param>
-  public ValidationException(string message, IDictionary<string, string[]> errors) 
-        : base(message)
-  {
-    Errors = errors;
-  }
+    /// <summary>
+    /// Список ошибок
+    /// </summary>
+    public IDictionary<string, string[]> Errors { get; }
+    /// <summary>
+    /// Ошибка валидации
+    /// </summary>
+    public ValidationException() : base("Validation error occurred")
+    {
+        Errors = new Dictionary<string, string[]>();
+    }
+    /// <summary>
+    /// Ошибка валидации
+    /// </summary>
+    /// <param name="message">Текст ошибки</param>
+    public ValidationException(string message) : base(message)
+    {
+        Errors = new Dictionary<string, string[]>();
+    }
+    /// <summary>
+    /// Ошибка валидации
+    /// </summary>
+    /// <param name="errors">Список ошибок</param>
+    public ValidationException(IDictionary<string, string[]> errors)
+          : base("Validation error occurred")
+    {
+        Errors = errors;
+    }
+    /// <summary>
+    /// Ошибка валидации
+    /// </summary>
+    /// <param name="message">Текст ошибки</param>
+    /// <param name="errors">Список ошибок</param>
+    public ValidationException(string message, IDictionary<string, string[]> errors)
+          : base(message)
+    {
+        Errors = errors;
+    }
 }

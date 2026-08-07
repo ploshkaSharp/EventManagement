@@ -16,7 +16,7 @@ public class TopicInitializer : IHostedService
     public TopicInitializer(IConfiguration configuration, ILogger<TopicInitializer> logger)
     {
         _logger = logger;
-        _bootstrapServers = configuration["Kafka:BootstrapServers"] 
+        _bootstrapServers = configuration["Kafka:BootstrapServers"]
             ?? throw new InvalidOperationException("Kafka:BootstrapServers not configured");
     }
 

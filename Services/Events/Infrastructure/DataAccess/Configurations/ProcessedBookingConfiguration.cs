@@ -9,21 +9,21 @@ public class ProcessedBookingConfiguration : IEntityTypeConfiguration<ProcessedB
     public void Configure(EntityTypeBuilder<ProcessedBooking> builder)
     {
         builder.ToTable("ProcessedBookings");
-        
+
         builder.HasKey(pb => pb.Id);
-        
+
         builder.Property(pb => pb.BookingId)
             .IsRequired()
             .HasColumnName("BookingId");
-        
+
         builder.Property(pb => pb.EventId)
             .IsRequired()
             .HasColumnName("EventId");
-        
+
         builder.Property(pb => pb.UserId)
             .IsRequired()
             .HasColumnName("UserId");
-        
+
         builder.Property(pb => pb.ProcessedAt)
             .IsRequired()
             .HasColumnName("ProcessedAt")

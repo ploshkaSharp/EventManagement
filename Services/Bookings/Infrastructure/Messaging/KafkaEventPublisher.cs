@@ -46,7 +46,7 @@ public class KafkaEventPublisher : IEventPublisher, IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,"Failed to publish message to topic {Topic}, key {Key}", topic, key);
+            _logger.LogError(ex, "Failed to publish message to topic {Topic}, key {Key}", topic, key);
             throw;
         }
     }

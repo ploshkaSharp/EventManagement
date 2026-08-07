@@ -10,7 +10,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IBookingRequestedHandler, BookingRequestedHandler>();
-        
+
         return services;
     }
 }

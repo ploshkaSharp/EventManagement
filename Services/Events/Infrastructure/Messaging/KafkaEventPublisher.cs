@@ -20,7 +20,7 @@ public class KafkaEventPublisher : IEventPublisher, IDisposable
         ILogger<KafkaEventPublisher> logger)
     {
         _logger = logger;
-        
+
         var bootstrapServers = configuration["Kafka:BootstrapServers"]
             ?? throw new InvalidOperationException("Kafka:BootstrapServers not configured");
 
@@ -37,8 +37,8 @@ public class KafkaEventPublisher : IEventPublisher, IDisposable
         _producer = new ProducerBuilder<string, string>(config)
             .SetErrorHandler((_, e) => _logger.LogError("Kafka producer error: {Error}", e.Reason))
             .Build();
-        
-        _logger.LogInformation("KafkaEventPublisher initialized with BootstrapServers: {BootstrapServers}", 
+
+        _logger.LogInformation("KafkaEventPublisher initialized with BootstrapServers: {BootstrapServers}",
             bootstrapServers);
     }
 
@@ -50,7 +50,7 @@ public class KafkaEventPublisher : IEventPublisher, IDisposable
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
-            
+
             var kafkaMessage = new Message<string, string>
             {
                 Key = key,
@@ -64,7 +64,7 @@ public class KafkaEventPublisher : IEventPublisher, IDisposable
                 typeof(T).Name);
 
             var result = await _producer.ProduceAsync(topic, kafkaMessage);
-            
+
             _logger.LogInformation(
                 "Successfully published message to topic {Topic}, key {Key}, partition {Partition}, offset {Offset}",
                 topic,
@@ -102,13 +102,13 @@ public class KafkaEventPublisher : IEventPublisher, IDisposable
     protected virtual void Dispose(bool disposing)
     {
         if (_disposed) return;
-        
+
         if (disposing)
         {
             _producer?.Dispose();
             _logger.LogInformation("KafkaEventPublisher disposed");
         }
-        
+
         _disposed = true;
     }
 }

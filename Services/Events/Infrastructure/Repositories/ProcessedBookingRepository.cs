@@ -25,7 +25,7 @@ public class ProcessedBookingRepository : IProcessedBookingRepository
     public async Task AddAsync(Guid bookingId, Guid eventId, Guid userId, DateTime processedAt)
     {
         try
-        {            
+        {
             var affected = await _context.Database.ExecuteSqlRawAsync(
                 @"
                     INSERT INTO ""ProcessedBookings"" (""Id"", ""BookingId"", ""EventId"", ""UserId"", ""ProcessedAt"")

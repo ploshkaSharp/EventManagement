@@ -26,10 +26,10 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-        
+
         services.Configure<JwtSettings>(
             configuration.GetSection("JwtSettings"));
-        
+
         return services;
     }
 }

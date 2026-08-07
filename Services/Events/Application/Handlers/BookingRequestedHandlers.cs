@@ -52,7 +52,7 @@ public class BookingRequestedHandler : IBookingRequestedHandler
                 _logger.LogInformation(
                     "Booking {BookingId} already processed, sending duplicate response",
                     @event.BookingId);
-                
+
                 // Отправить результат с признаком уже обработано
                 await SendProcessedEvent(@event, true, "Already processed", 0);
                 return;
@@ -60,25 +60,25 @@ public class BookingRequestedHandler : IBookingRequestedHandler
 
             // 2. Получить мероприятие
             var eventItem = await _eventRepository.GetByIdAsync(@event.EventId);
-            
+
             if (eventItem == null)
             {
                 _logger.LogWarning(
                     "Event {EventId} not found for booking {BookingId}",
                     @event.EventId,
                     @event.BookingId);
-                
+
                 // Сохранить как обработанное, чтобы не обрабатывать повторно
                 await _processedBookingRepository.AddAsync(
                     @event.BookingId,
                     @event.EventId,
                     @event.UserId,
                     DateTime.UtcNow);
-                
+
                 // Отправить результат с ошибкой
                 await SendProcessedEvent(
-                    @event, 
-                    false, 
+                    @event,
+                    false,
                     $"Event {@event.EventId} not found",
                     0);
                 return;
@@ -92,16 +92,16 @@ public class BookingRequestedHandler : IBookingRequestedHandler
                     @event.EventId,
                     eventItem.StartAt,
                     @event.BookingId);
-                
+
                 await _processedBookingRepository.AddAsync(
                     @event.BookingId,
                     @event.EventId,
                     @event.UserId,
                     DateTime.UtcNow);
-                
+
                 await SendProcessedEvent(
-                    @event, 
-                    false, 
+                    @event,
+                    false,
                     $"Event has already started at {eventItem.StartAt:yyyy-MM-dd HH:mm:ss} UTC",
                     eventItem.AvailableSeats);
                 return;
@@ -116,16 +116,16 @@ public class BookingRequestedHandler : IBookingRequestedHandler
                     @event.EventId,
                     eventItem.AvailableSeats,
                     @event.SeatsCount);
-                
+
                 await _processedBookingRepository.AddAsync(
                     @event.BookingId,
                     @event.EventId,
                     @event.UserId,
                     DateTime.UtcNow);
-                
+
                 await SendProcessedEvent(
-                    @event, 
-                    false, 
+                    @event,
+                    false,
                     $"Not enough seats. Available: {availableBefore}, Requested: {@event.SeatsCount}",
                     availableBefore);
                 return;
@@ -133,7 +133,7 @@ public class BookingRequestedHandler : IBookingRequestedHandler
 
             // 5. Обновить мероприятие в базе данных
             await _eventRepository.UpdateAsync(eventItem);
-            
+
             // 6. Сохранить запись об обработанной брони
             await _processedBookingRepository.AddAsync(
                 @event.BookingId,
@@ -143,11 +143,11 @@ public class BookingRequestedHandler : IBookingRequestedHandler
 
             // 7. Отправить успешный результат
             await SendProcessedEvent(
-                @event, 
-                true, 
-                null, 
+                @event,
+                true,
+                null,
                 eventItem.AvailableSeats);
-            
+
             _logger.LogInformation(
                 "Successfully processed booking {BookingId} for event {EventId}. " +
                 "Seats: {AvailableBefore} -> {AvailableAfter}",
@@ -163,13 +163,13 @@ public class BookingRequestedHandler : IBookingRequestedHandler
                 "Error processing booking request {BookingId} for event {EventId}",
                 @event.BookingId,
                 @event.EventId);
-            
+
             // В случае ошибки отправить негативный результат
             try
             {
                 await SendProcessedEvent(
-                    @event, 
-                    false, 
+                    @event,
+                    false,
                     $"Internal error: {ex.Message}",
                     0);
             }
@@ -180,7 +180,7 @@ public class BookingRequestedHandler : IBookingRequestedHandler
                     "Failed to send processed event for booking {BookingId}",
                     @event.BookingId);
             }
-            
+
             throw;
         }
     }
@@ -189,9 +189,9 @@ public class BookingRequestedHandler : IBookingRequestedHandler
     /// Отправка результата обработки бронирования
     /// </summary>
     private async Task SendProcessedEvent(
-        EventManagement.Shared.Contracts.BookingRequestedEvent @event, 
-        bool success, 
-        string? failureReason, 
+        EventManagement.Shared.Contracts.BookingRequestedEvent @event,
+        bool success,
+        string? failureReason,
         int availableSeats)
     {
         var processedEvent = new BookingProcessedEvent(
@@ -208,7 +208,7 @@ public class BookingRequestedHandler : IBookingRequestedHandler
             KafkaTopics.BookingProcessed,
             @event.EventId.ToString(),
             processedEvent);
-        
+
         _logger.LogInformation(
             "Sent BookingProcessed event for booking {BookingId}, Success: {Success}, Reason: {Reason}",
             @event.BookingId,

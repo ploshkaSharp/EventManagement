@@ -8,21 +8,21 @@ namespace EventManagement.Bookings.Application.Mappers;
 /// </summary>
 public static class BookingMapper
 {
-  /// <summary>
-  /// Маппинг модели Booking в BookingDTO
-  /// </summary>
-  /// <param name="booking">Модель бронирования</param>
-  /// <returns>DTO объект мероприятия</returns>
-  public static BookingDTO ToDto(Booking booking)
-  {
-    return new BookingDTO
+    /// <summary>
+    /// Маппинг модели Booking в BookingDTO
+    /// </summary>
+    /// <param name="booking">Модель бронирования</param>
+    /// <returns>DTO объект мероприятия</returns>
+    public static BookingDTO ToDto(Booking booking)
     {
-      Id = booking.Id,
-      EventId = booking.EventId,
-      UserId = booking.UserId,
-      Status = booking.Status,
-      CreatedAt = booking.CreatedAt,
-      ProcessedAt = booking.ProcessedAt
-    };
-  }
+        return new BookingDTO
+        {
+            Id = booking.Id,
+            EventId = booking.EventId,
+            UserId = booking.UserId,
+            Status = booking.Status,
+            CreatedAt = booking.CreatedAt,
+            ProcessedAt = booking.ProcessedAt
+        };
+    }
 }

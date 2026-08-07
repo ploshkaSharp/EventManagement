@@ -23,11 +23,11 @@ public class BookingRequestedConsumerService : BackgroundService
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
-        
-        var bootstrapServers = configuration["Kafka:BootstrapServers"] 
+
+        var bootstrapServers = configuration["Kafka:BootstrapServers"]
             ?? throw new InvalidOperationException("Kafka:BootstrapServers not configured");
         var groupId = configuration["Kafka:ConsumerGroup"];
-        
+
         // Если ConsumerGroup не задан, используем значение по умолчанию
         if (string.IsNullOrEmpty(groupId))
         {
@@ -59,7 +59,7 @@ public class BookingRequestedConsumerService : BackgroundService
                 try
                 {
                     var consumeResult = _consumer.Consume(TimeSpan.FromSeconds(5));
-                    
+
                     if (consumeResult?.Message == null)
                     {
                         await Task.Delay(100, stoppingToken);

@@ -18,36 +18,36 @@ builder.Services.AddEndpointsApiExplorer();
 // Настройка Swagger с поддержкой XML-комментариев
 builder.Services.AddSwaggerGen(c =>
 {
-  c.SwaggerDoc("v1", new OpenApiInfo
-  {
-    Title = "Event Management API",
-    Version = "v1",
-    Description = "API для управления мероприятиями и их бронированием"
-  });
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Event Management API",
+        Version = "v1",
+        Description = "API для управления мероприятиями и их бронированием"
+    });
 
-  var securityScheme = new OpenApiSecurityScheme
-  {
-    Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token",
-    Name = "Authorization",
-    In = ParameterLocation.Header,
-    Type = SecuritySchemeType.Http,
-    Scheme = "Bearer",
-    BearerFormat = "JWT"
-  };
+    var securityScheme = new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
+    };
 
-  // Описать схему безопасности
-  c.AddSecurityDefinition("Bearer", securityScheme);
+    // Описать схему безопасности
+    c.AddSecurityDefinition("Bearer", securityScheme);
 
-  // Добавить заголовок авторизации к каждой конечной точке
-  c.AddSecurityRequirement(document => new() { [new OpenApiSecuritySchemeReference("Bearer", document)] = [] });
+    // Добавить заголовок авторизации к каждой конечной точке
+    c.AddSecurityRequirement(document => new() { [new OpenApiSecuritySchemeReference("Bearer", document)] = [] });
 
-  // Включение XML-комментариев для документации
-  var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-  var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-  c.IncludeXmlComments(xmlPath);
+    // Включение XML-комментариев для документации
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
 
-  // Добавление аннотаций для типов ответов
-  c.EnableAnnotations();
+    // Добавление аннотаций для типов ответов
+    c.EnableAnnotations();
 });
 
 // JWT Authentication
@@ -56,21 +56,21 @@ var secretKey = System.Text.Encoding.UTF8.GetBytes(jwtSettings["Secret"] ?? thro
 
 builder.Services.AddAuthentication(options =>
 {
-  options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-  options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
-  options.TokenValidationParameters = new TokenValidationParameters
-  {
-    ValidateIssuer = true,
-    ValidateAudience = true,
-    ValidateLifetime = true,
-    ValidateIssuerSigningKey = true,
-    ValidIssuer = jwtSettings["Issuer"],
-    ValidAudience = jwtSettings["Audience"],
-    IssuerSigningKey = new SymmetricSecurityKey(secretKey)
-  };
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(secretKey)
+    };
 });
 
 builder.Services.AddAuthorization();
@@ -81,8 +81,8 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-  var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-  db.Database.Migrate();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
 }
 
 // middleware для глобальной обработки ошибок. Ставить первым в pipeline для перехвата всех исключений

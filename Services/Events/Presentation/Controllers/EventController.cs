@@ -141,7 +141,7 @@ public class EventsController : ControllerBase
     /// <response code="400">Неверные данные запроса (ошибка валидации)</response>
     /// <response code="404">Мероприятие с указанным идентификатором не найдено</response>    
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin")]    
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(UpdateEventDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -173,7 +173,7 @@ public class EventsController : ControllerBase
     /// <response code="204">Мероприятие успешно удалено</response>
     /// <response code="404">Мероприятие с указанным идентификатором не найдено</response>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]    
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id)
@@ -182,51 +182,5 @@ public class EventsController : ControllerBase
 
         return NoContent();
     }
-    #endregion
-
-    #region === Бронирование ===
-    /// <summary>
-    /// Создать бронирование на мероприятие
-    /// </summary>
-    /// <param name="id">Идентификатор мероприятия (GUID)</param>
-    /// <remarks>
-    /// Пример запроса:
-    /// POST /events/fd1c1927-dd18-4e08-bc6f-a5517290d729/book
-    /// 
-    /// Пример ответа:
-    /// {
-    ///   "id": "06643d61-2689-49df-aa08-42c0ab9a8577",
-    ///   "eventId": "fd1c1927-dd18-4e08-bc6f-a5517290d729",
-    ///   "status": 0,
-    ///   "createdAt": "2026-04-23T10:30:00Z",
-    ///   "processedAt": null
-    /// }
-    /// </remarks>
-    /// <returns>Информация о созданной брони</returns>
-    /// <response code="202">Бронирование успешно создано и принято в обработку</response>
-    /// <response code="404">Мероприятие не найдено</response>
-    /// <response code="400">Невозможно создать бронирование (мероприятие уже началось)</response>
-    /// <response code="409">Нет свободных мест на мероприятии</response>
-    /*
-    [HttpPost("{id}/book")]
-    [Authorize]
-    [ProducesResponseType(typeof(BookingDTO), StatusCodes.Status202Accepted)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]    
-    public async Task<ActionResult<BookingDTO>> BookEvent(Guid id)
-    { 
-        var userId = GetUserId();               
-        // Создать бронь
-        var booking = await _bookingService.CreateBookingAsync(id, userId);
-
-        // Вернуть 202 Accepted с Location header
-        return AcceptedAtAction(
-            "GetBooking",
-            "Bookings",
-            new { id = booking.Id },
-            booking);
-    }
-    */
     #endregion
 }
