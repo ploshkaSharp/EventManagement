@@ -29,24 +29,56 @@ public class TopicInitializer : IHostedService
                 BootstrapServers = _bootstrapServers
             }).Build();
 
-            var topicSpecification = new TopicSpecification
+            var topics = new List<TopicSpecification>
             {
-                Name = KafkaTopics.BookingConfirmed,
-                NumPartitions = 3,
-                ReplicationFactor = 1
+                new TopicSpecification
+                {
+                    Name = KafkaTopics.BookingRequested,
+                    NumPartitions = 3,
+                    ReplicationFactor = 1
+                },
+                new TopicSpecification
+                {
+                    Name = KafkaTopics.BookingProcessed,
+                    NumPartitions = 3,
+                    ReplicationFactor = 1
+                }
             };
 
-            await adminClient.CreateTopicsAsync(new[] { topicSpecification });
-            _logger.LogInformation("Topic {Topic} created successfully", KafkaTopics.BookingConfirmed);
-        }
-        catch (CreateTopicsException ex) when (ex.Results.Any(r => r.Error.Code == ErrorCode.TopicAlreadyExists))
-        {
-            _logger.LogInformation("Topic {Topic} already exists", KafkaTopics.BookingConfirmed);
+            foreach (var topic in topics)
+            {
+                try
+                {
+                    await adminClient.CreateTopicsAsync(new[] { topic });
+                    _logger.LogInformation("Topic {Topic} created successfully", topic.Name);
+                }
+                catch (CreateTopicsException ex) when (ex.Results.Any(r => r.Error.Code == ErrorCode.TopicAlreadyExists))
+                {
+                    _logger.LogInformation("Topic {Topic} already exists, skipping creation", topic.Name);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to create topic {Topic}", topic.Name);
+                }
+            }
+
+            // Получить список существующих топиков
+            try
+            {
+                var metadata = adminClient.GetMetadata(TimeSpan.FromSeconds(10));
+                var existingTopics = metadata.Topics.Select(t => t.Topic).ToList();
+                _logger.LogInformation("Existing topics: {Topics}", string.Join(", ", existingTopics));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to get topics metadata");
+            }
+
+            _logger.LogInformation("Kafka topic initialization completed");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to create topic {Topic}", KafkaTopics.BookingConfirmed);
-            throw;
+            _logger.LogError(ex, "Failed to initialize Kafka topics");
         }
     }
 

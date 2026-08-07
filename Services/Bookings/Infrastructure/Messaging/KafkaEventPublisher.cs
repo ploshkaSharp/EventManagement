@@ -1,7 +1,5 @@
 using System.Text.Json;
 using Confluent.Kafka;
-using EventManagement.Shared.Contracts;
-using EventManagement.Shared.Topics;
 using EventManagement.Bookings.Application.Ports;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
@@ -30,27 +28,25 @@ public class KafkaEventPublisher : IEventPublisher, IDisposable
         _producer = new ProducerBuilder<string, string>(config).Build();
         _logger.LogInformation("KafkaEventPublisher initialized");
     }
-
-    public async Task PublishBookingConfirmedAsync(BookingConfirmedEvent @event)
+    public async Task PublishAsync<T>(string topic, string key, T message)
     {
         try
         {
-            var messageJson = JsonSerializer.Serialize(@event);
-            
-            var message = new Message<string, string>
+            var messageJson = JsonSerializer.Serialize(message);
+
+            var kafkaMessage = new Message<string, string>
             {
-                Key = @event.EventId.ToString(),
+                Key = key,
                 Value = messageJson
             };
 
-            var result = await _producer.ProduceAsync(KafkaTopics.BookingConfirmed, message);
-            
-            _logger.LogInformation("Published BookingConfirmed event for booking {BookingId} to topic {Topic}, offset: {Offset}",
-                @event.BookingId, KafkaTopics.BookingConfirmed, result.Offset);
+            var result = await _producer.ProduceAsync(topic, kafkaMessage);
+
+            _logger.LogInformation("Published message to topic {Topic}, key {Key}, offset {Offset}", topic, key, result.Offset);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to publish BookingConfirmed event for booking {BookingId}", @event.BookingId);
+            _logger.LogError(ex,"Failed to publish message to topic {Topic}, key {Key}", topic, key);
             throw;
         }
     }

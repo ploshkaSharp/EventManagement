@@ -1,5 +1,6 @@
 using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Domain.Enums;
+using EventManagement.Shared.Contracts;
 
 namespace EventManagement.Bookings.Application.Services;
 
@@ -45,4 +46,11 @@ public interface IBookingService
   /// <param name="isAdmin"></param>
   /// <returns></returns>
   Task<bool> CancelBookingAsync(Guid bookingId, Guid userId, bool isAdmin);
+  
+  /// <summary>
+  /// Обработка результата бронирования из Events
+  /// </summary>
+  /// <param name="event"></param>
+  /// <returns></returns>
+  Task ProcessBookingResultAsync(BookingProcessedEvent @event);
 }

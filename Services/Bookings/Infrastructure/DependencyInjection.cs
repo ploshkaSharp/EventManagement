@@ -35,10 +35,10 @@ public static class DependencyInjection
         });
         
 
-        services.AddScoped<IBookingService, BookingService>();
-
+        services.AddScoped<IBookingService, BookingService>();        
         // Producer
         services.AddSingleton<KafkaEventPublisher>();
+        services.AddHostedService<BookingProcessedConsumerService>();
 
         return services;
     }

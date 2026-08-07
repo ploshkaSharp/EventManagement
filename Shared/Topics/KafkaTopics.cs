@@ -2,8 +2,7 @@ namespace EventManagement.Shared.Topics;
 
 public static class KafkaTopics
 {
-    /// <summary>
-    /// Имя топика
-    /// </summary>
-    public const string BookingConfirmed = "booking-confirmed";
+    public const string BookingRequested = "booking-requested";
+    public const string BookingProcessed = "booking-processed";
+    public const string BookingCancelled = "booking-cancelled";
 }

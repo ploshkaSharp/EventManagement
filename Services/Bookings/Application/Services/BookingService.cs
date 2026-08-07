@@ -5,6 +5,7 @@ using EventManagement.Bookings.Domain.Entities;
 using EventManagement.Bookings.Domain.Exceptions;
 using EventManagement.Bookings.Application.Mappers;
 using EventManagement.Shared.Contracts;
+using EventManagement.Shared.Topics;
 using Microsoft.Extensions.Logging;
 
 namespace EventManagement.Bookings.Application.Services;
@@ -16,7 +17,7 @@ public class BookingService : IBookingService
 {
   private readonly IBookingRepository _bookingRepository;
   private readonly IUserService _userService;
-  private readonly IEventPublisher _eventPublisher;  
+  private readonly IEventPublisher _eventPublisher;
   private readonly int _maxActiveBookings = 10;
   private readonly ILogger<BookingService> _logger;
   private static readonly SemaphoreSlim _bookingLock = new(1, 1); // Блокировка для критической секции
@@ -47,32 +48,70 @@ public class BookingService : IBookingService
   public async Task<BookingDTO> CreateBookingAsync(Guid eventId, Guid userId)
   {
     _logger.LogInformation("Attempting to create booking for event {EventId}", eventId);
-        await _bookingLock.WaitAsync();
-        try
-        {            
-            var activeBookings = await _bookingRepository.CountActiveBookingsAsync(userId);
-            if (activeBookings >= _maxActiveBookings)
-                throw new BookingLimitExceededException(_maxActiveBookings);
-            
-            var booking = new Booking(eventId, userId);
-            var created = await _bookingRepository.CreateAsync(booking);
-            
-            // Публикуем событие подтверждения брони
-            await _eventPublisher.PublishBookingConfirmedAsync(
-                new BookingConfirmedEvent(                
-                    created.Id,
-                    eventId,
-                    userId,
-                    1,
-                    DateTime.UtcNow
-                ));
-            
-            return BookingMapper.ToDto(created);
-        }
-        finally
-        {
-            _bookingLock.Release();
-        }
+    await _bookingLock.WaitAsync();
+    try
+    {
+      var activeBookings = await _bookingRepository.CountActiveBookingsAsync(userId);
+      if (activeBookings >= _maxActiveBookings)
+        throw new BookingLimitExceededException(_maxActiveBookings);
+
+      var booking = new Booking(eventId, userId);
+      var created = await _bookingRepository.CreateAsync(booking);
+
+      // Опубликовать событие запроса на бронирование
+      await _eventPublisher.PublishAsync(
+          KafkaTopics.BookingRequested,
+          created.Id.ToString(),
+          new BookingRequestedEvent(
+              created.Id,
+              eventId,
+              userId,
+              1,
+              DateTime.UtcNow
+          ));
+
+      return BookingMapper.ToDto(created);
+    }
+    finally
+    {
+      _bookingLock.Release();
+    }
+  }
+
+  /// <summary>
+  /// Обработка результата бронирования (вызывается из Consumer при получении BookingProcessed)
+  /// </summary>
+  public async Task ProcessBookingResultAsync(BookingProcessedEvent @event)
+  {
+    _logger.LogInformation("Processing booking result for Booking {BookingId}, Success: {Success}", @event.BookingId, @event.Success);
+
+    var booking = await _bookingRepository.GetByIdAsync(@event.BookingId);
+    if (booking == null)
+    {
+      _logger.LogWarning("Booking {BookingId} not found", @event.BookingId);
+      return;
+    }
+
+    if (booking.Status != BookingStatus.Pending)
+    {
+      _logger.LogWarning("Booking {BookingId} is not in Pending status: {Status}", @event.BookingId, booking.Status);
+      return;
+    }
+
+    if (@event.Success)
+    {
+      booking.Confirm();
+      _logger.LogInformation("Booking {BookingId} confirmed. Available seats: {AvailableSeats}", @event.BookingId, @event.AvailableSeats);
+    }
+    else
+    {
+      booking.Reject();
+      _logger.LogWarning("Booking {BookingId} rejected. Reason: {FailureReason}", @event.BookingId, @event.FailureReason ?? "No reason provided");
+    }
+
+    await _bookingRepository.UpdateAsync(booking);
+
+    _logger.LogInformation("Booking {BookingId} status updated to {Status}", @event.BookingId, booking.Status);
   }
 
   /// <summary>
@@ -166,12 +205,29 @@ public class BookingService : IBookingService
       throw new UnAuthorizedOperationException("cancel booking", "User can only cancel their own bookings");
 
     if (booking.Status != BookingStatus.Pending && booking.Status != BookingStatus.Confirmed)
-      throw new ValidationException($"Cannot cancel booking with status {booking.Status}");  
+      throw new ValidationException($"Cannot cancel booking with status {booking.Status}");
 
     booking.Cancel();
-    
-    var updated = await _bookingRepository.UpdateAsync(booking);    
 
-    return updated != null;
+    var updated = await _bookingRepository.UpdateAsync(booking);
+
+    if (updated != null)
+    {
+      _logger.LogInformation("Booking {BookingId} cancelled successfully", bookingId);
+
+      // Если бронь была подтверждена, уведомить Events о необходимости освободить места
+      if (booking.Status == BookingStatus.Confirmed)
+      {
+        await _eventPublisher.PublishAsync(
+            KafkaTopics.BookingCancelled,
+            booking.EventId.ToString(),
+            new BookingCancelledEvent(bookingId, booking.EventId, booking.UserId, DateTime.UtcNow)
+        );
+      }
+
+      return true;
+    }
+
+    return false;
   }
 }
