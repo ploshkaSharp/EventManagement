@@ -22,8 +22,6 @@ public static class DependencyInjection
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddSingleton<IEventPublisher, KafkaEventPublisher>();
         services.AddScoped<IBookingService, BookingService>();
-        // Producer
-        //services.AddSingleton<KafkaEventPublisher>();
         services.AddHostedService<BookingProcessedConsumerService>();
 
         return services;
