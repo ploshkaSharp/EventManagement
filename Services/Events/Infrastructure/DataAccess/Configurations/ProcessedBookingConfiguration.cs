@@ -29,9 +29,24 @@ public class ProcessedBookingConfiguration : IEntityTypeConfiguration<ProcessedB
             .HasColumnName("ProcessedAt")
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+        builder.Property(pb => pb.Success)
+            .IsRequired()
+            .HasDefaultValue(false);
+        
+        builder.Property(pb => pb.FailureReason)
+            .HasMaxLength(500);
+        
+        builder.Property(pb => pb.AvailableSeats)
+            .IsRequired()
+            .HasDefaultValue(0);            
+
         // Уникальный индекс для идемпотентности
         builder.HasIndex(pb => pb.BookingId)
             .IsUnique()
             .HasDatabaseName("IX_ProcessedBookings_BookingId");
+
+        // Индекс для быстрого поиска по событию
+        builder.HasIndex(pb => pb.EventId)
+            .HasDatabaseName("IX_ProcessedBookings_EventId");            
     }
 }

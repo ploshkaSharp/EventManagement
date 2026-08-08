@@ -22,14 +22,14 @@ public class ProcessedBookingRepository : IProcessedBookingRepository
         return await _context.ProcessedBookings.AnyAsync(pb => pb.BookingId == bookingId);
     }
 
-    public async Task AddAsync(Guid bookingId, Guid eventId, Guid userId, DateTime processedAt)
+    public async Task<bool> TryAddAsync(Guid bookingId, Guid eventId, Guid userId, DateTime processedAt)
     {
         try
         {
             var affected = await _context.Database.ExecuteSqlRawAsync(
                 @"
-                    INSERT INTO ""ProcessedBookings"" (""Id"", ""BookingId"", ""EventId"", ""UserId"", ""ProcessedAt"")
-                    VALUES (gen_random_uuid(), {0}, {1}, {2}, {3})
+                    INSERT INTO ""ProcessedBookings"" (""Id"", ""BookingId"", ""EventId"", ""UserId"", ""ProcessedAt"", ""Success"", ""FailureReason"", ""AvailableSeats"")
+                    VALUES (gen_random_uuid(), {0}, {1}, {2}, {3}, false, NULL, 0)
                     ON CONFLICT (""BookingId"") DO NOTHING
                 ",
                 bookingId,
@@ -37,14 +37,18 @@ public class ProcessedBookingRepository : IProcessedBookingRepository
                 userId,
                 processedAt);
 
-            if (affected == 0)
+            var inserted = affected == 1;
+
+            if (inserted)
             {
-                _logger.LogDebug("Booking {BookingId} already exists in ProcessedBookings", bookingId);
+                _logger.LogDebug("Successfully inserted ProcessedBooking record for booking {BookingId}", bookingId);
             }
             else
             {
-                _logger.LogDebug("Booking {BookingId} added to ProcessedBookings", bookingId);
+                _logger.LogDebug("ProcessedBooking record for booking {BookingId} already exists", bookingId);
             }
+
+            return inserted;
         }
         catch (Exception ex)
         {
@@ -52,4 +56,63 @@ public class ProcessedBookingRepository : IProcessedBookingRepository
             throw;
         }
     }
+
+    /// <summary>
+    /// Получить результат обработки брони
+    /// </summary>
+    public async Task<ProcessedBookingResult?> GetResultAsync(Guid bookingId)
+    {
+        var record = await _context.ProcessedBookings
+            .Where(pb => pb.BookingId == bookingId)
+            .Select(pb => new ProcessedBookingResult(
+                pb.BookingId,
+                pb.Success,
+                pb.FailureReason,
+                pb.AvailableSeats,
+                pb.ProcessedAt))
+            .FirstOrDefaultAsync();
+
+        if (record != null)
+        {
+            _logger.LogDebug("Retrieved result for booking {BookingId}: Success={Success}", bookingId, record.Success);
+        }
+
+        return record;
+    }
+
+    /// <summary>
+    /// Обновить результат обработки брони
+    /// </summary>
+    public async Task UpdateResultAsync(Guid bookingId, bool success, string? failureReason, int availableSeats)
+    {
+        try
+        {
+            var affected = await _context.Database.ExecuteSqlRawAsync(
+                @"
+                    UPDATE ""ProcessedBookings""
+                    SET ""Success"" = {0},
+                        ""FailureReason"" = {1},
+                        ""AvailableSeats"" = {2}
+                    WHERE ""BookingId"" = {3}
+                ",
+                success,
+                failureReason,
+                availableSeats,
+                bookingId);
+
+            if (affected == 0)
+            {
+                _logger.LogWarning("No ProcessedBooking record found to update for booking {BookingId}", bookingId);
+            }
+            else
+            {
+                _logger.LogDebug("Updated ProcessedBooking record for booking {BookingId}: Success={Success}", bookingId, success);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating ProcessedBooking record for booking {BookingId}", bookingId);
+            throw;
+        }
+    }    
 }

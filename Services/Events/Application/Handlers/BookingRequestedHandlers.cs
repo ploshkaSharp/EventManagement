@@ -43,126 +43,139 @@ public class BookingRequestedHandler : IBookingRequestedHandler
             @event.EventId,
             @event.UserId);
 
+        // Результат обработки
+        bool success = false;
+        string? failureReason = null;
+        int availableSeats = 0;
+
         try
         {
-            // 1. Проверить, не было ли это бронирование уже обработано (идемпотентность)
-            var alreadyProcessed = await _processedBookingRepository.ExistsAsync(@event.BookingId);
-            if (alreadyProcessed)
-            {
-                _logger.LogInformation(
-                    "Booking {BookingId} already processed, sending duplicate response",
-                    @event.BookingId);
-
-                // Отправить результат с признаком уже обработано
-                await SendProcessedEvent(@event, true, "Already processed", 0);
-                return;
-            }
-
-            // 2. Получить мероприятие
-            var eventItem = await _eventRepository.GetByIdAsync(@event.EventId);
-
-            if (eventItem == null)
-            {
-                _logger.LogWarning(
-                    "Event {EventId} not found for booking {BookingId}",
-                    @event.EventId,
-                    @event.BookingId);
-
-                // Сохранить как обработанное, чтобы не обрабатывать повторно
-                await _processedBookingRepository.AddAsync(
-                    @event.BookingId,
-                    @event.EventId,
-                    @event.UserId,
-                    DateTime.UtcNow);
-
-                // Отправить результат с ошибкой
-                await SendProcessedEvent(
-                    @event,
-                    false,
-                    $"Event {@event.EventId} not found",
-                    0);
-                return;
-            }
-
-            // 3. Проверить, активно ли мероприятие
-            if (eventItem.StartAt < DateTime.UtcNow)
-            {
-                _logger.LogWarning(
-                    "Event {EventId} is not active (started at {StartAt}) for booking {BookingId}",
-                    @event.EventId,
-                    eventItem.StartAt,
-                    @event.BookingId);
-
-                await _processedBookingRepository.AddAsync(
-                    @event.BookingId,
-                    @event.EventId,
-                    @event.UserId,
-                    DateTime.UtcNow);
-
-                await SendProcessedEvent(
-                    @event,
-                    false,
-                    $"Event has already started at {eventItem.StartAt:yyyy-MM-dd HH:mm:ss} UTC",
-                    eventItem.AvailableSeats);
-                return;
-            }
-
-            // 4. Проверить наличие достаточного количества мест
-            var availableBefore = eventItem.AvailableSeats;
-            if (!eventItem.TryReserveSeats(@event.SeatsCount))
-            {
-                _logger.LogWarning(
-                    "Not enough seats for event {EventId}. Available: {Available}, Requested: {Requested}",
-                    @event.EventId,
-                    eventItem.AvailableSeats,
-                    @event.SeatsCount);
-
-                await _processedBookingRepository.AddAsync(
-                    @event.BookingId,
-                    @event.EventId,
-                    @event.UserId,
-                    DateTime.UtcNow);
-
-                await SendProcessedEvent(
-                    @event,
-                    false,
-                    $"Not enough seats. Available: {availableBefore}, Requested: {@event.SeatsCount}",
-                    availableBefore);
-                return;
-            }
-
-            // 5. Обновить мероприятие в базе данных
-            await _eventRepository.UpdateAsync(eventItem);
-
-            // 6. Сохранить запись об обработанной брони
-            await _processedBookingRepository.AddAsync(
+            // Попытататься вставить запись первой с уникальным ключом
+            // Только один экземпляр сможет выполнить INSERT, остальные получат affected = 0
+            var inserted = await _processedBookingRepository.TryAddAsync(
                 @event.BookingId,
                 @event.EventId,
                 @event.UserId,
                 DateTime.UtcNow);
 
-            // 7. Отправить успешный результат
-            await SendProcessedEvent(
-                @event,
-                true,
-                null,
-                eventItem.AvailableSeats);
+            if (!inserted)
+            {
+                // Если запись уже существует, получится сохраненный результат
+                _logger.LogInformation("Booking {BookingId} already processed, retrieving stored result", @event.BookingId);
 
-            _logger.LogInformation(
-                "Successfully processed booking {BookingId} for event {EventId}. " +
-                "Seats: {AvailableBefore} -> {AvailableAfter}",
-                @event.BookingId,
-                @event.EventId,
-                availableBefore,
-                eventItem.AvailableSeats);
+                var storedResult = await _processedBookingRepository.GetResultAsync(@event.BookingId);
+                if (storedResult != null)
+                {
+                    // Отправить сохраненный результат (повтор)
+                    await SendProcessedEvent(@event, storedResult.Success, storedResult.FailureReason, storedResult.AvailableSeats);
+                }
+                else
+                {
+                    // Если результат не найден, отправляем по-умолчанию
+                    await SendProcessedEvent(@event, false, "Unknown processing state", 0);
+                }
+                return;
+            }
+
+            try
+            {
+
+                // 1. Получить мероприятие
+                var eventItem = await _eventRepository.GetByIdAsync(@event.EventId);
+
+                if (eventItem == null)
+                {
+                    failureReason = $"Event {@event.EventId} not found";
+                    _logger.LogWarning(failureReason, @event.EventId, @event.BookingId);
+                    success = false;
+                    availableSeats = 0;
+                    await _processedBookingRepository.UpdateResultAsync(
+                        @event.BookingId,
+                        success,
+                        failureReason,
+                        availableSeats);
+                    return;
+                }
+
+                // 3. Проверить, активно ли мероприятие
+                if (eventItem.StartAt < DateTime.UtcNow)
+                {
+                    failureReason = $"Event has already started at {eventItem.StartAt:yyyy-MM-dd HH:mm:ss}";
+                    _logger.LogWarning("Event {EventId} is not active for booking {BookingId}", @event.EventId, @event.BookingId);
+
+                    success = false;
+                    availableSeats = eventItem.AvailableSeats;
+
+                    await _processedBookingRepository.UpdateResultAsync(
+                        @event.BookingId,
+                        success,
+                        failureReason,
+                        availableSeats);
+                    return;
+                }
+
+                // 4. Проверить наличие достаточного количества мест
+                var availableBefore = eventItem.AvailableSeats;
+                if (!eventItem.TryReserveSeats(@event.SeatsCount))
+                {
+                    failureReason = $"Not enough seats. Available: {availableBefore}, Requested: {@event.SeatsCount}";
+                    _logger.LogWarning("Not enough seats for event {EventId}. Available: {Available}, Requested: {Requested}",
+                        @event.EventId,
+                        eventItem.AvailableSeats,
+                        @event.SeatsCount);
+
+                    success = false;
+                    availableSeats = availableBefore;
+
+                    await _processedBookingRepository.UpdateResultAsync(
+                        @event.BookingId,
+                        success,
+                        failureReason,
+                        availableSeats);
+                    return;
+                }
+
+                // Успешно зарезервировано места 
+                success = true;
+                availableSeats = eventItem.AvailableSeats;
+
+                // 5. Обновить запись об обработанной брони с результатом
+                await _processedBookingRepository.UpdateResultAsync(
+                    @event.BookingId,
+                    success,
+                    null,
+                    availableSeats);
+
+                _logger.LogInformation(
+                    "Successfully processed booking {BookingId} for event {EventId}. " +
+                    "Seats: {AvailableBefore} -> {AvailableAfter}",
+                    @event.BookingId,
+                    @event.EventId,
+                    availableBefore,
+                    availableSeats);
+
+            }
+            catch (Exception ex)
+            {
+                // При ошибке сохранить результат и пробросить исключение 
+                _logger.LogError(ex, "Error processing booking request {BookingId} for event {EventId}", @event.BookingId, @event.EventId);
+
+                success = false;
+                failureReason = $"Internal error: {ex.Message}";
+                availableSeats = 0;
+
+                await _processedBookingRepository.UpdateResultAsync(
+                    @event.BookingId,
+                    success,
+                    failureReason,
+                    availableSeats);
+
+                throw;
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Error processing booking request {BookingId} for event {EventId}",
-                @event.BookingId,
-                @event.EventId);
+            _logger.LogError(ex, "Error processing booking request {BookingId} for event {EventId}", @event.BookingId,  @event.EventId);
 
             // В случае ошибки отправить негативный результат
             try
@@ -181,8 +194,11 @@ public class BookingRequestedHandler : IBookingRequestedHandler
                     @event.BookingId);
             }
 
-            throw;
+            return;
         }
+
+        // Отправить результат
+        await SendProcessedEvent(@event, success, failureReason, availableSeats);
     }
 
     /// <summary>
