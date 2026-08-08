@@ -112,7 +112,7 @@ services:
       - ConnectionStrings__DefaultConnection=Host=users_db;Port=5432;Database=users_db;Username=postgres;Password=postgres
       - JwtSettings__Secret=SECRET_KEY_MINIMUM_32_CHARACTERS
       - JwtSettings__Issuer=EventManagement
-      - JwtSettings__Audience=EventManagementClients
+      - JwtSettings__Audience=EventManagementClient
     ports:
       - "5001:8080"
     networks:
@@ -133,7 +133,7 @@ services:
       - Kafka__ConsumerGroup=events-service-group
       - JwtSettings__Secret=SECRET_KEY_MINIMUM_32_CHARACTERS
       - JwtSettings__Issuer=EventManagement
-      - JwtSettings__Audience=EventManagementClients
+      - JwtSettings__Audience=EventManagementClient
     ports:
       - "5002:8080"
     networks:
@@ -153,8 +153,7 @@ services:
       - Kafka__BootstrapServers=kafka:9092
       - JwtSettings__Secret=SECRET_KEY_MINIMUM_32_CHARACTERS
       - JwtSettings__Issuer=EventManagement
-      - JwtSettings__Audience=EventManagementClients
-      - Services__Users__Url=http://users_service:8080
+      - JwtSettings__Audience=EventManagementClient
     ports:
       - "5003:8080"
     networks:

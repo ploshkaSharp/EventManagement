@@ -206,7 +206,7 @@ public class BookingRequestedHandler : IBookingRequestedHandler
 
         await _eventPublisher.PublishAsync(
             KafkaTopics.BookingProcessed,
-            @event.EventId.ToString(),
+            @event.BookingId.ToString(),
             processedEvent);
 
         _logger.LogInformation(

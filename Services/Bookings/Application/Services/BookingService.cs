@@ -59,7 +59,7 @@ public class BookingService : IBookingService
             // Опубликовать событие запроса на бронирование
             await _eventPublisher.PublishAsync(
                 KafkaTopics.BookingRequested,
-                created.Id.ToString(),
+                eventId.ToString(),
                 new BookingRequestedEvent(
                     created.Id,
                     eventId,
@@ -205,6 +205,12 @@ public class BookingService : IBookingService
         if (booking.Status != BookingStatus.Pending && booking.Status != BookingStatus.Confirmed)
             throw new ValidationException($"Cannot cancel booking with status {booking.Status}");
 
+        // Сохранить статус ДО изменения
+        var wasConfirmed = booking.Status == BookingStatus.Confirmed;
+        var eventId = booking.EventId;
+        var bookingIdForEvent = booking.Id;
+        var userIdForEvent = booking.UserId;
+
         booking.Cancel();
 
         var updated = await _bookingRepository.UpdateAsync(booking);
@@ -213,13 +219,20 @@ public class BookingService : IBookingService
         {
             _logger.LogInformation("Booking {BookingId} cancelled successfully", bookingId);
 
-            // Если бронь была подтверждена, уведомить Events о необходимости освободить места
-            if (booking.Status == BookingStatus.Confirmed)
+            // Публиковать событие если статус БЫЛ Confirmed 
+            if (wasConfirmed)
             {
+                _logger.LogInformation("Booking {BookingId} was confirmed, publishing BookingCancelled event to release seats", bookingId);
+
                 await _eventPublisher.PublishAsync(
                     KafkaTopics.BookingCancelled,
-                    booking.EventId.ToString(),
-                    new BookingCancelledEvent(bookingId, booking.EventId, booking.UserId, DateTime.UtcNow)
+                    eventId.ToString(),
+                    new BookingCancelledEvent(
+                        bookingIdForEvent,
+                        eventId,
+                        userIdForEvent,
+                        DateTime.UtcNow
+                    )
                 );
             }
 

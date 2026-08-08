@@ -26,9 +26,10 @@ public static class DependencyInjection
                 b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
         services.AddScoped<IEventRepository, EventRepository>();
-        services.AddScoped<IBookingRequestedHandler, BookingRequestedHandler>();
+        services.AddScoped<IBookingRequestedHandler, BookingRequestedHandler>();        
         services.AddScoped<IProcessedBookingRepository, ProcessedBookingRepository>();
         services.AddHostedService<BookingRequestedConsumerService>();
+        services.AddHostedService<BookingCancelledConsumerService>();
         services.AddHostedService<TopicInitializer>();
         services.AddSingleton<IEventPublisher, KafkaEventPublisher>();
 

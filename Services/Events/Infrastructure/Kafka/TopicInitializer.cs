@@ -42,7 +42,13 @@ public class TopicInitializer : IHostedService
                     Name = KafkaTopics.BookingProcessed,
                     NumPartitions = 3,
                     ReplicationFactor = 1
-                }
+                },
+                new TopicSpecification
+                {
+                    Name = KafkaTopics.BookingCancelled,  
+                    NumPartitions = 3,
+                    ReplicationFactor = 1
+                }                
             };
 
             foreach (var topic in topics)
