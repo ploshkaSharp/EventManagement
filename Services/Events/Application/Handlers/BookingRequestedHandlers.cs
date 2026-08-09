@@ -47,6 +47,7 @@ public class BookingRequestedHandler : IBookingRequestedHandler
         bool success = false;
         string? failureReason = null;
         int availableSeats = 0;
+        bool seatsReserved = false;
 
         try
         {
@@ -135,9 +136,13 @@ public class BookingRequestedHandler : IBookingRequestedHandler
                     return;
                 }
 
-                // Успешно зарезервировано места 
+                // Успешно зарезервировано места
+                seatsReserved = true; 
                 success = true;
                 availableSeats = eventItem.AvailableSeats;
+
+                // Обновить мероприятие в базе данных
+                await _eventRepository.UpdateAsync(eventItem);                
 
                 // 5. Обновить запись об обработанной брони с результатом
                 await _processedBookingRepository.UpdateResultAsync(
@@ -159,6 +164,26 @@ public class BookingRequestedHandler : IBookingRequestedHandler
             {
                 // При ошибке сохранить результат и пробросить исключение 
                 _logger.LogError(ex, "Error processing booking request {BookingId} for event {EventId}", @event.BookingId, @event.EventId);
+
+                // Если места уже зарезервированы, освобождаем их
+                if (seatsReserved)
+                {
+                    try
+                    {
+                        _logger.LogWarning("Releasing seats for event {EventId} due to error", @event.EventId);
+                        var eventItem = await _eventRepository.GetByIdAsync(@event.EventId);
+                        if (eventItem != null)
+                        {
+                            eventItem.ReleaseSeats(@event.SeatsCount);
+                            await _eventRepository.UpdateAsync(eventItem);
+                            _logger.LogInformation("Successfully released seats for event {EventId}", @event.EventId);
+                        }
+                    }
+                    catch (Exception releaseEx)
+                    {
+                        _logger.LogError(releaseEx, "Failed to release seats for event {EventId}", @event.EventId);
+                    }
+                }                
 
                 success = false;
                 failureReason = $"Internal error: {ex.Message}";

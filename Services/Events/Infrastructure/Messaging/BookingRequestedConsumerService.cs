@@ -75,13 +75,30 @@ public class BookingRequestedConsumerService : BackgroundService
                         continue;
                     }
 
-                    using var scope = _scopeFactory.CreateScope();
-                    var handler = scope.ServiceProvider.GetRequiredService<IBookingRequestedHandler>();
+                    bool processed = false;
 
-                    await handler.HandleAsync(@event);
+                    try
+                    {
+                        using var scope = _scopeFactory.CreateScope();
+                        var handler = scope.ServiceProvider.GetRequiredService<IBookingRequestedHandler>();
 
+                        await handler.HandleAsync(@event);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error processing booking request {BookingId}", @event.BookingId);
+                    }
+                    
+                    if (processed)
+                    {
                     _consumer.Commit(consumeResult);
                     _logger.LogInformation("Successfully processed booking request {BookingId} at offset {Offset}", @event.BookingId, consumeResult.Offset);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Booking request {BookingId} not processed successfully, will retry", @event.BookingId);
+                        await Task.Delay(500, stoppingToken);                        
+                    }
                 }
                 catch (Exception ex)
                 {
