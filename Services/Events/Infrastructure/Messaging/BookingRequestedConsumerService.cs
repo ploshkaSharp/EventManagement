@@ -83,6 +83,7 @@ public class BookingRequestedConsumerService : BackgroundService
                         var handler = scope.ServiceProvider.GetRequiredService<IBookingRequestedHandler>();
 
                         await handler.HandleAsync(@event);
+                        processed = true;
                     }
                     catch (Exception ex)
                     {
