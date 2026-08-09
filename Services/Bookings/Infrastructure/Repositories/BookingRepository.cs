@@ -81,7 +81,12 @@ public class BookingRepository : IBookingRepository
     /// <returns></returns>
     public async Task<Booking?> UpdateAsync(Booking booking)
     {
+        _logger.LogInformation("Updating booking status to {status}", booking.Status);
+
         var existingBooking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == booking.Id);
+
+        _logger.LogInformation("Updating booking status.  Booking with id = {status} not found", booking.Id);
+
         if (existingBooking == null)
             return null;
 
@@ -89,7 +94,10 @@ public class BookingRepository : IBookingRepository
         existingBooking.ProcessedAt = booking.ProcessedAt;
 
         await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Updated booking status to {status}", existingBooking.Status);
         return existingBooking;
+
     }
 
     /// <summary>

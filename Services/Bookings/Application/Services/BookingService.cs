@@ -215,6 +215,8 @@ public class BookingService : IBookingService
 
         var updated = await _bookingRepository.UpdateAsync(booking);
 
+        _logger.LogInformation("Booking {BookingId} cancelling... Was confirmed = {WasConfirmed}, booking status = {Status}", bookingId, wasConfirmed, booking.Status);
+
         if (updated != null)
         {
             _logger.LogInformation("Booking {BookingId} cancelled successfully", bookingId);
