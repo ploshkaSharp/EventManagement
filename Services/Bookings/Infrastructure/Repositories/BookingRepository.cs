@@ -1,0 +1,145 @@
+using Microsoft.EntityFrameworkCore;
+using EventManagement.Bookings.Infrastructure.Data;
+using EventManagement.Bookings.Domain.Entities;
+using EventManagement.Bookings.Domain.Enums;
+using EventManagement.Bookings.Application.Ports;
+using Microsoft.Extensions.Logging;
+
+namespace EventManagement.Bookings.Infrastructure.Repositories;
+
+/// <summary>
+/// Репозиторий бронирований
+/// </summary>
+public class BookingRepository : IBookingRepository
+{
+    private readonly AppDbContext _context;
+    private readonly ILogger<BookingRepository> _logger;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="context">Контекст БД</param>
+    /// <param name="logger">Логгер</param>
+    public BookingRepository(AppDbContext context, ILogger<BookingRepository> logger)
+    {
+        _context = context;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Получить бронь по ИД
+    /// </summary>
+    /// <param name="id">ИД брони</param>
+    /// <returns></returns>
+    public async Task<Booking?> GetByIdAsync(Guid id)
+    {
+        return await _context.Bookings.FirstOrDefaultAsync(b => b.Id == id);
+    }
+
+    /// <summary>
+    /// Получить брони по ИД мероприятия
+    /// </summary>
+    /// <param name="eventId">ИД мероприятия</param>
+    /// <returns></returns>
+    public async Task<IEnumerable<Booking>> GetByEventIdAsync(Guid eventId)
+    {
+        return await _context.Bookings
+            .Where(b => b.EventId == eventId)
+            .OrderByDescending(b => b.CreatedAt)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Получить брони по стаусу
+    /// </summary>
+    /// <param name="status">Статус бронирования</param>
+    /// <returns></returns>
+    public async Task<IEnumerable<Booking>> GetBookingByStatusAsync(BookingStatus status)
+    {
+        return await _context.Bookings
+                .Where(b => b.Status == status)
+                .OrderBy(b => b.CreatedAt)
+                .ToListAsync();
+    }
+
+    /// <summary>
+    /// Создать бронь
+    /// </summary>
+    /// <param name="booking">Бронь</param>
+    /// <returns></returns>
+    public async Task<Booking> CreateAsync(Booking booking)
+    {
+        _context.Bookings.Add(booking);
+        await _context.SaveChangesAsync();
+        return booking;
+    }
+
+    /// <summary>
+    /// Обновить информацию о бронировании
+    /// </summary>
+    /// <param name="booking">Бронь</param>
+    /// <returns></returns>
+    public async Task<Booking?> UpdateAsync(Booking booking)
+    {
+        _logger.LogInformation("Updating booking status to {status}", booking.Status);
+
+        var existingBooking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == booking.Id);
+
+        _logger.LogInformation("Updating booking status.  Booking with id = {status} not found", booking.Id);
+
+        if (existingBooking == null)
+            return null;
+
+        existingBooking.Status = booking.Status;
+        existingBooking.ProcessedAt = booking.ProcessedAt;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Updated booking status to {status}", existingBooking.Status);
+        return existingBooking;
+
+    }
+
+    /// <summary>
+    /// Удалить бронь по ИД
+    /// </summary>
+    /// <param name="id">ИД брони</param>
+    /// <returns></returns>
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == id);
+        if (booking == null)
+            return false;
+
+        _context.Bookings.Remove(booking);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
+    /// Подсчет количества активных броней пользователя
+    /// Активными считаются брони со статусами Pending или Confirmed
+    /// </summary>
+    /// <param name="userId">Идентификатор пользователя</param>
+    /// <returns>Количество активных броней</returns>
+    public async Task<int> CountActiveBookingsAsync(Guid userId)
+    {
+        try
+        {
+            var count = await _context.Bookings
+                .Where(b => b.UserId == userId && (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed))
+                .CountAsync();
+
+            _logger.LogDebug("User {UserId} has {Count} active bookings", userId, count);
+            return count;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error counting active bookings for user {UserId}", userId);
+            throw;
+        }
+    }
+
+    public async Task<IEnumerable<Booking>> GetByUserIdAsync(Guid userId)
+      => await _context.Bookings.Where(b => b.UserId == userId).OrderByDescending(b => b.CreatedAt).ToListAsync();
+}
