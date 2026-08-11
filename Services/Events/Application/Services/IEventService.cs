@@ -48,4 +48,6 @@ public interface IEventService
     /// </summary>
     /// <result>true - возврат удался, false - не удалось</result>
     Task<bool> ReleaseSeatsAsync(Guid eventId, int count = 1);
+    Task<IEnumerable<EventDTO>> GetTop10Async();
+    Task UpdateEventCacheAsync(Guid eventId);    
 }

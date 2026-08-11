@@ -1,6 +1,7 @@
 using EventManagement.Shared.Contracts;
 using EventManagement.Shared.Topics;
 using EventManagement.Events.Application.Ports;
+using EventManagement.Events.Application.Services;
 using Microsoft.Extensions.Logging;
 
 namespace EventManagement.Events.Application.Handlers;
@@ -21,17 +22,20 @@ public class BookingRequestedHandler : IBookingRequestedHandler
     private readonly IEventRepository _eventRepository;
     private readonly IProcessedBookingRepository _processedBookingRepository;
     private readonly IEventPublisher _eventPublisher;
+    private readonly IEventService _eventService;
     private readonly ILogger<BookingRequestedHandler> _logger;
 
     public BookingRequestedHandler(
         IEventRepository eventRepository,
         IProcessedBookingRepository processedBookingRepository,
         IEventPublisher eventPublisher,
+        IEventService eventService,
         ILogger<BookingRequestedHandler> logger)
     {
         _eventRepository = eventRepository;
         _processedBookingRepository = processedBookingRepository;
         _eventPublisher = eventPublisher;
+        _eventService = eventService;
         _logger = logger;
     }
 
@@ -137,12 +141,12 @@ public class BookingRequestedHandler : IBookingRequestedHandler
                 }
 
                 // Успешно зарезервировано места
-                seatsReserved = true; 
+                seatsReserved = true;
                 success = true;
                 availableSeats = eventItem.AvailableSeats;
 
                 // Обновить мероприятие в базе данных
-                await _eventRepository.UpdateAsync(eventItem);                
+                await _eventRepository.UpdateAsync(eventItem);
 
                 // 5. Обновить запись об обработанной брони с результатом
                 await _processedBookingRepository.UpdateResultAsync(
@@ -158,6 +162,12 @@ public class BookingRequestedHandler : IBookingRequestedHandler
                     @event.EventId,
                     availableBefore,
                     availableSeats);
+
+                if (success)
+                {
+                    // Обновить кеш события
+                    await _eventService.UpdateEventCacheAsync(@event.EventId);
+                }
 
             }
             catch (Exception ex)
@@ -183,7 +193,7 @@ public class BookingRequestedHandler : IBookingRequestedHandler
                     {
                         _logger.LogError(releaseEx, "Failed to release seats for event {EventId}", @event.EventId);
                     }
-                }                
+                }
 
                 success = false;
                 failureReason = $"Internal error: {ex.Message}";
@@ -200,7 +210,7 @@ public class BookingRequestedHandler : IBookingRequestedHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing booking request {BookingId} for event {EventId}", @event.BookingId,  @event.EventId);
+            _logger.LogError(ex, "Error processing booking request {BookingId} for event {EventId}", @event.BookingId, @event.EventId);
 
             // В случае ошибки отправить негативный результат
             try

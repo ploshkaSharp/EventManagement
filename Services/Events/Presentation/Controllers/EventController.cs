@@ -182,5 +182,13 @@ public class EventsController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpGet("top")]
+    [ProducesResponseType(typeof(IEnumerable<EventDTO>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<EventDTO>>> GetTop10()
+    {
+        var result = await _eventService.GetTop10Async();
+        return Ok(result);
+    }
     #endregion
 }

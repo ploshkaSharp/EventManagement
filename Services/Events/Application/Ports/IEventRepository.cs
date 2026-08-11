@@ -65,4 +65,5 @@ public interface IEventRepository
     /// <param name="count">Количество мест</param>
     /// <returns></returns>
     Task<bool> ReleaseSeatsAsync(Guid eventId, int count = 1);
+    Task<IEnumerable<Event>> GetTop10ByPopularityAsync();
 }

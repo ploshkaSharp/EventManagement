@@ -1,9 +1,11 @@
 using EventManagement.Events.Application.DTOs;
 using EventManagement.Events.Application.Mappers;
 using EventManagement.Events.Application.Ports;
+using EventManagement.Events.Application.Constants;
 using EventManagement.Events.Domain.Entities;
 using EventManagement.Events.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace EventManagement.Events.Application.Services;
 
@@ -13,15 +15,19 @@ namespace EventManagement.Events.Application.Services;
 public class EventService : IEventService
 {
     private readonly IEventRepository _eventRepository;
+    private readonly ICacheService _cacheService;
+    private readonly IOptions<CacheSettings> _cacheSettings;    
     private readonly ILogger<EventService> _logger;
     /// <summary>
     /// 
     /// </summary>
     /// <param name="eventRepository">Репозиторий мероприятий</param>
     /// <param name="logger">Логгер</param>
-    public EventService(IEventRepository eventRepository, ILogger<EventService> logger)
+    public EventService(IEventRepository eventRepository, ILogger<EventService> logger, ICacheService cacheService, IOptions<CacheSettings> cacheSettings)
     {
         _eventRepository = eventRepository;
+        _cacheService = cacheService;
+        _cacheSettings = cacheSettings;        
         _logger = logger;
     }
 
@@ -35,6 +41,23 @@ public class EventService : IEventService
     {
         _logger.LogDebug("Retrieving event {EventId}", id);
 
+        var cacheKey = CacheKeys.EventKey(id);
+        try
+        {
+            var cached = await _cacheService.GetAsync<EventDTO>(cacheKey);
+            if (cached != null)
+            {
+                _logger.LogDebug("Cache hit for event {EventId}", id);
+                return cached;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Cache read failed for event {EventId}, fallback to DB", id);
+        }
+
+        _logger.LogDebug("Cache miss for event {EventId}, fetching from DB", id);        
+
         var eventItem = await _eventRepository.GetByIdAsync(id);
 
         if (eventItem == null)
@@ -42,9 +65,14 @@ public class EventService : IEventService
             _logger.LogDebug("Event {EventId} not found", id);
             throw new NotFoundException(nameof(Event), id);
         }
+        
+        var dto = EventMapper.ToDto(eventItem);
+        // Сохранить в кеш с TTL
+        var ttl = TimeSpan.FromSeconds(_cacheSettings.Value.Event);
+        await _cacheService.SetAsync(cacheKey, dto, ttl);
 
         _logger.LogDebug("Successfully retrieved event {EventId}", id);
-        return EventMapper.ToDto(eventItem);
+        return dto;
     }
 
     /// <summary>
@@ -76,6 +104,8 @@ public class EventService : IEventService
         };
 
         var createdEvent = await _eventRepository.CreateAsync(evetItem);
+        // Инвалидация топ-10 
+        await InvalidateTop10CacheAsync();        
         return EventMapper.ToDto(createdEvent);
     }
 
@@ -119,6 +149,12 @@ public class EventService : IEventService
 
         var result = await _eventRepository.UpdateAsync(eventItem);
 
+        if (result != null)
+        {
+            await InvalidateEventCacheAsync(id);
+            await InvalidateTop10CacheAsync();
+        }        
+
         return EventMapper.ToDto(eventItem);
     }
 
@@ -139,7 +175,15 @@ public class EventService : IEventService
             throw new NotFoundException(nameof(Event), id);
         }
 
-        return await _eventRepository.DeleteAsync(id);
+        var deleted = await _eventRepository.DeleteAsync(id);
+
+        if (deleted)
+        {
+            await InvalidateEventCacheAsync(id);
+            await InvalidateTop10CacheAsync();
+        }
+
+        return deleted;
     }
     #region    === Валидация ===
     /// <summary>
@@ -237,4 +281,56 @@ public class EventService : IEventService
         return await _eventRepository.ReleaseSeatsAsync(eventId, count);
     }
     #endregion
+    
+    /// <summary>
+    /// Топ-10 самых популярных событий 
+    /// </summary>
+    public async Task<IEnumerable<EventDTO>> GetTop10Async()
+    {
+        const string cacheKey = CacheKeys.Top10Events;
+        try
+        {
+            var cached = await _cacheService.GetAsync<IEnumerable<EventDTO>>(cacheKey);
+            if (cached != null)
+            {
+                _logger.LogDebug("Cache hit for top10 events");
+                return cached;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Cache read failed for top10, fallback to DB");
+        }
+
+        _logger.LogDebug("Cache miss for top10, fetching from DB");
+        var events = await _eventRepository.GetTop10ByPopularityAsync();
+        var dtos = events.Select(e => EventMapper.ToDto(e)).ToList();
+        var ttl = TimeSpan.FromSeconds(_cacheSettings.Value.Top10);
+        await _cacheService.SetAsync(cacheKey, dtos, ttl);
+        return dtos;
+    }    
+
+    /// <summary>
+    /// Метод для обновления кеша после изменения AvailableSeats (вызывается из Kafka обработчика)
+    /// </summary> 
+    public async Task UpdateEventCacheAsync(Guid eventId)
+    {
+        // Просто инвалидируем и прогреем при следующем запросе
+        await InvalidateEventCacheAsync(eventId);
+        // Топ-10 тоже инвалидируем, так как популярность изменилась
+        await InvalidateTop10CacheAsync();
+    }    
+
+    private async Task InvalidateEventCacheAsync(Guid eventId)
+    {
+        var key = CacheKeys.EventKey(eventId);
+        await _cacheService.RemoveAsync(key);
+        _logger.LogDebug("Invalidated cache for event {EventId}", eventId);
+    }    
+
+    private async Task InvalidateTop10CacheAsync()
+    {
+        await _cacheService.RemoveAsync(CacheKeys.Top10Events);
+        _logger.LogDebug("Invalidated top10 cache");
+    }    
 }
