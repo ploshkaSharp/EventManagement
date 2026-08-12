@@ -29,7 +29,7 @@ Swagger для упрощения тестирования и документи
 
 ### Обмен сообщениями
 
-- **Топик**: `booking-confirmed`
+- **Топик**: `booking-requested`, `booking-processed`, `booking-cancelled`
 - **Издатель**: Сервис Bookings (при подтверждении брони)
 - **Подписчик**: Сервис Events (уменьшает доступные места)
 - **Ключ сообщения**: EventId (обеспечивает порядок обработки)
@@ -273,8 +273,7 @@ POST /auth/login
 ### Создание новой миграции
 
 ```bash
-dotnet ef migrations add <MigrationName> --context AppDbContext --output-dir EventManagement\Infrastructure\Migrations
-dotnet ef migrations add Users --context AppDbContext --startup-project D:\Teach\EventManagement\Services\Users\Presentation --project D:\Teach\EventManagement\Services\Users\Infrastructure --output-dir D:\Teach\EventManagement\Services\Users\Infrastructure\Migrations  
+dotnet ef migrations add <MigrationName> --context AppDbContext --startup-project Services\Users\Presentation --project Services\Users\Infrastructure --output-dir Services\Users\Infrastructure\Migrations  
 ```
 ### Применение миграций к базе данных
 ```bash
