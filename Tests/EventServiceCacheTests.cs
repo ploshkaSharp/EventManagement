@@ -9,11 +9,16 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using EventManagement.Events.Application.Mappers;
 
+using Microsoft.Extensions.DependencyInjection;
+using EventManagement.Events.Application.Ports;
+
 public class EventServiceCacheTests
 {
     private readonly Mock<IEventRepository> _repoMock;
     private readonly Mock<ICacheService> _cacheMock;
     private readonly EventService _service;
+
+    private readonly ServiceProvider _serviceProvider;  
 
     public EventServiceCacheTests()
     {
@@ -21,8 +26,8 @@ public class EventServiceCacheTests
         _cacheMock = new Mock<ICacheService>();
         var settings = Options.Create(new CacheSettings { Event = 600, Top10 = 300 });
         var logger = new Mock<ILogger<EventService>>().Object;
-        _service = new EventService(_repoMock.Object, logger, _cacheMock.Object, settings);
-    }
+        _service = new EventService(_repoMock.Object, logger, _cacheMock.Object, settings);          
+    } 
 
     [Fact]
     public async Task GetByIdAsync_CacheHit_DoesNotCallRepository()
