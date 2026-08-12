@@ -8,9 +8,8 @@ using EventManagement.Events.Domain.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using EventManagement.Events.Application.Mappers;
-
 using Microsoft.Extensions.DependencyInjection;
-using EventManagement.Events.Application.Ports;
+
 
 public class EventServiceCacheTests
 {
