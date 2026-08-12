@@ -25,6 +25,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Services\Events\Application\EventManagement.Events.Application.csproj" />
     <ProjectReference Include="..\Services\Events\Domain\EventManagement.Events.Domain.csproj" />
+    <ProjectReference Include="..\Services\Events\Infrastructure\EventManagement.Events.Infrastructure.csproj" />    
+    <ProjectReference Include="..\Services\Bookings\Application\EventManagement.Bookings.Application.csproj" />
+    <ProjectReference Include="..\Services\Bookings\Domain\EventManagement.Bookings.Domain.csproj" />
+    <ProjectReference Include="..\Services\Bookings\Infrastructure\EventManagement.Bookings.Infrastructure.csproj" />
+    <ProjectReference Include="..\Services\Users\Application\EventManagement.Users.Application.csproj" />
+    <ProjectReference Include="..\Services\Users\Domain\EventManagement.Users.Domain.csproj" />
+    <ProjectReference Include="..\Services\Users\Infrastructure\EventManagement.Users.Infrastructure.csproj" />    
   </ItemGroup>  
 
 </Project>
