@@ -195,6 +195,7 @@ public class EventRepository : IEventRepository
     public async Task<IEnumerable<Event>> GetTop10ByPopularityAsync()
     {
         return await _context.Events
+            .Where(e => e.TotalSeats != 0)
             .OrderByDescending(e => (double)(e.TotalSeats - e.AvailableSeats) / e.TotalSeats)
             .Take(10)
             .ToListAsync();

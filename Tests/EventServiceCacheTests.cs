@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using EventManagement.Events.Application.Mappers;
 using Microsoft.Extensions.DependencyInjection;
 
-
 public class EventServiceCacheTests
 {
     private readonly Mock<IEventRepository> _repoMock;
@@ -36,7 +35,7 @@ public class EventServiceCacheTests
         var id = @event.Id;
         var dto = EventMapper.ToDto(@event);
         _cacheMock.Setup(c => c.GetAsync<EventDTO>(CacheKeys.EventKey(id), default))
-            .ReturnsAsync(dto);
+                  .ReturnsAsync(dto);
 
         // Act
         var result = await _service.GetByIdAsync(id);
@@ -54,7 +53,7 @@ public class EventServiceCacheTests
         var eventItem = new Event("Title", DateTime.Now, DateTime.Now.AddHours(1), 10);
         _repoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(eventItem);
         _cacheMock.Setup(c => c.GetAsync<EventDTO>(CacheKeys.EventKey(id), default))
-            .ReturnsAsync((EventDTO?)null);
+                  .ReturnsAsync((EventDTO?)null);
 
         // Act
         var result = await _service.GetByIdAsync(id);
@@ -80,6 +79,106 @@ public class EventServiceCacheTests
 
         // Assert
         _cacheMock.Verify(c => c.RemoveAsync(CacheKeys.EventKey(id), default), Times.Once);
-        _cacheMock.Verify(c => c.RemoveAsync(CacheKeys.Top10Events, default), Times.Once);
+        _cacheMock.Verify(c => c.RemoveAsync(CacheKeys.Top10Events, default), Times.Never);
     }
+
+    [Fact]
+    public async Task GetTop10Async_CacheHit_DoesNotCallRepository()
+    {
+        // Arrange
+        var cacheKey = CacheKeys.Top10Events;
+        var expectedEvents = new List<EventDTO>
+        {
+            new EventDTO()
+            {
+                Id = Guid.NewGuid(), 
+                Title = "Event 1", 
+                Description = null, 
+                StartAt = DateTime.UtcNow, 
+                EndAt = DateTime.UtcNow.AddHours(4), 
+                TotalSeats = 100, 
+                AvailableSeats = 10
+            },
+            new EventDTO()
+            {
+                Id = Guid.NewGuid(), 
+                Title = "Event 2", 
+                Description = null, 
+                StartAt = DateTime.UtcNow, 
+                EndAt = DateTime.UtcNow.AddHours(4), 
+                TotalSeats = 100, 
+                AvailableSeats = 20
+            },
+            new EventDTO()
+            {
+                Id = Guid.NewGuid(), 
+                Title = "Event 3", 
+                Description = null, 
+                StartAt = DateTime.UtcNow, 
+                EndAt = DateTime.UtcNow.AddHours(4), 
+                TotalSeats = 100, 
+                AvailableSeats = 30
+            }
+        };
+        
+        _cacheMock.Setup(c => c.GetAsync<IEnumerable<EventDTO>>(cacheKey, It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(expectedEvents);
+
+        // Act
+        var result = await _service.GetTop10Async();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(3, result.Count());
+        Assert.Equal(expectedEvents, result);
+        
+        // Репозиторий НЕ вызывается
+        _repoMock.Verify(r => r.GetTop10ByPopularityAsync(), Times.Never);
+        
+        // Кеш читается один раз
+        _cacheMock.Verify(c => c.GetAsync<IEnumerable<EventDTO>>(cacheKey, It.IsAny<CancellationToken>()), Times.Once);
+        
+        // Кеш НЕ записывается
+        _cacheMock.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetTop10Async_CacheMiss_CallsRepositoryAndCaches()
+    {
+        // Arrange
+        var cacheKey = CacheKeys.Top10Events;
+        
+        var events = new List<Event>
+        {
+            new Event("Event 1", DateTime.UtcNow, DateTime.UtcNow.AddHours(4), 100),
+            new Event("Event 2", DateTime.UtcNow, DateTime.UtcNow.AddHours(4), 100),
+            new Event("Event 3", DateTime.UtcNow, DateTime.UtcNow.AddHours(4), 100)
+        };
+        
+        // Установка AvailableSeats для разных уровней популярности
+        events[0].TryReserveSeats(90); // 90% занято
+        events[1].TryReserveSeats(80); // 80% занято
+        events[2].TryReserveSeats(70); // 70% занято
+        
+        _cacheMock.Setup(c => c.GetAsync<IEnumerable<EventDTO>>(cacheKey, It.IsAny<CancellationToken>()))
+                  .ReturnsAsync((IEnumerable<EventDTO>?)null);
+        
+        _repoMock.Setup(r => r.GetTop10ByPopularityAsync()).ReturnsAsync(events);
+
+        // Act
+        var result = await _service.GetTop10Async();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(3, result.Count());
+        
+        // Репозиторий вызывается один раз
+        _repoMock.Verify(r => r.GetTop10ByPopularityAsync(), Times.Once);
+        
+        // Кеш читается один раз
+        _cacheMock.Verify(c => c.GetAsync<IEnumerable<EventDTO>>(cacheKey, It.IsAny<CancellationToken>()), Times.Once);
+        
+        // Кеш записывается с TTL для Top10
+        _cacheMock.Verify(c => c.SetAsync(cacheKey, It.IsAny<IEnumerable<EventDTO>>(), TimeSpan.FromSeconds(300), It.IsAny<CancellationToken>()), Times.Once);
+    }    
 }

@@ -135,6 +135,7 @@ services:
     depends_on:
       - events_db
       - kafka
+      - redis
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=events_db;Port=5432;Database=events_db;Username=postgres;Password=postgres

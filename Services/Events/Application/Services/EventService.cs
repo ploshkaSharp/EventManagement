@@ -104,8 +104,7 @@ public class EventService : IEventService
         };
 
         var createdEvent = await _eventRepository.CreateAsync(evetItem);
-        // Инвалидация топ-10 
-        await InvalidateTop10CacheAsync();        
+    
         return EventMapper.ToDto(createdEvent);
     }
 
@@ -152,7 +151,6 @@ public class EventService : IEventService
         if (result != null)
         {
             await InvalidateEventCacheAsync(id);
-            await InvalidateTop10CacheAsync();
         }        
 
         return EventMapper.ToDto(eventItem);
@@ -180,7 +178,6 @@ public class EventService : IEventService
         if (deleted)
         {
             await InvalidateEventCacheAsync(id);
-            await InvalidateTop10CacheAsync();
         }
 
         return deleted;
@@ -317,8 +314,6 @@ public class EventService : IEventService
     {
         // Просто инвалидируем и прогреем при следующем запросе
         await InvalidateEventCacheAsync(eventId);
-        // Топ-10 тоже инвалидируем, так как популярность изменилась
-        await InvalidateTop10CacheAsync();
     }    
 
     private async Task InvalidateEventCacheAsync(Guid eventId)
@@ -326,11 +321,5 @@ public class EventService : IEventService
         var key = CacheKeys.EventKey(eventId);
         await _cacheService.RemoveAsync(key);
         _logger.LogDebug("Invalidated cache for event {EventId}", eventId);
-    }    
-
-    private async Task InvalidateTop10CacheAsync()
-    {
-        await _cacheService.RemoveAsync(CacheKeys.Top10Events);
-        _logger.LogDebug("Invalidated top10 cache");
-    }    
+    }       
 }
