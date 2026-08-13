@@ -43,6 +43,15 @@ services:
       timeout: 10s
       retries: 15
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - event-network
+    restart: unless-stopped
+
   users_db:
     image: postgres:16-alpine
     container_name: users_db
@@ -126,6 +135,7 @@ services:
     depends_on:
       - events_db
       - kafka
+      - redis
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=events_db;Port=5432;Database=events_db;Username=postgres;Password=postgres

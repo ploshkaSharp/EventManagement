@@ -29,7 +29,7 @@ Swagger для упрощения тестирования и документи
 
 ### Обмен сообщениями
 
-- **Топик**: `booking-confirmed`
+- **Топик**: `booking-requested`, `booking-processed`, `booking-cancelled`
 - **Издатель**: Сервис Bookings (при подтверждении брони)
 - **Подписчик**: Сервис Events (уменьшает доступные места)
 - **Ключ сообщения**: EventId (обеспечивает порядок обработки)
@@ -247,14 +247,33 @@ POST /auth/login
    http://localhost:5002/swagger - для сервиса Events
    http://localhost:5003/swagger - для сервиса Bookings
 
+## Кеширование (Redis)
+
+### Стратегия кеширования
+- **Event по ID** (ключ `event:{id}`): кешируется при первом чтении (Cache-Aside). TTL 10 минут. Кеш инвалидируется: при обновлении или удалении события, при изменении количества мест через Kafka-сообщение.
+- **Топ-10 популярных событий** (ключ `events:top10`): кешируется при первом запросе. TTL 5 минут.
+
+### Обоснование
+- Отдельные события читаются часто, поэтому кеш ускоряет ответ и снижает нагрузку на БД. Инвалидация при записи гарантирует свежесть данных в кеше.
+- Топ-10 — агрегированный рейтинг, небольшая задержка допустима, поэтому используется TTL.
+
+### Поведение при недоступности Redis
+- Все операции с кешем обёрнуты в try/catch. При ошибке логируется предупреждение, но запрос продолжается напрямую в БД. Приложение остаётся работоспособным.
+
+### Порядок операций
+- При записи сначала обновляется БД, затем инвалидируется кеш. Если между ними происходит сбой, кеш останется устаревшим, но при следующем чтении он обновится из БД.
+
+### Конфигурация
+- TTL вынесены в appsettings.json (секция `Redis:CacheTTLSeconds`).
+- Экземпляр Redis и строка подключения также конфигурируются.
+
 
 ## Управление миграциями
    
 ### Создание новой миграции
 
 ```bash
-dotnet ef migrations add <MigrationName> --context AppDbContext --output-dir EventManagement\Infrastructure\Migrations
-dotnet ef migrations add Users --context AppDbContext --startup-project D:\Teach\EventManagement\Services\Users\Presentation --project D:\Teach\EventManagement\Services\Users\Infrastructure --output-dir D:\Teach\EventManagement\Services\Users\Infrastructure\Migrations  
+dotnet ef migrations add <MigrationName> --context AppDbContext --startup-project Services\Users\Presentation --project Services\Users\Infrastructure --output-dir Services\Users\Infrastructure\Migrations  
 ```
 ### Применение миграций к базе данных
 ```bash
