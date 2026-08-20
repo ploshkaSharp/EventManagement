@@ -46,6 +46,7 @@ builder.Services.AddOpenTelemetry()
         .AddRuntimeInstrumentation()
         .AddPrometheusExporter());
 
+builder.Services.AddHealthChecks();
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -120,6 +121,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
+app.MapHealthChecks("/healthy");
 // Эндпоинт для Prometheus
 app.MapPrometheusScrapingEndpoint();
 
