@@ -1,5 +1,4 @@
 using EventManagement.Events.Application.DTOs;
-using EventManagement.Bookings.Application.DTOs;
 
 namespace EventManagement.Tests;
 

@@ -1,5 +1,10 @@
 using System.Reflection;
 using Microsoft.OpenApi;
+using Serilog;
+using Serilog.Formatting.Compact;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
 using EventManagement.Bookings.Application;
 using EventManagement.Bookings.Infrastructure;
 using EventManagement.Bookings.Infrastructure.Data;
@@ -9,6 +14,37 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Настройка Serilog для структурированного логирования в JSON
+builder.Host.UseSerilog((ctx, cfg) =>
+    cfg.ReadFrom.Configuration(ctx.Configuration)
+       .WriteTo.Console(new CompactJsonFormatter()));
+
+// Настройка OpenTelemetry
+var serviceName = "bookings_service";
+builder.Services.AddOpenTelemetry()
+    // Настройка Resource
+    .ConfigureResource(resource => resource
+    .AddService(serviceName: serviceName))
+    
+    // Настройка Трейсов
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation(options =>
+        {
+            options.Filter = (httpContext) =>
+            {
+                return !httpContext.Request.Path.StartsWithSegments("/metrics");
+            };
+        })
+        .AddHttpClientInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddOtlpExporter(o => o.Endpoint = new Uri(builder.Configuration["Otlp:Endpoint"] ?? "http://jaeger:4317")))
+    
+    // Настройка Метрик
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddPrometheusExporter());
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -83,6 +119,9 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
+
+// Эндпоинт для Prometheus
+app.MapPrometheusScrapingEndpoint();
 
 // middleware для глобальной обработки ошибок. Ставить первым в pipeline для перехвата всех исключений
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();

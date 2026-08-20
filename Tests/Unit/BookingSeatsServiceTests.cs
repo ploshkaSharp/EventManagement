@@ -1,14 +1,8 @@
 using Moq;
 using Xunit;
-using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Ports;
 using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Domain.Entities;
-using EventManagement.Bookings.Domain.Enums;
-using EventManagement.Bookings.Domain.Exceptions;
-using EventManagement.Users.Application.DTOs;
-using EventManagement.Users.Domain.Enums;
-using EventManagement.Users.Application.Ports;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace EventManagement.Tests.Services;

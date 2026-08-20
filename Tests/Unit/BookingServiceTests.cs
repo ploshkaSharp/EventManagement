@@ -1,6 +1,5 @@
 using Moq;
 using Xunit;
-using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Ports;
 using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Domain.Entities;
