@@ -1,15 +1,53 @@
 using System.Reflection;
 using Microsoft.OpenApi;
+using Serilog;
+using Serilog.Formatting.Compact;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
 using EventManagement.Users.Application;
 using EventManagement.Users.Infrastructure;
 using EventManagement.Users.Infrastructure.Data;
 using EventManagement.Users.Presentation.Middleware;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Настройка Serilog для структурированного логирования в JSON
+builder.Host.UseSerilog((ctx, cfg) =>
+    cfg.ReadFrom.Configuration(ctx.Configuration)
+       .WriteTo.Console(new CompactJsonFormatter()));
+
+// Настройка OpenTelemetry
+var serviceName = "users_service";
+builder.Services.AddOpenTelemetry()
+    // Настройка Resource
+    .ConfigureResource(resource => resource
+    .AddService(serviceName: serviceName))
+    
+    // Настройка Трейсов
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation(options =>
+        {
+            options.Filter = (httpContext) =>
+            {
+                // Исключить эндпоинты мониторинга из трейсов
+                return !httpContext.Request.Path.StartsWithSegments("/metrics");
+            };
+        })
+        .AddHttpClientInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddOtlpExporter(o => o.Endpoint = new Uri(builder.Configuration["Otlp:Endpoint"] ?? "http://jaeger:4317")))
+    
+    // Настройка Метрик
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddPrometheusExporter());
+
+builder.Services.AddHealthChecks();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -85,6 +123,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
+
 // middleware для глобальной обработки ошибок. Ставить первым в pipeline для перехвата всех исключений
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
@@ -94,6 +133,9 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHealthChecks("/healthy");
+// Эндпоинт для Prometheus 
+app.MapPrometheusScrapingEndpoint(); // доступен по /metrics
 app.MapControllers();
 
 app.Run();

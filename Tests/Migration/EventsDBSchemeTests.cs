@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
 using EventManagement.Events.Infrastructure.Data;
-using EventManagement.Events.Infrastructure.Repositories;
 
 namespace EventManagement.IntegrationTests;
 

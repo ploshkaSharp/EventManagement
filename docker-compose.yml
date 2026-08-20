@@ -122,6 +122,7 @@ services:
       - JwtSettings__Secret=SECRET_KEY_MINIMUM_32_CHARACTERS
       - JwtSettings__Issuer=EventManagement
       - JwtSettings__Audience=EventManagementClient
+      - Otlp__Endpoint=http://jaeger:4317
     ports:
       - "5001:8080"
     networks:
@@ -144,6 +145,7 @@ services:
       - JwtSettings__Secret=SECRET_KEY_MINIMUM_32_CHARACTERS
       - JwtSettings__Issuer=EventManagement
       - JwtSettings__Audience=EventManagementClient
+      - Otlp__Endpoint=http://jaeger:4317
     ports:
       - "5002:8080"
     networks:
@@ -164,10 +166,53 @@ services:
       - JwtSettings__Secret=SECRET_KEY_MINIMUM_32_CHARACTERS
       - JwtSettings__Issuer=EventManagement
       - JwtSettings__Audience=EventManagementClient
+      - Otlp__Endpoint=http://jaeger:4317
     ports:
       - "5003:8080"
     networks:
       - event-network
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: eventapi-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - event-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.56
+    container_name: eventapi-jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
+    networks:
+      - event-network
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: eventapi-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - event-network
+    depends_on:
+      - prometheus
 
 networks:
   event-network:
@@ -177,3 +222,4 @@ volumes:
   users_data:
   events_data:
   bookings_data:
+  grafana-data:

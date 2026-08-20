@@ -165,14 +165,14 @@ public class BookingService : IBookingService
 
         if (booking == null)
         {
-            _logger.LogWarning($"Not found booking with id='{bookingId.ToString()}'");
+            _logger.LogWarning("Not found booking with id={BookingId}", bookingId);
             return false;
         }
 
         // Можно обновить статус только из Pending
         if (booking.Status != BookingStatus.Pending)
         {
-            _logger.LogWarning($"Can not update status. Status of booking id='{bookingId.ToString()}' is not Pending ('{booking.Status.ToString()}')");
+            _logger.LogWarning("Can not update status. Status of booking id={BookingId} is not Pending ({Status})", bookingId, booking.Status);
             return false;
         }
 
